@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>FortiGate Scale Out Demo with NoviFlow</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/highcharts-more.js"></script>
+<script src="https://code.highcharts.com/modules/heatmap.js"></script>
+<script src="https://code.highcharts.com/modules/tilemap.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<script>
+$(function () {
+    $('#fgtthroughtput').highcharts({
+        chart: {
+            type: 'bar'
+        },
+		legend: {
+			enabled: true
+		},
+        title: {
+            text: ''
+        },
+        xAxis: {
+            categories: ['FGT1', 'FGT2', 'FGT3','FGT4', 'FGT5', 'FGT6', 'FGT7', 'FGT8']
+        },
+        yAxis: {
+            title: {
+                text: 'Bps'
+            }
+        },
+        series: [{
+            name: 'ingress',
+            data: [1, 8, 4, 3, 4, 6, 7, 3]
+        }, {
+            name: 'egress',
+            data: [2, 7, 3, 5, 5, 5, 6, 4]
+        }],
+    });
+});
+</script>
+<script>
+$(function () {
+    $('#totalthroughtput').highcharts({
+        chart: {
+            type: 'bar'
+        },
+        title: {
+            text: ''
+        },
+		colors: ['#FF7200', '#AA7200', '#8bbc21', '#910000', '#1aadce',
+    '#492970', '#f28f43', '#77a1e5', '#c42525', '#a6c96a'],
+	
+		legend: {
+			enabled: true,
+			floating: true,
+			align: 'right',
+			verticalAlign: 'top'
+		},
+        xAxis: {
+            categories: ['40G A', '40G B']
+        },
+        yAxis: {
+            title: {
+                text: 'Bps'
+            }
+        },
+        series: [{
+            name: 'ingress',
+            data: [1, 8]
+        }, {
+            name: 'egress',
+            data: [2, 7]
+        }],
+    });
+});
+</script>
+<script>
+var template = {
+    chart: {
+        type: 'gauge',
+        plotBackgroundColor: null,
+        plotBackgroundImage: null,
+        plotBorderWidth: 0,
+        plotShadow: false
+    },
+
+    title: {
+        text: 'Host',
+		margin:0
+    },
+
+    pane: {
+        startAngle: -150,
+        endAngle: 150,
+        background: [{
+            backgroundColor: {
+                linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                stops: [
+                    [0, '#FFF'],
+                    [1, '#333']
+                ]
+            },
+            borderWidth: 0,
+            outerRadius: '109%'
+        }, {
+            backgroundColor: {
+                linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                stops: [
+                    [0, '#333'],
+                    [1, '#FFF']
+                ]
+            },
+            borderWidth: 1,
+            outerRadius: '107%'
+        }, {
+            // default background
+        }, {
+            backgroundColor: '#DDD',
+            borderWidth: 0,
+            outerRadius: '105%',
+            innerRadius: '103%'
+        }]
+    },
+
+    // the value axis
+    yAxis: {
+        min: 0,
+        max: 100,
+
+        minorTickInterval: 'auto',
+        minorTickWidth: 1,
+        minorTickLength: 10,
+        minorTickPosition: 'inside',
+        minorTickColor: '#666',
+
+        tickPixelInterval: 30,
+        tickWidth: 2,
+        tickPosition: 'inside',
+        tickLength: 10,
+        tickColor: '#666',
+        labels: {
+            step: 2,
+            rotation: 'auto'
+        },
+        title: {
+            text: '%',
+			margin: 0
+        },
+        plotBands: [{
+            from: 0,
+            to: 60,
+            color: '#55BF3B' // green
+        }, {
+            from: 60,
+            to: 75,
+            color: '#DDDF0D' // yellow
+        }, {
+            from: 75,
+            to: 100,
+            color: '#DF5353' // red
+        }]
+    },
+
+    series: [{
+        name: 'CPU Load',
+        data: [80],
+        tooltip: {
+            valueSuffix: ' %'
+        }
+    }]
+
+};
+
+var template_fgt = $.extend( {}, template);
+template_fgt.chart.height='120%';
+template_fgt.series.name='';
+template_fgt.yAxis =  {
+        min: 0,
+        max: 100,
+
+        minorTickInterval: 'auto',
+        minorTickWidth: 1,
+        minorTickLength: 10,
+        minorTickPosition: 'inside',
+        minorTickColor: '#666',
+
+        tickPixelInterval: 30,
+        tickWidth: 2,
+        tickPosition: 'inside',
+        tickLength: 10,
+        tickColor: '#666',
+        labels: {
+            step: 2,
+            rotation: 'auto'
+        },
+        title: {
+            text: '',
+			margin: 0
+        },
+        plotBands: [{
+            from: 0,
+            to: 60,
+            color: '#55BF3B' // green
+        }, {
+            from: 60,
+            to: 75,
+            color: '#DDDF0D' // yellow
+        }, {
+            from: 75,
+            to: 100,
+            color: '#DF5353' // red
+        }]
+    };
+
+$(function () {
+template.title='';
+    $('#cpuload1').highcharts(template,
+// Add some life
+function (chart) {
+    if (!chart.renderer.forExport) {
+        setInterval(function () {
+            var point = chart.series[0].points[0],
+                newVal,
+                inc = Math.round((Math.random() - 0.5) * 20);
+            newVal = point.y + inc;
+            if (newVal < 0 || newVal > 100) {
+                newVal = point.y - inc;
+            }
+            point.update(newVal);
+        }, 5000);
+    }
+});
+    $('#cpuload2').highcharts(template,
+// Add some life
+function (chart) {
+    if (!chart.renderer.forExport) {
+        setInterval(function () {
+            var point = chart.series[0].points[0],
+                newVal,
+                inc = Math.round((Math.random() - 0.5) * 20);
+            newVal = point.y + inc;
+            if (newVal < 0 || newVal > 100) {
+                newVal = point.y - inc;
+            }
+            point.update(newVal);
+        }, 5000);
+    }
+});
+
+    $('#cpuload3').highcharts(template,
+// Add some life
+function (chart) {
+    if (!chart.renderer.forExport) {
+        setInterval(function () {
+            var point = chart.series[0].points[0],
+                newVal,
+                inc = Math.round((Math.random() - 0.5) * 20);
+            newVal = point.y + inc;
+            if (newVal < 0 || newVal > 100) {
+                newVal = point.y - inc;
+            }
+            point.update(newVal);
+        }, 5000);
+    }
+});
+
+    $('#cpuload4').highcharts(template,
+// Add some life
+function (chart) {
+    if (!chart.renderer.forExport) {
+        setInterval(function () {
+            var point = chart.series[0].points[0],
+                newVal,
+                inc = Math.round((Math.random() - 0.5) * 20);
+            newVal = point.y + inc;
+            if (newVal < 0 || newVal > 100) {
+                newVal = point.y - inc;
+            }
+            point.update(newVal);
+        }, 5000);
+    }
+	
+	$('#fgtload1').highcharts(template_fgt,
+// Add some life
+function (chart) {
+    if (!chart.renderer.forExport) {
+        setInterval(function () {
+            var point = chart.series[0].points[0],
+                newVal,
+                inc = Math.round((Math.random() - 0.5) * 20);
+
+            newVal = point.y + inc;
+            if (newVal < 0 || newVal > 100) {
+                newVal = point.y - inc;
+            }
+
+            point.update(newVal);
+
+        }, 5000);
+    }
+});
+
+	$('#fgtload2').highcharts(template_fgt,
+// Add some life
+function (chart) {
+    if (!chart.renderer.forExport) {
+        setInterval(function () {
+            var point = chart.series[0].points[0],
+                newVal,
+                inc = Math.round((Math.random() - 0.5) * 20);
+
+            newVal = point.y + inc;
+            if (newVal < 0 || newVal > 100) {
+                newVal = point.y - inc;
+            }
+
+            point.update(newVal);
+
+        }, 5000);
+    }
+});
+
+	$('#fgtload3').highcharts(template_fgt,
+// Add some life
+function (chart) {
+    if (!chart.renderer.forExport) {
+        setInterval(function () {
+            var point = chart.series[0].points[0],
+                newVal,
+                inc = Math.round((Math.random() - 0.5) * 20);
+            newVal = point.y + inc;
+            if (newVal < 0 || newVal > 100) {
+                newVal = point.y - inc;
+            }
+            point.update(newVal);
+        }, 5000);
+    }
+});
+
+	$('#fgtload4').highcharts(template_fgt,
+// Add some life
+function (chart) {
+    if (!chart.renderer.forExport) {
+        setInterval(function () {
+            var point = chart.series[0].points[0],
+                newVal,
+                inc = Math.round((Math.random() - 0.5) * 20);
+
+            newVal = point.y + inc;
+            if (newVal < 0 || newVal > 100) {
+                newVal = point.y - inc;
+            }
+
+            point.update(newVal);
+
+        }, 5000);
+    }
+});
+
+	$('#fgtload5').highcharts(template_fgt,
+// Add some life
+function (chart) {
+    if (!chart.renderer.forExport) {
+        setInterval(function () {
+            var point = chart.series[0].points[0],
+                newVal,
+                inc = Math.round((Math.random() - 0.5) * 20);
+            newVal = point.y + inc;
+            if (newVal < 0 || newVal > 100) {
+                newVal = point.y - inc;
+            }
+            point.update(newVal);
+        }, 5000);
+    }
+});
+
+	$('#fgtload6').highcharts(template_fgt,
+// Add some life
+function (chart) {
+    if (!chart.renderer.forExport) {
+        setInterval(function () {
+            var point = chart.series[0].points[0],
+                newVal,
+                inc = Math.round((Math.random() - 0.5) * 20);
+            newVal = point.y + inc;
+            if (newVal < 0 || newVal > 100) {
+                newVal = point.y - inc;
+            }
+            point.update(newVal);
+        }, 5000);
+    }
+});
+
+	$('#fgtload7').highcharts(template_fgt,
+// Add some life
+function (chart) {
+    if (!chart.renderer.forExport) {
+        setInterval(function () {
+            var point = chart.series[0].points[0],
+                newVal,
+                inc = Math.round((Math.random() - 0.5) * 20);
+            newVal = point.y + inc;
+            if (newVal < 0 || newVal > 100) {
+                newVal = point.y - inc;
+            }
+            point.update(newVal);
+        }, 5000);
+    }
+});
+	$('#fgtload8').highcharts(template_fgt,
+// Add some life
+function (chart) {
+    if (!chart.renderer.forExport) {
+        setInterval(function () {
+            var point = chart.series[0].points[0],
+                newVal,
+                inc = Math.round((Math.random() - 0.5) * 20);
+            newVal = point.y + inc;
+            if (newVal < 0 || newVal > 100) {
+                newVal = point.y - inc;
+            }
+            point.update(newVal);
+        }, 5000);
+    }
+});
+
+
+
+
+});
+});
+</script>
+<script>
+$(function () {
+    $('#ports').highcharts({
+    chart: {
+        type: 'tilemap',
+        inverted: true,
+        height: '15%',
+		
+    },
+
+    title: {
+        text: ''
+    },
+
+
+    xAxis: {
+        visible: false,
+    },
+
+    yAxis: {
+        visible: false
+		
+    },
+
+    colorAxis: {
+        dataClasses: [{
+            from: 0,
+            to: 1,
+            color: '#F9EDB3',
+            name: 'disabled'
+        }, {
+            from: 1,
+            to: 2,
+            color: '#FFC428',
+            name: 'enabled'
+        }]
+    },
+
+    tooltip: {
+        headerFormat: '',
+        pointFormat: 'The status of port <b> {point.name}</b> is <b>{point.value}</b>'
+    },
+
+    plotOptions: {
+        series: {
+		    tileShape: 'circle',
+            dataLabels: {
+                enabled: true,
+                format: '{point.hc-a2}',
+                color: '#000000',
+                style: {
+                    textOutline: false
+                }
+            }
+        }
+    },
+
+    series: [{
+        name: '',
+        data: [{
+            'hc-a2': '40.1',
+            name: '40.1',
+            x: 0,
+            y: 0,
+            value: 1
+        }, {
+            'hc-a2': '40.2',
+            name: '40.2',
+            x: 1,
+            y: 1,
+            value: 1
+        }, {
+            'hc-a2': '40.3',
+            name: '40.3',
+            x: 0,
+            y: 1,
+            value: 1
+        }, {
+            'hc-a2': '40.4',
+            name: '40.4',
+            x: 1,
+            y: 2,
+            value: 1
+        }, {
+            'hc-a2': '1',
+            name: '1',
+            x: 0,
+            y: 2,
+            value: 1
+        }, {
+            'hc-a2': '2',
+            name: '2',
+            x: 1,
+            y: 3,
+            value: 1
+        }, {
+            'hc-a2': '3',
+            name: '',
+            x: 0,
+            y: 3,
+            value: 1
+        }, {
+            'hc-a2': '4',
+            name: '',
+            x: 1,
+            y: 4,
+            value: 1
+        }, {
+            'hc-a2': '5',
+            name: '',
+            x: 0,
+            y: 4,
+            value: 1
+        }, {
+            'hc-a2': '6',
+            name: '',
+            x: 1,
+            y: 5,
+            value: 1
+        }, {
+            'hc-a2': '7',
+            name: '',
+            x: 0,
+            y: 5,
+            value: 1
+        }, {
+            'hc-a2': '8',
+            name: '',
+            x: 1,
+            y: 6,
+            value: 1
+        }, {
+            'hc-a2': '9',
+            name: '',
+            x: 0,
+            y: 6,
+            value: 1
+        }, {
+            'hc-a2': '10',
+            name: '',
+            x: 1,
+            y: 7,
+            value: 1
+        }, {
+            'hc-a2': '11',
+            name: '',
+            x: 0,
+            y: 7,
+            value: 1
+        }, {
+            'hc-a2': '12',
+            name: '',
+            x: 1,
+            y: 8,
+            value: 1
+        }, {
+            'hc-a2': '13',
+            name: '',
+            x: 0,
+            y: 8,
+            value: 1
+        }, {
+            'hc-a2': '14',
+            name: '',
+            x: 1,
+            y: 9,
+            value: 1
+        }, {
+            'hc-a2': '15',
+            name: '',
+            x: 0,
+            y: 9,
+            value: 1
+        }, {
+            'hc-a2': '16',
+            name: '',
+            x: 1,
+            y: 10,
+            value: 1
+        }, {
+            'hc-a2': '17',
+            name: '',
+            x: 0,
+            y: 10,
+            value: 0
+        }, {
+            'hc-a2': '18',
+            name: '',
+            x: 1,
+            y: 11,
+            value: 0
+        }, {
+            'hc-a2': '19',
+            name: '',
+            x: 0,
+            y: 11,
+            value: 0
+        }, {
+            'hc-a2': '20',
+            name: '',
+            x: 1,
+            y: 12,
+            value: 0
+        }, {
+            'hc-a2': '21',
+            name: '',
+            x: 0,
+            y: 12,
+            value: 0
+        }, {
+            'hc-a2': '22',
+            name: '',
+            x: 1,
+            y: 13,
+            value: 0
+        }, {
+            'hc-a2': '23',
+            name: '',
+            x: 0,
+            y: 13,
+            value: 0
+        }, {
+            'hc-a2': '24',
+            name: '',
+            x: 1,
+            y: 14,
+            value: 0
+        }
+		
+]
+    }]
+});
+});
+</script>
+
+<body>
+
+<div class="container-fluid">
+  <h1 class="text-center">FortiGate Scale Out with NoviFlow</h1>
+	<div class="row">
+		<div class="panel panel-default">
+			<div class="panel-heading">Total Throughput</div>
+			<div class="panel-body" style="height:16vh;" id="totalthroughtput"/>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-6">
+			<div class="panel panel-default">
+				<div class="panel-heading">FortiGate Port Throughput</div>
+					<div class="panel-body" id="fgtthroughtput" style=""></div>
+				
+			</div>
+
+		</div>
+		<div class="col-sm-6">
+			<div class="panel panel-default">
+				<div class="panel-heading">CPU Load / Host / FGT</div>
+				<div class="panel-body">
+					<div style="width: 100%; float:right">
+						<div id="cpuload1" style="width:24%; float:left"></div>
+						<div id="cpuload2" style="width:24%; float:left"></div>
+						<div id="cpuload3" style="width:24%; float:left"></div>
+						<div id="cpuload4" style="width:24%; float:left"></div>
+					</div>
+					<div style="width: 100%; float:right">
+						<div id="fgtload1" style="width:12%; float:left"></div>
+						<div id="fgtload2" style="width:12%; float:left"></div>
+						<div id="fgtload3" style="width:12%; float:left"></div>
+						<div id="fgtload4" style="width:12%; float:left"></div>
+						<div id="fgtload5" style="width:12%; float:left"></div>
+						<div id="fgtload6" style="width:12%; float:left"></div>
+						<div id="fgtload7" style="width:12%; float:left"></div>
+						<div id="fgtload8" style="width:12%; float:left"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-12">
+			<div class="panel panel-default">
+			    <div class="panel-heading">Port Status</div>
+				<div class="panel-body" id="ports" style="width:99%;">
+				<div>
+			</div>
+		</div>
+
+	</div>
+</div>
+</body>
+
+</html>
