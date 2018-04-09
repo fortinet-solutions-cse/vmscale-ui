@@ -5,8 +5,6 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
 <script src="https://code.highcharts.com/highcharts.js"></script>
 <script src="https://code.highcharts.com/highcharts-more.js"></script>
-<script src="https://code.highcharts.com/modules/heatmap.js"></script>
-<script src="https://code.highcharts.com/modules/tilemap.js"></script>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 </head>
@@ -174,7 +172,7 @@ var template = {
 
 };
 
-var template_fgt = $.extend( {}, template);
+var template_fgt = $.extend( true, {}, template);
 template_fgt.chart.height='120%';
 template_fgt.series.name='';
 template_fgt.yAxis =  {
@@ -222,7 +220,7 @@ template_fgt.yAxis =  {
 $(function () {
 
 // CPULoad1
-var template1 = $.extend( {}, template);
+var template1 = $.extend( true, {}, template);
 template1.title.text = 'Host1';
     $('#cpuload1').highcharts(template1,
 // Add some life
@@ -242,7 +240,7 @@ function (chart) {
 });
 
 // CPULoad2
-var template2 = $.extend( {}, template);
+var template2 = $.extend( true, {}, template);
 template2.title.text = 'Host2';
 $('#cpuload2').highcharts(template2,
 // Add some life
@@ -262,7 +260,7 @@ function (chart) {
 });
 
 // CPULoad3
-var template3 = $.extend( {}, template);
+var template3 = $.extend( true, {}, template);
 template3.title.text = 'Host3';
 $('#cpuload3').highcharts(template3,
 // Add some life
@@ -283,7 +281,7 @@ function (chart) {
 
 
 // CPULoad4
-var template4 = $.extend( {}, template);
+var template4 = $.extend( true, {}, template);
 template4.title.text = 'Host4';
 $('#cpuload4').highcharts(template4,
 // Add some life
@@ -303,7 +301,7 @@ function (chart) {
 	
 
 // FGTLoad1
-var template_fgt1 = $.extend( {}, template_fgt);
+var template_fgt1 = $.extend( true, {}, template_fgt);
 template_fgt1.title.text = 'FGT1';
 $('#fgtload1').highcharts(template_fgt1,
 // Add some life
@@ -323,7 +321,7 @@ function (chart) {
 });
 
 // FGTLoad2
-var template_fgt2 = $.extend( {}, template_fgt);
+var template_fgt2 = $.extend(true, {}, template_fgt);
 template_fgt2.title.text = 'FGT2';
 $('#fgtload2').highcharts(template_fgt2,
 // Add some life
@@ -344,7 +342,7 @@ function (chart) {
 
 
 // FGTLoad3
-var template_fgt3 = $.extend( {}, template_fgt);
+var template_fgt3 = $.extend(true, {}, template_fgt);
 template_fgt3.title.text = 'FGT3';
 $('#fgtload3').highcharts(template_fgt3,
 // Add some life
@@ -364,7 +362,7 @@ function (chart) {
 });
 
 // FGTLoad4
-var template_fgt4 = $.extend( {}, template_fgt);
+var template_fgt4 = $.extend(true, {}, template_fgt);
 template_fgt4.title.text = 'FGT4';
 $('#fgtload4').highcharts(template_fgt4,
 // Add some life
@@ -387,7 +385,7 @@ function (chart) {
 });
 
 // FGTLoad5
-var template_fgt5 = $.extend( {}, template_fgt);
+var template_fgt5 = $.extend(true, {}, template_fgt);
 template_fgt5.title.text = 'FGT5';
 $('#fgtload5').highcharts(template_fgt5,
 // Add some life
@@ -407,7 +405,7 @@ function (chart) {
 });
 
 // FGTLoad6
-var template_fgt6 = $.extend( {}, template_fgt);
+var template_fgt6 = $.extend(true, {}, template_fgt);
 template_fgt6.title.text = 'FGT6';
 $('#fgtload6').highcharts(template_fgt6,
 // Add some life
@@ -427,7 +425,7 @@ function (chart) {
 });
 
 // FGTLoad7
-var template_fgt7 = $.extend( {}, template_fgt);
+var template_fgt7 = $.extend(true, {}, template_fgt);
 template_fgt7.title.text = 'FGT7';
 $('#fgtload7').highcharts(template_fgt7,
 // Add some life
@@ -447,7 +445,7 @@ function (chart) {
 });
 
 // FGTLoad8
-var template_fgt8 = $.extend( {}, template_fgt);
+var template_fgt8 = $.extend(true, {}, template_fgt);
 template_fgt8.title.text = 'FGT8';
 $('#fgtload8').highcharts(template_fgt,
 	// Add some life
@@ -471,47 +469,175 @@ $('#fgtload8').highcharts(template_fgt,
 });
 </script>
 
+<script>
+$(function () {
+var template_cpu_time = {
+		chart: {
+			type: 'line'
+		},
+		title: {
+			text: 'Host1'
+		},
+		xAxis: {
+			categories: ['15:31', '15:32', '15:33', '15:34', '15:35', '15:36', '15:37', '15:38', '15:39', '15:40'],
+			
+		},
+		yAxis: {
+			title: {
+				text: '% CPU Load'
+			},
+			
+		},
+		legend: false,
+		plotOptions: {
+			line: {
+				dataLabels: {
+					enabled: true
+				},
+				enableMouseTracking: false
+			}
+		},
+		series: [{
+			data: [7.0, 6.9, 9.5, 14.5, 18.4, 21.5, 25.2, 26.5, 23.3, 18.3]
+		}]
+	};
+	
+var template_cpu_time1 = $.extend( true, {}, template_cpu_time);
+template_cpu_time1.title.text = "Host 1";
+$('#cputime1').highcharts(template_cpu_time1);
+
+var template_cpu_time2 = $.extend( true, {}, template_cpu_time);
+template_cpu_time2.title.text = "Host 2";
+$('#cputime2').highcharts(template_cpu_time2);
+
+var template_cpu_time3 = $.extend( true, {}, template_cpu_time);
+template_cpu_time3.title.text = "Host 3";
+$('#cputime3').highcharts(template_cpu_time3);
+
+var template_cpu_time4 = $.extend( true, {}, template_cpu_time);
+template_cpu_time4.title.text = "Host 4";
+$('#cputime4').highcharts(template_cpu_time4);
+
+var template_fgt_time = $.extend( true, {}, template_cpu_time);
+
+var template_fgt_time1 = $.extend( true, {}, template_cpu_time);
+template_fgt_time1.title.text = "FGT1";
+$('#fgttime1').highcharts(template_fgt_time1);
+
+var template_fgt_time2 = $.extend( true, {}, template_cpu_time);
+template_fgt_time2.title.text = "FGT2";
+$('#fgttime2').highcharts(template_fgt_time2);
+
+var template_fgt_time3 = $.extend( true, {}, template_cpu_time);
+template_fgt_time3.title.text = "FGT3";
+$('#fgttime3').highcharts(template_fgt_time3);
+
+var template_fgt_time4 = $.extend( true, {}, template_cpu_time);
+template_fgt_time4.title.text = "FGT4";
+$('#fgttime4').highcharts(template_fgt_time4);
+
+var template_fgt_time5 = $.extend( true, {}, template_cpu_time);
+template_fgt_time5.title.text = "FGT5";
+$('#fgttime5').highcharts(template_fgt_time5);
+
+var template_fgt_time6 = $.extend( true, {}, template_cpu_time);
+template_fgt_time6.title.text = "FGT6";
+$('#fgttime6').highcharts(template_fgt_time6);
+
+var template_fgt_time7 = $.extend( true, {}, template_cpu_time);
+template_fgt_time7.title.text = "FGT7";
+$('#fgttime7').highcharts(template_fgt_time7);
+
+var template_fgt_time8 = $.extend( true, {}, template_cpu_time);
+template_fgt_time8.title.text = "FGT8";
+$('#fgttime8').highcharts(template_fgt_time8);
+
+
+});
+</script>
+
 <body>
 
 <div class="container-fluid">
-  <h1 class="text-center">FortiGate Scale Out with NoviFlow</h1>
-	<div class="row">
-		<div class="panel panel-default">
-			<div class="panel-heading">Total Throughput</div>
-			<div class="panel-body" style="height:16vh;" id="totalthroughtput"/>
-		</div>
-	</div>
-	<div class="row">
-		<div class="col-sm-6">
-			<div class="panel panel-default">
-				<div class="panel-heading">FortiGate Port Throughput</div>
-					<div class="panel-body" id="fgtthroughtput" style=""></div>
-			</div>
-		</div>
-		<div class="col-sm-6">
-			<div class="panel panel-default">
-				<div class="panel-heading">Load per Host and FortiGate</div>
-				<div class="panel-body">
-					<div style="width: 100%; float:right">
-						<div id="cpuload1" style="width:24%; float:left"></div>
-						<div id="cpuload2" style="width:24%; float:left"></div>
-						<div id="cpuload3" style="width:24%; float:left"></div>
-						<div id="cpuload4" style="width:24%; float:left"></div>
-					</div>
-					<div style="width: 100%; float:right">
-						<div id="fgtload1" style="width:12%; float:left"></div>
-						<div id="fgtload2" style="width:12%; float:left"></div>
-						<div id="fgtload3" style="width:12%; float:left"></div>
-						<div id="fgtload4" style="width:12%; float:left"></div>
-						<div id="fgtload5" style="width:12%; float:left"></div>
-						<div id="fgtload6" style="width:12%; float:left"></div>
-						<div id="fgtload7" style="width:12%; float:left"></div>
-						<div id="fgtload8" style="width:12%; float:left"></div>
+	<h1 class="text-center">FortiGate Scale Out with NoviFlow</h1>
+
+	<div class="container" style="width:100%">
+	  <ul class="nav nav-pills">
+		<li class="active"><a data-toggle="pill" href="#home">Home</a></li>
+		<li><a data-toggle="pill" href="#menu1">Snapshot</a></li>
+		<li><a data-toggle="pill" href="#menu2">Other</a></li>
+	  </ul>
+	  
+	  <div class="tab-content">
+		<div id="home" class="tab-pane fade in active">
+			<div class="row">
+				<div class="panel panel-default">
+					<div class="panel-heading">CPU Load</div>
+					<div class="panel-body">
+						<div id="cputime1" style="width:24%; float:left; height:25vh;" ></div> 
+						<div id="cputime2" style="width:24%; float:left; height:25vh;" ></div>
+						<div id="cputime3" style="width:24%; float:left; height:25vh;" ></div>
+						<div id="cputime4" style="width:24%; float:left; height:25vh;" ></div>
+
+						<div id="fgttime1" style="width:12%; float:left; height:25vh;" ></div>
+						<div id="fgttime2" style="width:12%; float:left; height:25vh;" ></div>
+						<div id="fgttime3" style="width:12%; float:left; height:25vh;" ></div>
+						<div id="fgttime4" style="width:12%; float:left; height:25vh;" ></div>
+						<div id="fgttime5" style="width:12%; float:left; height:25vh;" ></div>
+						<div id="fgttime6" style="width:12%; float:left; height:25vh;" ></div>
+						<div id="fgttime7" style="width:12%; float:left; height:25vh;" ></div>
+						<div id="fgttime8" style="width:12%; float:left; height:25vh;" ></div>
+						
 					</div>
 				</div>
 			</div>
 		</div>
+
+		<div id="menu1" class="tab-pane fade">
+		  	<div class="row">
+				<div class="panel panel-default">
+					<div class="panel-heading">Total Throughput</div>
+					<div class="panel-body" style="height:16vh;" id="totalthroughtput"/>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-sm-6">
+					<div class="panel panel-default">
+						<div class="panel-heading">FortiGate Port Throughput</div>
+							<div class="panel-body" id="fgtthroughtput" style=""></div>
+					</div>
+				</div>
+				<div class="col-sm-6">
+					<div class="panel panel-default">
+						<div class="panel-heading">Load per Host and FortiGate</div>
+						<div class="panel-body">
+							<div style="width: 100%; float:right">
+								<div id="cpuload1" style="width:24%; height:25vh; float:left"></div>
+								<div id="cpuload2" style="width:24%; height:25vh; float:left"></div>
+								<div id="cpuload3" style="width:24%; height:25vh; float:left"></div>
+								<div id="cpuload4" style="width:24%; height:25vh; float:left"></div>
+							</div>
+							<div style="width: 100%; float:right">
+								<div id="fgtload1" style="width:12%; float:left"></div>
+								<div id="fgtload2" style="width:12%; float:left"></div>
+								<div id="fgtload3" style="width:12%; float:left"></div>
+								<div id="fgtload4" style="width:12%; float:left"></div>
+								<div id="fgtload5" style="width:12%; float:left"></div>
+								<div id="fgtload6" style="width:12%; float:left"></div>
+								<div id="fgtload7" style="width:12%; float:left"></div>
+								<div id="fgtload8" style="width:12%; float:left"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<button type="button" class="btn">Basic</button>
+			</div>
+		</div>
 	</div>
+
+
 </div>
 </body>
 
