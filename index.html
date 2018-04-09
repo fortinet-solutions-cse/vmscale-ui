@@ -12,36 +12,6 @@
 </head>
 <script>
 $(function () {
-    $('#fgtthroughtput').highcharts({
-        chart: {
-            type: 'bar'
-        },
-		legend: {
-			enabled: true
-		},
-        title: {
-            text: ''
-        },
-        xAxis: {
-            categories: ['FGT1', 'FGT2', 'FGT3','FGT4', 'FGT5', 'FGT6', 'FGT7', 'FGT8']
-        },
-        yAxis: {
-            title: {
-                text: 'Bps'
-            }
-        },
-        series: [{
-            name: 'ingress',
-            data: [1, 8, 4, 3, 4, 6, 7, 3]
-        }, {
-            name: 'egress',
-            data: [2, 7, 3, 5, 5, 5, 6, 4]
-        }],
-    });
-});
-</script>
-<script>
-$(function () {
     $('#totalthroughtput').highcharts({
         chart: {
             type: 'bar'
@@ -68,10 +38,40 @@ $(function () {
         },
         series: [{
             name: 'ingress',
-            data: [1, 8]
+            data: [17, 38]
         }, {
             name: 'egress',
-            data: [2, 7]
+            data: [16, 37]
+        }],
+    });
+});
+</script>
+<script>
+$(function () {
+    $('#fgtthroughtput').highcharts({
+        chart: {
+            type: 'bar'
+        },
+		legend: {
+			enabled: true
+		},
+        title: {
+            text: ''
+        },
+        xAxis: {
+            categories: ['FGT1', 'FGT2', 'FGT3','FGT4', 'FGT5', 'FGT6', 'FGT7', 'FGT8']
+        },
+        yAxis: {
+            title: {
+                text: 'Bps'
+            }
+		},
+        series: [{
+            name: 'ingress',
+            data: [1.2, 8, 4.3, 3.5, 4.2, 6.2, 7, 3.4]
+        }, {
+            name: 'egress',
+            data: [1.2, 7.5, 3.5, 3.5, 4.2, 5.4, 6.5, 3]
         }],
     });
 });
@@ -145,9 +145,10 @@ var template = {
             rotation: 'auto'
         },
         title: {
-            text: '%',
+            text: '% CPU',
 			margin: 0
         },
+
         plotBands: [{
             from: 0,
             to: 60,
@@ -183,14 +184,13 @@ template_fgt.yAxis =  {
         minorTickInterval: 'auto',
         minorTickWidth: 1,
         minorTickLength: 10,
-        minorTickPosition: 'inside',
+        minorTickPosition: 'outside',
         minorTickColor: '#666',
 
-        tickPixelInterval: 30,
+        tickPixelInterval: 50,
         tickWidth: 2,
-        tickPosition: 'inside',
         tickLength: 10,
-        tickColor: '#666',
+        tickColor: '#766',
         labels: {
             step: 2,
             rotation: 'auto'
@@ -199,6 +199,11 @@ template_fgt.yAxis =  {
             text: '',
 			margin: 0
         },
+		labels: {
+			enabled: false
+		},
+		showFirstLabel: false,
+		showLastLabel: false,
         plotBands: [{
             from: 0,
             to: 60,
@@ -215,24 +220,11 @@ template_fgt.yAxis =  {
     };
 
 $(function () {
-template.title='';
-    $('#cpuload1').highcharts(template,
-// Add some life
-function (chart) {
-    if (!chart.renderer.forExport) {
-        setInterval(function () {
-            var point = chart.series[0].points[0],
-                newVal,
-                inc = Math.round((Math.random() - 0.5) * 20);
-            newVal = point.y + inc;
-            if (newVal < 0 || newVal > 100) {
-                newVal = point.y - inc;
-            }
-            point.update(newVal);
-        }, 5000);
-    }
-});
-    $('#cpuload2').highcharts(template,
+
+// CPULoad1
+var template1 = $.extend( {}, template);
+template1.title.text = 'Host1';
+    $('#cpuload1').highcharts(template1,
 // Add some life
 function (chart) {
     if (!chart.renderer.forExport) {
@@ -249,7 +241,10 @@ function (chart) {
     }
 });
 
-    $('#cpuload3').highcharts(template,
+// CPULoad2
+var template2 = $.extend( {}, template);
+template2.title.text = 'Host2';
+$('#cpuload2').highcharts(template2,
 // Add some life
 function (chart) {
     if (!chart.renderer.forExport) {
@@ -266,7 +261,31 @@ function (chart) {
     }
 });
 
-    $('#cpuload4').highcharts(template,
+// CPULoad3
+var template3 = $.extend( {}, template);
+template3.title.text = 'Host3';
+$('#cpuload3').highcharts(template3,
+// Add some life
+function (chart) {
+    if (!chart.renderer.forExport) {
+        setInterval(function () {
+            var point = chart.series[0].points[0],
+                newVal,
+                inc = Math.round((Math.random() - 0.5) * 20);
+            newVal = point.y + inc;
+            if (newVal < 0 || newVal > 100) {
+                newVal = point.y - inc;
+            }
+            point.update(newVal);
+        }, 5000);
+    }
+});
+
+
+// CPULoad4
+var template4 = $.extend( {}, template);
+template4.title.text = 'Host4';
+$('#cpuload4').highcharts(template4,
 // Add some life
 function (chart) {
     if (!chart.renderer.forExport) {
@@ -282,7 +301,72 @@ function (chart) {
         }, 5000);
     }
 	
-	$('#fgtload1').highcharts(template_fgt,
+
+// FGTLoad1
+var template_fgt1 = $.extend( {}, template_fgt);
+template_fgt1.title.text = 'FGT1';
+$('#fgtload1').highcharts(template_fgt1,
+// Add some life
+function (chart) {
+    if (!chart.renderer.forExport) {
+        setInterval(function () {
+            var point = chart.series[0].points[0],
+                newVal,
+                inc = Math.round((Math.random() - 0.5) * 20);
+            newVal = point.y + inc;
+            if (newVal < 0 || newVal > 100) {
+                newVal = point.y - inc;
+            }
+            point.update(newVal);
+        }, 5000);
+    }
+});
+
+// FGTLoad2
+var template_fgt2 = $.extend( {}, template_fgt);
+template_fgt2.title.text = 'FGT2';
+$('#fgtload2').highcharts(template_fgt2,
+// Add some life
+function (chart) {
+    if (!chart.renderer.forExport) {
+        setInterval(function () {
+            var point = chart.series[0].points[0],
+                newVal,
+                inc = Math.round((Math.random() - 0.5) * 20);
+            newVal = point.y + inc;
+            if (newVal < 0 || newVal > 100) {
+                newVal = point.y - inc;
+            }
+            point.update(newVal);
+        }, 5000);
+    }
+});
+
+
+// FGTLoad3
+var template_fgt3 = $.extend( {}, template_fgt);
+template_fgt3.title.text = 'FGT3';
+$('#fgtload3').highcharts(template_fgt3,
+// Add some life
+function (chart) {
+    if (!chart.renderer.forExport) {
+        setInterval(function () {
+            var point = chart.series[0].points[0],
+                newVal,
+                inc = Math.round((Math.random() - 0.5) * 20);
+            newVal = point.y + inc;
+            if (newVal < 0 || newVal > 100) {
+                newVal = point.y - inc;
+            }
+            point.update(newVal);
+        }, 5000);
+    }
+});
+
+// FGTLoad4
+var template_fgt4 = $.extend( {}, template_fgt);
+template_fgt4.title.text = 'FGT4';
+$('#fgtload4').highcharts(template_fgt4,
 // Add some life
 function (chart) {
     if (!chart.renderer.forExport) {
@@ -302,27 +386,10 @@ function (chart) {
     }
 });
 
-	$('#fgtload2').highcharts(template_fgt,
-// Add some life
-function (chart) {
-    if (!chart.renderer.forExport) {
-        setInterval(function () {
-            var point = chart.series[0].points[0],
-                newVal,
-                inc = Math.round((Math.random() - 0.5) * 20);
-
-            newVal = point.y + inc;
-            if (newVal < 0 || newVal > 100) {
-                newVal = point.y - inc;
-            }
-
-            point.update(newVal);
-
-        }, 5000);
-    }
-});
-
-	$('#fgtload3').highcharts(template_fgt,
+// FGTLoad5
+var template_fgt5 = $.extend( {}, template_fgt);
+template_fgt5.title.text = 'FGT5';
+$('#fgtload5').highcharts(template_fgt5,
 // Add some life
 function (chart) {
     if (!chart.renderer.forExport) {
@@ -339,27 +406,10 @@ function (chart) {
     }
 });
 
-	$('#fgtload4').highcharts(template_fgt,
-// Add some life
-function (chart) {
-    if (!chart.renderer.forExport) {
-        setInterval(function () {
-            var point = chart.series[0].points[0],
-                newVal,
-                inc = Math.round((Math.random() - 0.5) * 20);
-
-            newVal = point.y + inc;
-            if (newVal < 0 || newVal > 100) {
-                newVal = point.y - inc;
-            }
-
-            point.update(newVal);
-
-        }, 5000);
-    }
-});
-
-	$('#fgtload5').highcharts(template_fgt,
+// FGTLoad6
+var template_fgt6 = $.extend( {}, template_fgt);
+template_fgt6.title.text = 'FGT6';
+$('#fgtload6').highcharts(template_fgt6,
 // Add some life
 function (chart) {
     if (!chart.renderer.forExport) {
@@ -376,7 +426,10 @@ function (chart) {
     }
 });
 
-	$('#fgtload6').highcharts(template_fgt,
+// FGTLoad7
+var template_fgt7 = $.extend( {}, template_fgt);
+template_fgt7.title.text = 'FGT7';
+$('#fgtload7').highcharts(template_fgt7,
 // Add some life
 function (chart) {
     if (!chart.renderer.forExport) {
@@ -393,38 +446,26 @@ function (chart) {
     }
 });
 
-	$('#fgtload7').highcharts(template_fgt,
-// Add some life
-function (chart) {
-    if (!chart.renderer.forExport) {
-        setInterval(function () {
-            var point = chart.series[0].points[0],
-                newVal,
-                inc = Math.round((Math.random() - 0.5) * 20);
-            newVal = point.y + inc;
-            if (newVal < 0 || newVal > 100) {
-                newVal = point.y - inc;
-            }
-            point.update(newVal);
-        }, 5000);
-    }
-});
-	$('#fgtload8').highcharts(template_fgt,
-// Add some life
-function (chart) {
-    if (!chart.renderer.forExport) {
-        setInterval(function () {
-            var point = chart.series[0].points[0],
-                newVal,
-                inc = Math.round((Math.random() - 0.5) * 20);
-            newVal = point.y + inc;
-            if (newVal < 0 || newVal > 100) {
-                newVal = point.y - inc;
-            }
-            point.update(newVal);
-        }, 5000);
-    }
-});
+// FGTLoad8
+var template_fgt8 = $.extend( {}, template_fgt);
+template_fgt8.title.text = 'FGT8';
+$('#fgtload8').highcharts(template_fgt,
+	// Add some life
+	function (chart) {
+		if (!chart.renderer.forExport) {
+			setInterval(function () {
+				var point = chart.series[0].points[0],
+					newVal,
+					inc = Math.round((Math.random() - 0.5) * 20);
+				newVal = point.y + inc;
+				if (newVal < 0 || newVal > 100) {
+					newVal = point.y - inc;
+				}
+				point.update(newVal);
+				}, 5000);
+		}
+	}
+);
 
 
 
@@ -688,7 +729,7 @@ $(function () {
 		</div>
 		<div class="col-sm-6">
 			<div class="panel panel-default">
-				<div class="panel-heading">CPU Load / Host / FGT</div>
+				<div class="panel-heading">Load per Host and FortiGate</div>
 				<div class="panel-body">
 					<div style="width: 100%; float:right">
 						<div id="cpuload1" style="width:24%; float:left"></div>
@@ -724,3 +765,7 @@ $(function () {
 </body>
 
 </html>
+
+
+
+
