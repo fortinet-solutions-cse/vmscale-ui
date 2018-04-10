@@ -1,2 +1,2 @@
-# noviflow-ui
-User Interface for Scale Out demo with NoviFlow
+# vmscale-ui
+User Interface and orchestrator for demoing FortiGate Scale Out
