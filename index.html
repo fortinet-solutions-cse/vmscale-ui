@@ -482,7 +482,8 @@ var template_cpu_time = {
 		},
 		xAxis: {
 			categories: ['15:31', '15:32', '15:33', '15:34', '15:35', '15:36', '15:37', '15:38', '15:39', '15:40'],
-			
+			tickInterval: 3
+
 		},
 		yAxis: {
 			title: {
@@ -490,22 +491,26 @@ var template_cpu_time = {
 			},
 			min: 0,
 			max: 100,
-			
+			tickInterval: 50
+
 		},
 		legend: false,
 		plotOptions: {
 			line: {
 				dataLabels: {
-					enabled: true
+					enabled: false
 				},
 				enableMouseTracking: false
 			}
 		},
 		series: [{
-			data: [7.0, 6.9, 9.5, 14.5, 28.4, 31.5, 45.2, 56.5, 63.3, 58.3]
+			data: [7.0, 6.9, 9.5, 14.5, 28.4, 31.5, 45.2, 56.5, 63.3, 58.3],
+			marker: {
+				enabled: false,
+			}
 		}]
 	};
-	
+
 var template_cpu_time1 = $.extend( true, {}, template_cpu_time);
 template_cpu_time1.title.text = "Host 1";
 $('#cputime1').highcharts(template_cpu_time1);
@@ -530,7 +535,13 @@ $('#cputime4').highcharts(template_cpu_time4);
 
 var template_fgt_time = $.extend( true, {}, template_cpu_time);
 template_fgt_time.colors = ['#3F30A0'];
-template_fgt_time.series= [{  data: [17.0, 16.9, 19.5, 7.5, 18.4, 24.5, 42.2, 36.5, 27.3, 8.3] }];
+template_fgt_time.series= [{  data: [17.0, 16.9, 19.5, 7.5, 18.4, 24.5, 42.2, 36.5, 27.3, 8.3],
+			marker: {
+				enabled: false,
+			} }];
+
+template_fgt_time.xAxis.tickInterval = 5;
+
 
 var template_fgt_time1 = $.extend( true, {}, template_fgt_time);
 template_fgt_time1.title.text = "FGT1";
@@ -587,14 +598,15 @@ var template_total_throughput_time = {
 		},
 		xAxis: {
 			categories: ['15:31', '15:32', '15:33', '15:34', '15:35', '15:36', '15:37', '15:38', '15:39', '15:40'],
-			
+
 		},
 		yAxis: {
 			title: {
 				text: 'GBps'
 			},
 			min: 0,
-			max: 40,			
+			max: 40,
+			tickInterval: 20
 		},
 		colors: ['#FF7200', '#AA7200', '#8bbc21', '#910000', '#1aadce',
     '#492970', '#f28f43', '#77a1e5', '#c42525', '#a6c96a'],
@@ -606,7 +618,7 @@ var template_total_throughput_time = {
 		plotOptions: {
 			line: {
 				dataLabels: {
-					enabled: true
+					enabled: false
 				},
 				enableMouseTracking: false
 			}
@@ -627,13 +639,19 @@ var template_total_throughput_time = {
 		},
 		series: [{
 			name: 'ingress',
-			data: [7.0, 6.9, 9.5, 14.5, 18.4, 21.5, 25.2, 26.5, 23.3, 18.3]
+			data: [7.0, 6.9, 9.5, 14.5, 18.4, 21.5, 25.2, 26.5, 23.3, 18.3],
+			marker: {
+				enabled: false,
+			}
 		}, {
 			name: 'egress',
-			data: [6.5, 6.2, 9.4, 12.5, 17.4, 20.2, 24.1, 25.5, 22.2, 16.2]
+			data: [6.5, 6.2, 9.4, 12.5, 17.4, 20.2, 24.1, 25.5, 22.2, 16.2],
+			marker: {
+				enabled: false,
+			}
 		}]
 	};
-	
+
 $('#totalthroughput_time').highcharts(template_total_throughput_time);
 
 var template_fgt_throughput_time = {
@@ -645,7 +663,7 @@ var template_fgt_throughput_time = {
 		},
 		xAxis: {
 			categories: ['15:31', '15:32', '15:33', '15:34', '15:35', '15:36', '15:37', '15:38', '15:39', '15:40'],
-			
+
 		},
 		yAxis: {
 			title: {
@@ -653,55 +671,91 @@ var template_fgt_throughput_time = {
 			},
 			min: 0,
 			max: 100,
+			tickInterval: 50
 		},
 		legend: {
 			layout: 'vertical',
 			align: 'right',
 			verticalAlign: 'middle'
 		},
-		
 		plotOptions: {
 			line: {
 				dataLabels: {
-					enabled: true
+					enabled: false
 				},
 				enableMouseTracking: false
 			}
 		},
 		series: [{
 			name: 'FGT1',
-			data: [7.0, 6.9, 9.5, 14.5, 18.4, 21.5, 25.2, 26.5, 23.3, 18.3]
+			data: [7.0, 6.9, 9.5, 14.5, 18.4, 21.5, 25.2, 26.5, 23.3, 18.3],
+			marker: {
+				enabled: false,
+			}
 		}, {
 			name: 'FGT2',
-			data: [51.0, 52.9, 54.5, 54.5, 38.4, 32.5, 25.2, 26.5, 13.3, 18.3]
+			data: [51.0, 52.9, 54.5, 54.5, 38.4, 32.5, 25.2, 26.5, 13.3, 18.3],
+			marker: {
+				enabled: false,
+			}
 		}, {
 			name: 'FGT3',
-			data: [17.0, 82.9, 84.5, 84.5, 88.4, 82.5, 85.2, 86.5, 83.3, 88.3]
+			data: [17.0, 82.9, 84.5, 84.5, 88.4, 82.5, 85.2, 86.5, 83.3, 88.3],
+			marker: {
+				enabled: false,
+			}
 		}, {
 			name: 'FGT4',
-			data: [21.0, 2.9, 4.5, 4.5, 8.4, 2.5, 15.2, 26.5, 23.3, 18.3]
+			data: [21.0, 2.9, 4.5, 4.5, 8.4, 2.5, 15.2, 26.5, 23.3, 18.3],
+			marker: {
+				enabled: false,
+			}
 		}, {
 			name: 'FGT5',
-			data: [43.0, 42.9, 44.5, 44.5, 38.4, 32.5, 25.2, 26.5, 23.3, 18.3]
+			data: [43.0, 42.9, 44.5, 44.5, 38.4, 32.5, 25.2, 26.5, 23.3, 18.3],
+			marker: {
+				enabled: false,
+			}
 		}, {
 			name: 'FGT6',
-			data: [11.0, 12.9, 14.5, 14.5, 18.4, 22.5, 35.2, 36.5, 33.3, 38.3]
+			data: [11.0, 12.9, 14.5, 14.5, 18.4, 22.5, 35.2, 36.5, 33.3, 38.3],
+			marker: {
+				enabled: false,
+			}
 		}, {
 			name: 'FGT7',
-			data: [61.0, 62.9, 64.5, 64.5, 68.4, 62.5, 65.2, 66.5, 63.3, 68.3]
+			data: [61.0, 62.9, 64.5, 64.5, 68.4, 62.5, 65.2, 66.5, 63.3, 68.3],
+			marker: {
+				enabled: false,
+			}
 		}, {
 			name: 'FGT8',
-			data: [71.0, 72.9, 74.5, 74.5, 78.4, 72.5, 65.2, 66.5, 63.3, 58.3]
+			data: [71.0, 72.9, 74.5, 74.5, 78.4, 72.5, 65.2, 66.5, 63.3, 58.3],
+			marker: {
+				enabled: false,
+			}
 		}]
 	};
-	
+
 $('#fgtthroughput_time').highcharts(template_fgt_throughput_time);
+
+$( "#scalingout" ).click(function() {
+  $('#scaleout_fgt').modal('toggle');
+});
+
+$( "#scalingin" ).click(function() {
+  $('#scalein_fgt').modal('toggle');
+});
 
 });
 </script>
 
-<body>
+<script>
 
+</script>
+
+
+<body>
 <div class="container-fluid">
 	<h1 class="text-center">FortiGate Scale Out with NoviFlow</h1>
 
@@ -714,19 +768,19 @@ $('#fgtthroughput_time').highcharts(template_fgt_throughput_time);
 				<span class="caret"></span>
 			</a>
 			<ul class="dropdown-menu">
-				<li><a href="#">Scaling Out FortiGate</a></li>
-				<li><a href="#">Scaling In FortiGate</a></li>
+				<li><a href="#"><div id="scalingout">Scaling Out FortiGate</div></a></li>
+				<li><a href="#"><div id="scalingin">Scaling In FortiGate</div></a></li>
 			</ul>
 		</li>
 	  </ul>
-	  
+
 	  <div class="tab-content">
 		<div id="home" class="tab-pane fade in active">
 			<div class="row">
 				<div class="panel panel-default">
 					<div class="panel-heading">CPU Load</div>
 					<div class="panel-body">
-						<div id="cputime1" style="width:24.9%; float:left; height:22vh;" ></div> 
+						<div id="cputime1" style="width:24.9%; float:left; height:22vh;" ></div>
 						<div id="cputime2" style="width:24.9%; float:left; height:22vh;" ></div>
 						<div id="cputime3" style="width:24.9%; float:left; height:22vh;" ></div>
 						<div id="cputime4" style="width:24.9%; float:left; height:22vh;" ></div>
@@ -805,6 +859,54 @@ $('#fgtthroughput_time').highcharts(template_fgt_throughput_time);
 
 
 </div>
+
+
+<!-- Modal -->
+<div id="scaleout_fgt" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Scaling out FortiGate</h4>
+      </div>
+      <div class="modal-body">
+        <p>Creating new instance</p>
+        <p>Configuring Switch</p>
+        <p>Redimensioning traffic</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal -->
+<div id="scalein_fgt" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Scaling in FortiGate</h4>
+      </div>
+      <div class="modal-body">
+        <p>Removing instance</p>
+        <p>Configuring Switch</p>
+        <p>Redimensioning traffic</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 </body>
 
 </html>
