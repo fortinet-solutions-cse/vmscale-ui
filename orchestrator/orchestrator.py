@@ -1,5 +1,8 @@
-from flask import Flask, jsonify, Response
+from flask import Flask, Response
 from random import random
+from apscheduler.schedulers.background import BackgroundScheduler
+from json import loads
+import grequests
 
 app = Flask(__name__)
 
@@ -38,10 +41,6 @@ def push_value_to_list(list, value):
 def hello():
     global data_cpuload_time1
 
-    push_value_to_list(data_cpuload_time1, random() * 100)
-    push_value_to_list(data_cpuload_time2, random() * 100)
-    push_value_to_list(data_cpuload_time3, random() * 100)
-    push_value_to_list(data_cpuload_time4, random() * 100)
     push_value_to_list(data_fgtload_time1, random() * 100)
     push_value_to_list(data_fgtload_time2, random() * 100)
     push_value_to_list(data_fgtload_time3, random() * 100)
@@ -56,12 +55,12 @@ def hello():
 
     push_value_to_list(data_fgtthroughput1_time, random() * 10)
     push_value_to_list(data_fgtthroughput2_time, random() * 10 + 10)
-    push_value_to_list(data_fgtthroughput3_time, random() * 10+20)
-    push_value_to_list(data_fgtthroughput4_time, random() * 10+30)
-    push_value_to_list(data_fgtthroughput5_time, random() * 10+40)
-    push_value_to_list(data_fgtthroughput6_time, random() * 10+50)
-    push_value_to_list(data_fgtthroughput7_time, random() * 10+60)
-    push_value_to_list(data_fgtthroughput8_time, random() * 10+70)
+    push_value_to_list(data_fgtthroughput3_time, random() * 10 + 20)
+    push_value_to_list(data_fgtthroughput4_time, random() * 10 + 30)
+    push_value_to_list(data_fgtthroughput5_time, random() * 10 + 40)
+    push_value_to_list(data_fgtthroughput6_time, random() * 10 + 50)
+    push_value_to_list(data_fgtthroughput7_time, random() * 10 + 60)
+    push_value_to_list(data_fgtthroughput8_time, random() * 10 + 70)
 
     newData = """{
         "cpuload_time1": """ + str(data_cpuload_time1) + """,
@@ -91,3 +90,26 @@ def hello():
     response.headers.add('Access-Control-Allow-Origin', '*')
     response.data = newData
     return response
+
+
+def request_cpu_load_from_nodes():
+
+    urls = [
+        'http://10.210.9.130:61208/api/2/cpu',
+        'http://10.210.9.130:61208/api/2/cpu',
+        'http://10.210.9.130:61208/api/2/cpu',
+        'http://10.210.9.130:61208/api/2/cpu'
+    ]
+
+    rs = (grequests.get(u) for u in urls)
+
+    results = grequests.map(rs)
+    push_value_to_list(data_cpuload_time1, loads(results[0].content)['total'])
+    push_value_to_list(data_cpuload_time2, loads(results[1].content)['total'])
+    push_value_to_list(data_cpuload_time3, loads(results[2].content)['total'])
+    push_value_to_list(data_cpuload_time4, loads(results[3].content)['total'])
+
+
+cron = BackgroundScheduler(daemon=True)
+cron.add_job(request_cpu_load_from_nodes, 'interval', seconds=4)
+cron.start()
