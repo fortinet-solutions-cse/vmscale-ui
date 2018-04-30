@@ -7,6 +7,11 @@ import requests
 import gevent
 import paramiko
 
+# Note previous patch to avoid error with paramiko
+# and grequests: https://github.com/paramiko/paramiko/issues/633
+from gevent import monkey
+monkey.patch_all()
+
 app = Flask(__name__)
 
 urls_fgt = [
@@ -77,7 +82,7 @@ def start_vm():
     #stdin = ssh_stdin.read()
     stderr = ssh_stderr.read()
 
-    #response.data = fgt_id+":RETURNED:"+str(stderr)+":"+str(stdout)+"."
+    response.data = fgt_id+":RETURNED:"+str(stderr)+":"+str(stdout)+"."
 
     return response
 
