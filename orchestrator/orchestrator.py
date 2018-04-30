@@ -1,4 +1,4 @@
-from flask import Flask, Response
+from flask import Flask, Response, request, jsonify
 from random import random
 from apscheduler.schedulers.background import BackgroundScheduler
 from json import loads
@@ -57,6 +57,18 @@ data_fgtthroughput8_time = [0] * 60
 def push_value_to_list(list, value):
     list.append(value)
     del list[0]
+
+
+@app.route("/start_vm", methods=['POST'])
+def start_vm():
+    fgt_id = request.args.get('fgt')
+    print("Parameter received:", fgt_id)
+
+    response = Response()
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.data = fgt_id
+
+    return response
 
 
 @app.route("/status", methods=['GET'])

@@ -47,6 +47,7 @@ $(function () {
 
 
 
+
 </script>
 <script>
 $(function () {
@@ -77,6 +78,7 @@ $(function () {
         }],
     });
 });
+
 
 
 
@@ -294,6 +296,7 @@ $('#fgtload8').highcharts(template_fgt8);
 
 
 
+
 </script>
 
 <script>
@@ -405,6 +408,7 @@ template_fgtload_time8.yAxis.title.text = '';
 $('#fgtload_time8').highcharts(template_fgtload_time8);
 
 });
+
 
 
 </script>
@@ -547,16 +551,53 @@ var template_fgt_throughput_time = {
 
 $('#fgtthroughput_time').highcharts(template_fgt_throughput_time);
 
+});
+
+</script>
+
+
+<!--
+***********************************
+  Functions to open windows
+***********************************
+-->
+<script>
+$(function () {
+
+function start_fgt() {
+    fortigate_id = $("#scaleout_fgt #fgt_id").val().trim()
+    $.ajax({
+        url: "http://localhost:5000/start_vm?fgt="+fortigate_id,
+        type: "POST",
+        success: function( result ) {
+                     $('#start_vm_log').html(result);
+                 }
+        });
+    };
+
+
 $( "#scalingout" ).click(function() {
-
   $('#scaleout_fgt').modal('toggle');
-
 });
 
 $( "#scalingin" ).click(function() {
   $('#scalein_fgt').modal('toggle');
 });
 
+$("#start_fgt_btn").click(start_fgt)
+
+});
+
+</script>
+
+
+<!--
+***********************************
+  Functions to fetch data regularly
+***********************************
+-->
+<script>
+$(function () {
 function update_data()
 {
   $.ajax({url: "http://localhost:5000/status", success: function(result){
@@ -590,14 +631,21 @@ function update_data()
     $('#fgtthroughput_time').highcharts().series[7].setData(parsedJSONResult['fgtthroughput8_time'], true);
 
   }});
-
-
 };
 
 setInterval(update_data, 2000);
 
 });
 
+
+</script>
+
+<!--
+***********************************
+  Functions to start/stop vms
+***********************************
+-->
+<script>
 </script>
 
 <body>
@@ -652,6 +700,7 @@ setInterval(update_data, 2000);
                             <div class="panel-body">
                                 <div id="totalthroughput_time" style="width:100%; float:left; height:25vh;"></div>
                             </div>
+                            start_vm_log
                         </div>
                     </div>
                     <div class="col-sm-7">
@@ -718,12 +767,19 @@ setInterval(update_data, 2000);
                     <h4 class="modal-title">Scaling out FortiGate</h4>
                 </div>
                 <div class="modal-body">
-                    <p>Creating new instance</p>
-                    <p>Configuring Switch</p>
-                    <p>Redimensioning traffic</p>
+                    <div class="form-group">
+                        <label for="text">FortiGate identifier:</label>
+                        <input type="text" class="form-control" id="fgt_id">
+                    </div>
+                    <div id="start_vm_log">
+                        <p>Creating new instance</p>
+                        <p>Configuring Switch</p>
+                        <p>Redimensioning traffic</p>
+                    </div>
                     <p id="result"></p>
                 </div>
                 <div class="modal-footer">
+                    <button type="button" class="btn btn-success" id="start_fgt_btn">Start</button>
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                 </div>
             </div>
@@ -741,7 +797,7 @@ setInterval(update_data, 2000);
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                     <h4 class="modal-title">Scaling in FortiGate</h4>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body" id="stop_vm_log">
                     <p>Removing instance</p>
                     <p>Configuring Switch</p>
                     <p>Redimensioning traffic</p>
