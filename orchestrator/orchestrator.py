@@ -5,6 +5,7 @@ from json import loads
 import grequests
 import requests
 import gevent
+import paramiko
 
 app = Flask(__name__)
 
@@ -66,7 +67,17 @@ def start_vm():
 
     response = Response()
     response.headers.add('Access-Control-Allow-Origin', '*')
-    response.data = fgt_id
+
+    ssh = paramiko.SSHClient()
+    ssh.load_system_host_keys()
+    ssh.connect("127.0.0.1", username="magonzalez")
+    ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("top -b -n 1")
+
+    stdout = ssh_stdout.read()
+    #stdin = ssh_stdin.read()
+    stderr = ssh_stderr.read()
+
+    #response.data = fgt_id+":RETURNED:"+str(stderr)+":"+str(stdout)+"."
 
     return response
 
