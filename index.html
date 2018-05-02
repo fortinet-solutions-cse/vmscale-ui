@@ -44,11 +44,7 @@ $(function () {
     });
 });
 
-
-
-
-
-</script>
+    </script>
 <script>
 $(function () {
     $('#fgtthroughtput').highcharts({
@@ -78,10 +74,6 @@ $(function () {
         }],
     });
 });
-
-
-
-
 
 </script>
 <script>
@@ -559,10 +551,13 @@ $('#fgtthroughput_time').highcharts(template_fgt_throughput_time);
 <!--
 ***********************************
   Functions to open windows
+  and start/stop vms
 ***********************************
 -->
 <script>
 $(function () {
+
+// Action functions
 
 function start_fgt() {
     fortigate_id = $("#scaleout_fgt #fgt_id").val().trim()
@@ -576,6 +571,20 @@ function start_fgt() {
     };
 
 
+function stop_fgt() {
+    fortigate_id = $("#scalein_fgt #fgt_id").val().trim()
+    $.ajax({
+        url: "http://localhost:5000/stop_vm?fgt="+fortigate_id,
+        type: "POST",
+        success: function( result ) {
+                     $('#stop_vm_log').html(result);
+                 }
+        });
+    };
+
+
+// Event handlers
+
 $( "#scalingout" ).click(function() {
   $('#scaleout_fgt').modal('toggle');
 });
@@ -585,6 +594,32 @@ $( "#scalingin" ).click(function() {
 });
 
 $("#start_fgt_btn").click(start_fgt)
+$("#stop_fgt_btn").click(stop_fgt)
+
+
+$('#scaleout_fgt').on('hidden.bs.modal', function (e) {
+  $(this)
+    .find("input,textarea,select")
+       .val('')
+       .end()
+    .find("input[type=checkbox], input[type=radio]")
+       .prop("checked", "")
+       .end();
+  $('#start_vm_log').html('');
+})
+
+
+$('#scalein_fgt').on('hidden.bs.modal', function (e) {
+  $(this)
+    .find("input,textarea,select")
+       .val('')
+       .end()
+    .find("input[type=checkbox], input[type=radio]")
+       .prop("checked", "")
+       .end();
+  $('#stop_vm_log').html('');
+})
+
 
 });
 
@@ -630,6 +665,10 @@ function update_data()
     $('#fgtthroughput_time').highcharts().series[6].setData(parsedJSONResult['fgtthroughput7_time'], true);
     $('#fgtthroughput_time').highcharts().series[7].setData(parsedJSONResult['fgtthroughput8_time'], true);
 
+    if (parsedJSONResult['fgtload_time1'][(parsedJSONResult['fgtload_time1'].length) - 1] == -1) {
+       $('#fgtload1').title.text = 'FGT1 - on'
+    }
+
   }});
 };
 
@@ -640,13 +679,6 @@ setInterval(update_data, 2000);
 
 </script>
 
-<!--
-***********************************
-  Functions to start/stop vms
-***********************************
--->
-<script>
-</script>
 
 <body>
 <div class="container-fluid">
@@ -794,12 +826,18 @@ setInterval(update_data, 2000);
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                     <h4 class="modal-title">Scaling in FortiGate</h4>
                 </div>
-                <div class="modal-body" id="stop_vm_log">
-                    <p>Removing instance</p>
-                    <p>Configuring Switch</p>
-                    <p>Redimensioning traffic</p>
+               <div class="modal-body">
+                    <div class="form-group">
+                        <label for="text">FortiGate identifier:</label>
+                        <input type="text" class="form-control" id="fgt_id">
+                    </div>
+                    <div id="stop_vm_log">
+                        <p></p>
+                    </div>
+                    <p id="result"></p>
                 </div>
                 <div class="modal-footer">
+                    <button type="button" class="btn btn-success" id="stop_fgt_btn">Stop</button>
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                 </div>
             </div>

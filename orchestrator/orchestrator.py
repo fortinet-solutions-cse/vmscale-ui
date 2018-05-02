@@ -9,22 +9,36 @@ import paramiko
 
 # Note previous patch to avoid error with paramiko
 # and grequests: https://github.com/paramiko/paramiko/issues/633
+
 from gevent import monkey
+
 monkey.patch_all()
+
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 
 app = Flask(__name__)
 
+# Urls to access FGT REST API
 urls_fgt = [
-    'http://192.168.122.40/',
-    'http://192.168.122.40/',
-    'http://192.168.122.40/'
+    'https://192.168.122.40/',
+    'https://192.168.122.40/',
+    'https://192.168.122.40/'
 ]
 
+# URLs to access hypervisor REST API (cpu load)
 urls_hypervisors = [
     'http://10.210.9.130:61208/api/2/cpu',
     'http://10.210.9.130:61208/api/2/cpu',
     'http://10.210.9.130:61208/api/2/cpu',
     'http://10.210.9.130:61208/api/2/cpu'
+]
+
+# Address of the hypervisor of each fortigate
+fgt_hypervisors = [
+    '127.0.0.1',
+    '127.0.0.1'
 ]
 
 fgt_sessions = [requests.Session() for u in urls_fgt]
@@ -50,14 +64,14 @@ data_fgtload_time8 = [0] * 60
 data_totalthroughput_ingress_time = [0] * 60
 data_totalthroughput_egress_time = [0] * 60
 
-data_fgtthroughput1_time = [0] * 60
-data_fgtthroughput2_time = [0] * 60
-data_fgtthroughput3_time = [0] * 60
-data_fgtthroughput4_time = [0] * 60
-data_fgtthroughput5_time = [0] * 60
-data_fgtthroughput6_time = [0] * 60
-data_fgtthroughput7_time = [0] * 60
-data_fgtthroughput8_time = [0] * 60
+data_fgtthroughput1_time = [-1] * 60
+data_fgtthroughput2_time = [-1] * 60
+data_fgtthroughput3_time = [-1] * 60
+data_fgtthroughput4_time = [-1] * 60
+data_fgtthroughput5_time = [-1] * 60
+data_fgtthroughput6_time = [-1] * 60
+data_fgtthroughput7_time = [-1] * 60
+data_fgtthroughput8_time = [-1] * 60
 
 
 def push_value_to_list(list, value):
@@ -76,13 +90,33 @@ def start_vm():
     ssh = paramiko.SSHClient()
     ssh.load_system_host_keys()
     ssh.connect("127.0.0.1", username="magonzalez")
-    ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("top -b -n 1")
+    ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("LIBVIRT_DEFAULT_URI=qemu:///system virsh start fortigate")
 
     stdout = ssh_stdout.read()
-    #stdin = ssh_stdin.read()
     stderr = ssh_stderr.read()
 
-    response.data = fgt_id+":RETURNED:"+str(stderr)+":"+str(stdout)+"."
+    response.data = fgt_id + ":RETURNED:" + str(stderr) + ":" + str(stdout) + "."
+
+    return response
+
+
+@app.route("/stop_vm", methods=['POST'])
+def stop_vm():
+    fgt_id = request.args.get('fgt')
+    print("Parameter received:", fgt_id)
+
+    response = Response()
+    response.headers.add('Access-Control-Allow-Origin', '*')
+
+    ssh = paramiko.SSHClient()
+    ssh.load_system_host_keys()
+    ssh.connect("127.0.0.1", username="magonzalez")
+    ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("LIBVIRT_DEFAULT_URI=qemu:///system virsh destroy fortigate")
+
+    stdout = ssh_stdout.read()
+    stderr = ssh_stderr.read()
+
+    response.data = fgt_id + ":RETURNED:" + str(stderr) + ":" + str(stdout) + "."
 
     return response
 
@@ -144,14 +178,14 @@ def request_cpu_load_from_nodes():
 
     global urls_hypervisors
 
-    rs = (grequests.get(u) for u in urls_hypervisors)
+    rs = (grequests.get(u, timeout=TIMEOUT) for u in urls_hypervisors)
 
     results = grequests.map(rs)
-
-    push_value_to_list(data_cpuload_time1, loads(results[0].content)['total'])
-    push_value_to_list(data_cpuload_time2, loads(results[1].content)['total'])
-    push_value_to_list(data_cpuload_time3, loads(results[2].content)['total'])
-    push_value_to_list(data_cpuload_time4, loads(results[3].content)['total'])
+    if len(results) >= 0:
+        if results[0] is not None: push_value_to_list(data_cpuload_time1, loads(results[0].content)['total'])
+        if results[1] is not None: push_value_to_list(data_cpuload_time2, loads(results[1].content)['total'])
+        if results[2] is not None: push_value_to_list(data_cpuload_time3, loads(results[2].content)['total'])
+        if results[3] is not None: push_value_to_list(data_cpuload_time4, loads(results[3].content)['total'])
 
     # ******************************
     # Get Values from FortiGates
@@ -170,7 +204,8 @@ def request_cpu_load_from_nodes():
             urls_fgt[i] + 'api/v2/monitor/system/resource/usage?resource=cpu&interval=1-min',
             session=fgt_sessions[i],
             headers=fgt_sessions[i].headers,
-            timeout=TIMEOUT)
+            timeout=TIMEOUT,
+            verify=False)
 
     fgt_cpu_results = grequests.map(fgt_cpu_requests)
 
@@ -185,7 +220,8 @@ def request_cpu_load_from_nodes():
             fgt_login_requests[i] = grequests.post(urls_fgt[i] + 'logincheck',
                                                    data='username=' + USER + '&secretkey=' + PASSWORD + '&ajax=1',
                                                    session=fgt_sessions[i],
-                                                   timeout=TIMEOUT)
+                                                   timeout=TIMEOUT,
+                                                   verify=False)
             r = grequests.send(fgt_login_requests[i])
             reqs.append(r)
     gevent.joinall(reqs)
@@ -199,11 +235,12 @@ def request_cpu_load_from_nodes():
                 push_value_to_list(globals()['data_fgtload_time' + str(i + 1)],
                                    loads(fgt_cpu_results[i].content)['results']['cpu'][0]['current'])
             except:
-                print("Error getting data from FortiGate:")
+                print("Error getting data from FortiGate:", i)
         else:
-            print("Request was not ok:", i)
+            print("FGT request was not ok:", i)
             if fgt_cpu_results[i] is not None:
                 print("  -> result: ", fgt_cpu_results[i].status_code)
+            push_value_to_list(globals()['data_fgtload_time' + str(i + 1)], -1)
 
 
 cron = BackgroundScheduler(daemon=True)
