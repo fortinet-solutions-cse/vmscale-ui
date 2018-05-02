@@ -48,21 +48,21 @@ POLL_INTERVAL = 4
 USER = 'admin'
 PASSWORD = ''
 
-data_cpuload_time1 = [0] * 60
-data_cpuload_time2 = [0] * 60
-data_cpuload_time3 = [0] * 60
-data_cpuload_time4 = [0] * 60
-data_fgtload_time1 = [0] * 60
-data_fgtload_time2 = [0] * 60
-data_fgtload_time3 = [0] * 60
-data_fgtload_time4 = [0] * 60
-data_fgtload_time5 = [0] * 60
-data_fgtload_time6 = [0] * 60
-data_fgtload_time7 = [0] * 60
-data_fgtload_time8 = [0] * 60
+data_cpuload_time1 = [-1] * 60
+data_cpuload_time2 = [-1] * 60
+data_cpuload_time3 = [-1] * 60
+data_cpuload_time4 = [-1] * 60
+data_fgtload_time1 = [-1] * 60
+data_fgtload_time2 = [-1] * 60
+data_fgtload_time3 = [-1] * 60
+data_fgtload_time4 = [-1] * 60
+data_fgtload_time5 = [-1] * 60
+data_fgtload_time6 = [-1] * 60
+data_fgtload_time7 = [-1] * 60
+data_fgtload_time8 = [-1] * 60
 
-data_totalthroughput_ingress_time = [0] * 60
-data_totalthroughput_egress_time = [0] * 60
+data_totalthroughput_ingress_time = [-1] * 60
+data_totalthroughput_egress_time = [-1] * 60
 
 data_fgtthroughput1_time = [-1] * 60
 data_fgtthroughput2_time = [-1] * 60

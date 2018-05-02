@@ -582,7 +582,6 @@ function stop_fgt() {
         });
     };
 
-
 // Event handlers
 
 $( "#scalingout" ).click(function() {
@@ -633,6 +632,20 @@ $('#scalein_fgt').on('hidden.bs.modal', function (e) {
 -->
 <script>
 $(function () {
+
+function updateTitle(data, index) {
+    var chart=$("#fgtload_time" + index).highcharts();
+    if (data["fgtload_time" + index][(data["fgtload_time" + index].length) - 1] == -1) {
+       chart.setTitle({text: "FGT" + index + " - off"});
+    }
+    else {
+       chart.setTitle({text: "FGT" + index + " - on"});
+    }
+    chart.redraw();
+
+}
+
+
 function update_data()
 {
   $.ajax({url: "http://localhost:5000/status", success: function(result){
@@ -665,9 +678,14 @@ function update_data()
     $('#fgtthroughput_time').highcharts().series[6].setData(parsedJSONResult['fgtthroughput7_time'], true);
     $('#fgtthroughput_time').highcharts().series[7].setData(parsedJSONResult['fgtthroughput8_time'], true);
 
-    if (parsedJSONResult['fgtload_time1'][(parsedJSONResult['fgtload_time1'].length) - 1] == -1) {
-       $('#fgtload1').title.text = 'FGT1 - on'
-    }
+    updateTitle(parsedJSONResult, 1);
+    updateTitle(parsedJSONResult, 2);
+    updateTitle(parsedJSONResult, 3);
+    updateTitle(parsedJSONResult, 4);
+    updateTitle(parsedJSONResult, 5);
+    updateTitle(parsedJSONResult, 6);
+    updateTitle(parsedJSONResult, 7);
+    updateTitle(parsedJSONResult, 8);
 
   }});
 };
