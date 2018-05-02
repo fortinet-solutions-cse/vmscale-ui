@@ -23,8 +23,8 @@ app = Flask(__name__)
 # Urls to access FGT REST API
 urls_fgt = [
     'https://192.168.122.40/',
-    'https://192.168.122.40/',
-    'https://192.168.122.40/'
+    'https://192.168.122.41/',
+    'https://192.168.122.42/'
 ]
 
 # URLs to access hypervisor REST API (cpu load)
@@ -131,7 +131,7 @@ def stop_vm():
     ssh.load_system_host_keys()
     ssh.connect(fgt_hypervisors[fgt_id], username=USERNAME_HYPERVISOR)
     ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-        "LIBVIRT_DEFAULT_URI=qemu:///system virsh destroy fortigate" + str(fgt_id))
+        "LIBVIRT_DEFAULT_URI=qemu:///system virsh shutdown fortigate" + str(fgt_id))
 
     stdout = ssh_stdout.read()
     stderr = ssh_stderr.read()
