@@ -15,8 +15,8 @@ from gevent import monkey
 monkey.patch_all()
 
 import urllib3
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 app = Flask(__name__)
 
@@ -38,15 +38,22 @@ urls_hypervisors = [
 # Address of the hypervisor of each fortigate
 fgt_hypervisors = [
     '127.0.0.1',
+    '127.0.0.1',
+    '127.0.0.1',
+    '127.0.0.1',
+    '127.0.0.1',
+    '127.0.0.1',
+    '127.0.0.1',
     '127.0.0.1'
 ]
 
-fgt_sessions = [requests.Session() for u in urls_fgt]
-
 TIMEOUT = 1
 POLL_INTERVAL = 4
-USER = 'admin'
-PASSWORD = ''
+USER_FGT = 'admin'
+PASSWORD_FGT = ''
+USERNAME_HYPERVISOR = 'magonzalez'
+
+fgt_sessions = [requests.Session() for u in urls_fgt]
 
 data_cpuload_time1 = [-1] * 60
 data_cpuload_time2 = [-1] * 60
@@ -82,6 +89,11 @@ def push_value_to_list(list, value):
 @app.route("/start_vm", methods=['POST'])
 def start_vm():
     fgt_id = request.args.get('fgt')
+    try:
+        fgt_id = int(fgt_id)
+    except:
+        return "Error, identifier not recognized"
+
     print("Parameter received:", fgt_id)
 
     response = Response()
@@ -89,13 +101,15 @@ def start_vm():
 
     ssh = paramiko.SSHClient()
     ssh.load_system_host_keys()
-    ssh.connect("127.0.0.1", username="magonzalez")
-    ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("LIBVIRT_DEFAULT_URI=qemu:///system virsh start fortigate")
+    ssh.connect(fgt_hypervisors[fgt_id], username=USERNAME_HYPERVISOR)
+    ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+        "LIBVIRT_DEFAULT_URI=qemu:///system virsh start fortigate" + str(fgt_id))
 
     stdout = ssh_stdout.read()
     stderr = ssh_stderr.read()
 
-    response.data = fgt_id + ":RETURNED:" + str(stderr) + ":" + str(stdout) + "."
+    response.data = "RETURNED id:" + str(fgt_id) + "\n" + str(stderr).replace('\\n', '\n') + ":" + str(stdout).replace(
+        '\\n', '\n') + "."
 
     return response
 
@@ -103,6 +117,11 @@ def start_vm():
 @app.route("/stop_vm", methods=['POST'])
 def stop_vm():
     fgt_id = request.args.get('fgt')
+    try:
+        fgt_id = int(fgt_id)
+    except:
+        return "Error, identifier not recognized"
+
     print("Parameter received:", fgt_id)
 
     response = Response()
@@ -110,13 +129,15 @@ def stop_vm():
 
     ssh = paramiko.SSHClient()
     ssh.load_system_host_keys()
-    ssh.connect("127.0.0.1", username="magonzalez")
-    ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("LIBVIRT_DEFAULT_URI=qemu:///system virsh destroy fortigate")
+    ssh.connect(fgt_hypervisors[fgt_id], username=USERNAME_HYPERVISOR)
+    ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+        "LIBVIRT_DEFAULT_URI=qemu:///system virsh destroy fortigate" + str(fgt_id))
 
     stdout = ssh_stdout.read()
     stderr = ssh_stderr.read()
 
-    response.data = fgt_id + ":RETURNED:" + str(stderr) + ":" + str(stdout) + "."
+    response.data = "RETURNED id:" + str(fgt_id) + "\n" + str(stderr).replace('\\n', '\n') + ":" + str(stdout).replace(
+        '\\n', '\n') + "."
 
     return response
 
@@ -218,7 +239,7 @@ def request_cpu_load_from_nodes():
         if fgt_cpu_results[i] is not None and fgt_cpu_results[i].status_code == 401:
             print("Login into FortiGate's REST API: ", i)
             fgt_login_requests[i] = grequests.post(urls_fgt[i] + 'logincheck',
-                                                   data='username=' + USER + '&secretkey=' + PASSWORD + '&ajax=1',
+                                                   data='username=' + USER_FGT + '&secretkey=' + PASSWORD_FGT + '&ajax=1',
                                                    session=fgt_sessions[i],
                                                    timeout=TIMEOUT,
                                                    verify=False)
