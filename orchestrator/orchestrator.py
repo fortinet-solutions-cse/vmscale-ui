@@ -110,8 +110,38 @@ def start_vm():
     stdout = ssh_stdout.read()
     stderr = ssh_stderr.read()
 
-    response.data = "RETURNED id:" + str(fgt_id) + "\n" + str(stderr).replace('\\n', '\n') + ":" + str(stdout).replace(
-        '\\n', '\n') + "."
+    returned_str = "<b>FortiGate id: </b>" + str(fgt_id) + "<br>" + \
+                   "<b>FortiGate VM instantiation: </b>" + str(stderr).replace('\\n', '<br>') + \
+                   ":" + str(stdout).replace('\\n', '<br>') + "<br>"
+
+    global url_cybermapper
+
+    # Get dpid
+
+    loadbal = requests.get(url_cybermapper + '/v1.0/loadbal',
+                           timeout=TIMEOUT)
+
+    # Use this notation '[*' to get the keys extracted into a list
+    dpid = [*loads(loadbal.content).keys()][0]
+
+    # Send "add target" request
+    target_data = '{ \
+        "type": "pair", \
+        "port_ingress": ' + str(fgt_id * 2 + 3) + ', \
+        "port_egress": ' + str(fgt_id * 2 + 4) + ', \
+        "id": "dpi' + str(fgt_id) + '" }'
+
+    print(target_data)
+
+    results = requests.post(url_cybermapper + '/v1.0/loadbal/' + dpid + '/0/targets',
+                            data=target_data,
+                            timeout=TIMEOUT)
+
+    returned_str += "<b>NoviFlow response (code): </b>" + str(results.status_code)
+
+    returned_str += "<br><b>NoviFlow response (content): </b>" + str(loads(results.content))
+
+    response.data = returned_str
 
     return response
 
