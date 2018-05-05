@@ -47,6 +47,8 @@ fgt_hypervisors = [
     '127.0.0.1'
 ]
 
+url_cybermapper = 'http://10.210.9.132:8080'
+
 TIMEOUT = 1
 POLL_INTERVAL = 4
 USER_FGT = 'admin'
@@ -150,12 +152,8 @@ def status():
     push_value_to_list(data_fgtload_time7, random() * 100)
     push_value_to_list(data_fgtload_time8, random() * 100)
 
-    push_value_to_list(data_totalthroughput_ingress_time, random() * 40)
     push_value_to_list(data_totalthroughput_egress_time, random() * 40)
 
-    push_value_to_list(data_fgtthroughput1_time, random() * 10)
-    push_value_to_list(data_fgtthroughput2_time, random() * 10 + 10)
-    push_value_to_list(data_fgtthroughput3_time, random() * 10 + 20)
     push_value_to_list(data_fgtthroughput4_time, random() * 10 + 30)
     push_value_to_list(data_fgtthroughput5_time, random() * 10 + 40)
     push_value_to_list(data_fgtthroughput6_time, random() * 10 + 50)
@@ -262,6 +260,40 @@ def request_cpu_load_from_nodes():
             if fgt_cpu_results[i] is not None:
                 print("  -> result: ", fgt_cpu_results[i].status_code)
             push_value_to_list(globals()['data_fgtload_time' + str(i + 1)], -1)
+
+    # ********************************
+    # Get Values from DSO CyberMapper
+    # ********************************
+
+    global url_cybermapper
+
+    # Get dpid
+
+    loadbal = requests.get(url_cybermapper + '/v1.0/loadbal',
+                           timeout=TIMEOUT)
+
+    # Use this notation '[*' to get the keys extracted into a list
+    dpid = [*loads(loadbal.content).keys()][0]
+
+    # Get port statistics
+
+    results = requests.get(url_cybermapper + '/v1.0/switch_stats/switches/' + dpid + '/port_stats',
+                           timeout=TIMEOUT)
+
+    port_stats = loads(results.content)
+
+    bps = {}
+
+    for port in port_stats:
+        bps[port['id']] = (port['tx_bytes'] - port['last']['tx_bytes'] +
+                           port['rx_bytes'] - port['last']['rx_bytes']) / \
+                          (port['timestamp'] - port['last']['timestamp'])
+
+    push_value_to_list(data_totalthroughput_ingress_time, bps[1] + bps[3])
+
+    push_value_to_list(data_fgtthroughput1_time, bps[5] + bps[6])
+    push_value_to_list(data_fgtthroughput2_time, bps[7] + bps[8])
+    push_value_to_list(data_fgtthroughput3_time, bps[9] + bps[10])
 
 
 cron = BackgroundScheduler(daemon=True)
