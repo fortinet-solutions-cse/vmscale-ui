@@ -168,8 +168,27 @@ def stop_vm():
     stdout = ssh_stdout.read()
     stderr = ssh_stderr.read()
 
-    response.data = "RETURNED id:" + str(fgt_id) + "\n" + str(stderr).replace('\\n', '\n') + ":" + str(stdout).replace(
-        '\\n', '\n') + "."
+    returned_str = "<b>FortiGate id: </b>" + str(fgt_id) + "<br>" + \
+                   "<b>FortiGate VM shutdown: </b>" + str(stderr).replace('\\n', '<br>') + \
+                   ":" + str(stdout).replace('\\n', '<br>') + "<br>"
+
+    global url_cybermapper
+
+    # Get dpid
+
+    loadbal = requests.get(url_cybermapper + '/v1.0/loadbal',
+                           timeout=TIMEOUT)
+
+    # Use this notation '[*' to get the keys extracted into a list
+    dpid = [*loads(loadbal.content).keys()][0]
+
+    # Send "remove target" request
+    results = requests.delete(url_cybermapper + '/v1.0/loadbal/' + dpid + '/0/targets/dpi' + str(fgt_id),
+                            timeout=TIMEOUT)
+
+    returned_str += "<b>NoviFlow response (code): </b>" + str(results.status_code)
+
+    response.data = returned_str
 
     return response
 
