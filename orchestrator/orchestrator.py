@@ -353,9 +353,9 @@ def request_cpu_load_from_nodes():
 
     push_value_to_list(data_totalthroughput_ingress_time, (bps[1] + bps[3]) / 1000000)
 
-    push_value_to_list(data_fgtthroughput1_time, (bps[5] + bps[6]) / 1000)
-    push_value_to_list(data_fgtthroughput2_time, (bps[7] + bps[8]) / 1000)
-    push_value_to_list(data_fgtthroughput3_time, (bps[9] + bps[10]) / 1000)
+    push_value_to_list(data_fgtthroughput1_time, (bps[5] + bps[6]) / 1000000)
+    push_value_to_list(data_fgtthroughput2_time, (bps[7] + bps[8]) / 1000000)
+    push_value_to_list(data_fgtthroughput3_time, (bps[9] + bps[10]) / 1000000)
 
 
 cron = BackgroundScheduler(daemon=True)
