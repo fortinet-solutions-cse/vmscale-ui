@@ -33,7 +33,10 @@ app = Flask(__name__)
 urls_fgt = [
     'https://10.210.14.33/',
     'https://10.210.14.34/',
-    'https://10.210.14.35/'
+    'https://10.210.14.35/',
+    'https://10.210.14.36/',
+    'https://10.210.14.37/',
+    'https://10.210.14.38/'
 ]
 
 # URLs to access hypervisor REST API (cpu load)
@@ -204,17 +207,10 @@ def stop_vm():
 
 @app.route("/status", methods=['GET'])
 def status():
-    push_value_to_list(data_fgtload_time4, random() * 100)
-    push_value_to_list(data_fgtload_time5, random() * 100)
-    push_value_to_list(data_fgtload_time6, random() * 100)
+
     push_value_to_list(data_fgtload_time7, random() * 100)
     push_value_to_list(data_fgtload_time8, random() * 100)
 
-    push_value_to_list(data_totalthroughput_egress_time, random() * 40)
-
-    push_value_to_list(data_fgtthroughput4_time, random() * 10 + 30)
-    push_value_to_list(data_fgtthroughput5_time, random() * 10 + 40)
-    push_value_to_list(data_fgtthroughput6_time, random() * 10 + 50)
     push_value_to_list(data_fgtthroughput7_time, random() * 10 + 60)
     push_value_to_list(data_fgtthroughput8_time, random() * 10 + 70)
 
@@ -352,10 +348,14 @@ def request_cpu_load_from_nodes():
                           (port['timestamp'] - port['last']['timestamp'])
 
     push_value_to_list(data_totalthroughput_ingress_time, (bps[1] + bps[3]) / 1000000)
+    push_value_to_list(data_totalthroughput_egress_time, (bps[2] + bps[4]) / 1000000)
 
     push_value_to_list(data_fgtthroughput1_time, (bps[5] + bps[6]) / 1000000)
     push_value_to_list(data_fgtthroughput2_time, (bps[7] + bps[8]) / 1000000)
     push_value_to_list(data_fgtthroughput3_time, (bps[9] + bps[10]) / 1000000)
+    push_value_to_list(data_fgtthroughput4_time, (bps[11] + bps[12]) / 1000000)
+    push_value_to_list(data_fgtthroughput5_time, (bps[13] + bps[14]) / 1000000)
+    push_value_to_list(data_fgtthroughput6_time, (bps[15] + bps[16]) / 1000000)
 
 
 cron = BackgroundScheduler(daemon=True)
