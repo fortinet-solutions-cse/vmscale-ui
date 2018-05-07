@@ -22,27 +22,27 @@ app = Flask(__name__)
 
 # Urls to access FGT REST API
 urls_fgt = [
-    'https://192.168.122.40/',
-    'https://192.168.122.41/',
-    'https://192.168.122.42/'
+    'https://10.210.14.33/',
+    'https://10.210.14.34/',
+    'https://10.210.14.35/'
 ]
 
 # URLs to access hypervisor REST API (cpu load)
 urls_hypervisors = [
-    'http://10.210.9.130:61208/api/2/cpu',
-    'http://10.210.9.130:61208/api/2/cpu',
-    'http://10.210.9.130:61208/api/2/cpu',
-    'http://10.210.9.130:61208/api/2/cpu'
+    'http://10.210.14.6:61208/api/2/cpu',
+    'http://10.210.14.6:61208/api/2/cpu',
+    'http://10.210.14.22:61208/api/2/cpu',
+    'http://10.210.14.23:61208/api/2/cpu'
 ]
 
 # Address of the hypervisor of each fortigate
 fgt_hypervisors = [
     '127.0.0.1',
-    '127.0.0.1',
-    '127.0.0.1',
-    '127.0.0.1',
-    '127.0.0.1',
-    '127.0.0.1',
+    '10.210.14.6',
+    '10.210.14.22',
+    '10.210.14.22',
+    '10.210.14.23',
+    '10.210.14.23',
     '127.0.0.1',
     '127.0.0.1'
 ]
@@ -53,7 +53,7 @@ TIMEOUT = 1
 POLL_INTERVAL = 4
 USER_FGT = 'admin'
 PASSWORD_FGT = ''
-USERNAME_HYPERVISOR = 'magonzalez'
+USERNAME_HYPERVISOR = 'root'
 
 fgt_sessions = [requests.Session() for u in urls_fgt]
 
