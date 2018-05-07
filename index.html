@@ -564,7 +564,7 @@
         function start_fgt() {
             fortigate_id = $("#scaleout_fgt #fgt_id").val().trim()
             $.ajax({
-                url: "http://localhost:5000/start_vm?fgt=" + fortigate_id,
+                url: "http://" + window.location.hostname + ":5000/start_vm?fgt=" + fortigate_id,
                 type: "POST",
                 success: function(result) {
                     $('#start_vm_log').html(result);
@@ -576,7 +576,7 @@
         function stop_fgt() {
             fortigate_id = $("#scalein_fgt #fgt_id").val().trim()
             $.ajax({
-                url: "http://localhost:5000/stop_vm?fgt=" + fortigate_id,
+                url: "http://" + window.location.hostname + ":5000/stop_vm?fgt=" + fortigate_id,
                 type: "POST",
                 success: function(result) {
                     $('#stop_vm_log').html(result);
@@ -652,7 +652,7 @@
 
         function update_data() {
             $.ajax({
-                url: "http://localhost:5000/status",
+                url: "http://" + window.location.hostname + ":5000/status",
                 success: function(result) {
 
                     var parsedJSONResult = $.parseJSON(result);
