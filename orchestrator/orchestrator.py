@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 from flask import Flask, Response, request, jsonify
 from random import random
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -19,6 +20,14 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 app = Flask(__name__)
+
+# This requires glances to run on the hypervisors
+# install the package and run: glances -w & disown
+#
+# Ensure ports are open in the server (CentOS 7):
+# firewall-cmd --zone=public --permanent --add-port=8080/tcp
+# firewall-cmd --reload
+
 
 # Urls to access FGT REST API
 urls_fgt = [
@@ -122,7 +131,7 @@ def start_vm():
                            timeout=TIMEOUT)
 
     # Use this notation '[*' to get the keys extracted into a list
-    dpid = [*loads(loadbal.content).keys()][0]
+    dpid = [*loads(loadbal.content.decode('utf-8')).keys()][0]
 
     # Send "add target" request
     target_data = '{ \
@@ -139,7 +148,7 @@ def start_vm():
 
     returned_str += "<b>NoviFlow response (code): </b>" + str(results.status_code)
 
-    returned_str += "<br><b>NoviFlow response (content): </b>" + str(loads(results.content))
+    returned_str += "<br><b>NoviFlow response (content): </b>" + str(loads(results.content.decode('utf-8')))
 
     response.data = returned_str
 
@@ -180,11 +189,11 @@ def stop_vm():
                            timeout=TIMEOUT)
 
     # Use this notation '[*' to get the keys extracted into a list
-    dpid = [*loads(loadbal.content).keys()][0]
+    dpid = [*loads(loadbal.content.decode('utf-8')).keys()][0]
 
     # Send "remove target" request
     results = requests.delete(url_cybermapper + '/v1.0/loadbal/' + dpid + '/0/targets/dpi' + str(fgt_id),
-                            timeout=TIMEOUT)
+                              timeout=TIMEOUT)
 
     returned_str += "<b>NoviFlow response (code): </b>" + str(results.status_code)
 
@@ -250,10 +259,14 @@ def request_cpu_load_from_nodes():
 
     results = grequests.map(rs)
     if len(results) >= 0:
-        if results[0] is not None: push_value_to_list(data_cpuload_time1, loads(results[0].content)['total'])
-        if results[1] is not None: push_value_to_list(data_cpuload_time2, loads(results[1].content)['total'])
-        if results[2] is not None: push_value_to_list(data_cpuload_time3, loads(results[2].content)['total'])
-        if results[3] is not None: push_value_to_list(data_cpuload_time4, loads(results[3].content)['total'])
+        if results[0] is not None: push_value_to_list(data_cpuload_time1,
+                                                      loads(results[0].content.decode('utf-8'))['total'])
+        if results[1] is not None: push_value_to_list(data_cpuload_time2,
+                                                      loads(results[1].content.decode('utf-8'))['total'])
+        if results[2] is not None: push_value_to_list(data_cpuload_time3,
+                                                      loads(results[2].content.decode('utf-8'))['total'])
+        if results[3] is not None: push_value_to_list(data_cpuload_time4,
+                                                      loads(results[3].content.decode('utf-8'))['total'])
 
     # ******************************
     # Get Values from FortiGates
@@ -301,7 +314,7 @@ def request_cpu_load_from_nodes():
         if fgt_cpu_results[i] and fgt_cpu_results[i].status_code == 200:
             try:
                 push_value_to_list(globals()['data_fgtload_time' + str(i + 1)],
-                                   loads(fgt_cpu_results[i].content)['results']['cpu'][0]['current'])
+                                   loads(fgt_cpu_results[i].content.decode('utf-8'))['results']['cpu'][0]['current'])
             except:
                 print("Error getting data from FortiGate:", i)
         else:
@@ -322,14 +335,14 @@ def request_cpu_load_from_nodes():
                            timeout=TIMEOUT)
 
     # Use this notation '[*' to get the keys extracted into a list
-    dpid = [*loads(loadbal.content).keys()][0]
+    dpid = [*loads(loadbal.content.decode('utf-8')).keys()][0]
 
     # Get port statistics
 
     results = requests.get(url_cybermapper + '/v1.0/switch_stats/switches/' + dpid + '/port_stats',
                            timeout=TIMEOUT)
 
-    port_stats = loads(results.content)
+    port_stats = loads(results.content.decode('utf-8'))
 
     bps = {}
 
@@ -338,11 +351,11 @@ def request_cpu_load_from_nodes():
                            port['rx_bytes'] - port['last']['rx_bytes']) / \
                           (port['timestamp'] - port['last']['timestamp'])
 
-    push_value_to_list(data_totalthroughput_ingress_time, bps[1] + bps[3])
+    push_value_to_list(data_totalthroughput_ingress_time, (bps[1] + bps[3]) / 1000000)
 
-    push_value_to_list(data_fgtthroughput1_time, bps[5] + bps[6])
-    push_value_to_list(data_fgtthroughput2_time, bps[7] + bps[8])
-    push_value_to_list(data_fgtthroughput3_time, bps[9] + bps[10])
+    push_value_to_list(data_fgtthroughput1_time, (bps[5] + bps[6]) / 1000)
+    push_value_to_list(data_fgtthroughput2_time, (bps[7] + bps[8]) / 1000)
+    push_value_to_list(data_fgtthroughput3_time, (bps[9] + bps[10]) / 1000)
 
 
 cron = BackgroundScheduler(daemon=True)
