@@ -59,7 +59,7 @@
                 text: ''
             },
             xAxis: {
-                categories: ['FGT1', 'FGT2', 'FGT3', 'FGT4', 'FGT5', 'FGT6', 'FGT7', 'FGT8']
+                categories: ['FGT1', 'FGT2', 'FGT3', 'FGT4', 'FGT5', 'FGT6']
             },
             yAxis: {
                 title: {
@@ -282,16 +282,6 @@
         template_fgt6.title.text = 'FGT6';
         $('#fgtload6').highcharts(template_fgt6);
 
-        // FGTLoad7
-        var template_fgt7 = $.extend(true, {}, template_fgt);
-        template_fgt7.title.text = 'FGT7';
-        $('#fgtload7').highcharts(template_fgt7);
-
-        // FGTLoad8
-        var template_fgt8 = $.extend(true, {}, template_fgt);
-        template_fgt8.title.text = 'FGT8';
-        $('#fgtload8').highcharts(template_fgt8);
-
     });
 </script>
 
@@ -393,16 +383,6 @@
         template_fgtload_time6.title.text = "FGT6";
         template_fgtload_time6.yAxis.title.text = '';
         $('#fgtload_time6').highcharts(template_fgtload_time6);
-
-        var template_fgtload_time7 = $.extend(true, {}, template_fgtload_time);
-        template_fgtload_time7.title.text = "FGT7";
-        template_fgtload_time7.yAxis.title.text = '';
-        $('#fgtload_time7').highcharts(template_fgtload_time7);
-
-        var template_fgtload_time8 = $.extend(true, {}, template_fgtload_time);
-        template_fgtload_time8.title.text = "FGT8";
-        template_fgtload_time8.yAxis.title.text = '';
-        $('#fgtload_time8').highcharts(template_fgtload_time8);
 
     });
 </script>
@@ -528,16 +508,6 @@
                 }
             }, {
                 name: 'FGT6',
-                marker: {
-                    enabled: false,
-                }
-            }, {
-                name: 'FGT7',
-                marker: {
-                    enabled: false,
-                }
-            }, {
-                name: 'FGT8',
                 marker: {
                     enabled: false,
                 }
@@ -678,10 +648,6 @@
                         'fgtload_time5'], true);
                     $('#fgtload_time6').highcharts().series[0].setData(parsedJSONResult[
                         'fgtload_time6'], true);
-                    $('#fgtload_time7').highcharts().series[0].setData(parsedJSONResult[
-                        'fgtload_time7'], true);
-                    $('#fgtload_time8').highcharts().series[0].setData(parsedJSONResult[
-                        'fgtload_time8'], true);
 
                     $('#totalthroughput_time').highcharts().series[0].setData(parsedJSONResult[
                         'totalthroughput_ingress_time'], true);
@@ -700,10 +666,6 @@
                         'fgtthroughput5_time'], true);
                     $('#fgtthroughput_time').highcharts().series[5].setData(parsedJSONResult[
                         'fgtthroughput6_time'], true);
-                    $('#fgtthroughput_time').highcharts().series[6].setData(parsedJSONResult[
-                        'fgtthroughput7_time'], true);
-                    $('#fgtthroughput_time').highcharts().series[7].setData(parsedJSONResult[
-                        'fgtthroughput8_time'], true);
 
                     updateTitle(parsedJSONResult, 1);
                     updateTitle(parsedJSONResult, 2);
@@ -711,8 +673,6 @@
                     updateTitle(parsedJSONResult, 4);
                     updateTitle(parsedJSONResult, 5);
                     updateTitle(parsedJSONResult, 6);
-                    updateTitle(parsedJSONResult, 7);
-                    updateTitle(parsedJSONResult, 8);
 
                 }
             });
@@ -762,14 +722,12 @@
                                 <div id="cpuload_time3" style="width:24.9%; float:left; height:22vh;"></div>
                                 <div id="cpuload_time4" style="width:24.9%; float:left; height:22vh;"></div>
 
-                                <div id="fgtload_time1" style="width:12.4%; float:left; height:24vh;"></div>
-                                <div id="fgtload_time2" style="width:12.4%; float:left; height:24vh;"></div>
+                                <div id="fgtload_time1" style="width:24.8%; float:left; height:24vh;"></div>
+                                <div id="fgtload_time2" style="width:24.8%; float:left; height:24vh;"></div>
                                 <div id="fgtload_time3" style="width:12.4%; float:left; height:24vh;"></div>
                                 <div id="fgtload_time4" style="width:12.4%; float:left; height:24vh;"></div>
                                 <div id="fgtload_time5" style="width:12.4%; float:left; height:24vh;"></div>
                                 <div id="fgtload_time6" style="width:12.4%; float:left; height:24vh;"></div>
-                                <div id="fgtload_time7" style="width:12.4%; float:left; height:24vh;"></div>
-                                <div id="fgtload_time8" style="width:12.4%; float:left; height:24vh;"></div>
                             </div>
                         </div>
                     </div>
@@ -824,8 +782,6 @@
                                         <div id="fgtload4" style="width:12%; float:left"></div>
                                         <div id="fgtload5" style="width:12%; float:left"></div>
                                         <div id="fgtload6" style="width:12%; float:left"></div>
-                                        <div id="fgtload7" style="width:12%; float:left"></div>
-                                        <div id="fgtload8" style="width:12%; float:left"></div>
                                     </div>
                                 </div>
                             </div>
@@ -847,7 +803,7 @@
                     </div>
                     <div class="modal-body">
                         <div class="form-group">
-                            <label for="text">FortiGate identifier(1-8):</label>
+                            <label for="text">FortiGate identifier(1-6):</label>
                             <input type="text" class="form-control" id="fgt_id">
                         </div>
                         <div id="start_vm_log">
@@ -876,7 +832,7 @@
                     </div>
                     <div class="modal-body">
                         <div class="form-group">
-                            <label for="text">FortiGate identifier (1-8):</label>
+                            <label for="text">FortiGate identifier (1-6):</label>
                             <input type="text" class="form-control" id="fgt_id">
                         </div>
                         <div id="stop_vm_log">
