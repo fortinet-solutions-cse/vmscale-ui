@@ -117,7 +117,7 @@ def start_vm():
     ssh.load_system_host_keys()
     ssh.connect(fgt_hypervisors[fgt_id], username=USERNAME_HYPERVISOR)
     ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-        "LIBVIRT_DEFAULT_URI=qemu:///system virsh start fortigate" + str(fgt_id))
+        "LIBVIRT_DEFAULT_URI=qemu:///system virsh start fortigate" + str(fgt_id-1))
 
     stdout = ssh_stdout.read()
     stderr = ssh_stderr.read()
@@ -175,7 +175,7 @@ def stop_vm():
     ssh.load_system_host_keys()
     ssh.connect(fgt_hypervisors[fgt_id], username=USERNAME_HYPERVISOR)
     ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-        "LIBVIRT_DEFAULT_URI=qemu:///system virsh shutdown fortigate" + str(fgt_id))
+        "LIBVIRT_DEFAULT_URI=qemu:///system virsh shutdown fortigate" + str(fgt_id-1))
 
     stdout = ssh_stdout.read()
     stderr = ssh_stderr.read()
