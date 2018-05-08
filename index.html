@@ -532,24 +532,34 @@
         // Action functions
 
         function start_fgt() {
+            $("body").css("cursor", "progress");
+            $('#start_fgt_btn').prop('disabled', true)
             fortigate_id = $("#scaleout_fgt #fgt_id").val().trim()
             $.ajax({
                 url: "http://" + window.location.hostname + ":5000/start_vm?fgt=" + fortigate_id,
                 type: "POST",
                 success: function(result) {
                     $('#start_vm_log').html(result);
+                },
+                complete: function() {
+                    $("body").css("cursor", "default");
                 }
             });
         };
 
 
         function stop_fgt() {
+            $("body").css("cursor", "progress");
+            $('#stop_fgt_btn').prop('disabled', true)
             fortigate_id = $("#scalein_fgt #fgt_id").val().trim()
             $.ajax({
                 url: "http://" + window.location.hostname + ":5000/stop_vm?fgt=" + fortigate_id,
                 type: "POST",
                 success: function(result) {
                     $('#stop_vm_log').html(result);
+                },
+                complete: function() {
+                    $("body").css("cursor", "default");
                 }
             });
         };
@@ -576,6 +586,7 @@
                 .find("input[type=checkbox], input[type=radio]")
                 .prop("checked", "")
                 .end();
+            $('#start_fgt_btn').prop('disabled', false)
             $('#start_vm_log').html('');
         })
 
@@ -588,6 +599,7 @@
                 .find("input[type=checkbox], input[type=radio]")
                 .prop("checked", "")
                 .end();
+            $('#stop_fgt_btn').prop('disabled', false)
             $('#stop_vm_log').html('');
         })
 
