@@ -2,7 +2,7 @@
 from flask import Flask, Response, request, jsonify
 from random import random
 from apscheduler.schedulers.background import BackgroundScheduler
-from json import loads
+from json import loads, dumps
 import grequests
 import requests
 import gevent
@@ -115,12 +115,12 @@ def start_vm():
 
     ssh = paramiko.SSHClient()
     ssh.load_system_host_keys()
-    ssh.connect(fgt_hypervisors[fgt_id-1], username=USERNAME_HYPERVISOR)
+    ssh.connect(fgt_hypervisors[fgt_id - 1], username=USERNAME_HYPERVISOR)
     ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
         "LIBVIRT_DEFAULT_URI=qemu:///system virsh start fortigate" + str(fgt_id))
 
-    stdout = ssh_stdout.read()
-    stderr = ssh_stderr.read()
+    stdout = ssh_stdout.read().decode('ascii').strip('\n')
+    stderr = ssh_stderr.read().decode('ascii').strip('\n')
 
     returned_str = "<b>FortiGate id: </b>" + str(fgt_id) + "<br>" + \
                    "<b>FortiGate VM instantiation: </b>" + str(stderr).replace('\\n', '<br>') + \
@@ -151,7 +151,10 @@ def start_vm():
 
     returned_str += "<b>NoviFlow response (code): </b>" + str(results.status_code)
 
-    returned_str += "<br><b>NoviFlow response (content): </b>" + str(loads(results.content.decode('utf-8')))
+    returned_str += "<br><b>NoviFlow response (content): </b>" + \
+                    str(dumps(loads(results.content.decode('utf-8')),
+                              indent=4,
+                              sort_keys=True).replace('\n', '<br>').replace(' ','&nbsp;'))
 
     response.data = returned_str
 
@@ -173,12 +176,12 @@ def stop_vm():
 
     ssh = paramiko.SSHClient()
     ssh.load_system_host_keys()
-    ssh.connect(fgt_hypervisors[fgt_id-1], username=USERNAME_HYPERVISOR)
+    ssh.connect(fgt_hypervisors[fgt_id - 1], username=USERNAME_HYPERVISOR)
     ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
         "LIBVIRT_DEFAULT_URI=qemu:///system virsh shutdown fortigate" + str(fgt_id))
 
-    stdout = ssh_stdout.read()
-    stderr = ssh_stderr.read()
+    stdout = ssh_stdout.read().decode('ascii').strip('\n')
+    stderr = ssh_stderr.read().decode('ascii').strip('\n')
 
     returned_str = "<b>FortiGate id: </b>" + str(fgt_id) + "<br>" + \
                    "<b>FortiGate VM shutdown: </b>" + str(stderr).replace('\\n', '<br>') + \
@@ -207,7 +210,6 @@ def stop_vm():
 
 @app.route("/status", methods=['GET'])
 def status():
-
     push_value_to_list(data_fgtload_time7, random() * 100)
     push_value_to_list(data_fgtload_time8, random() * 100)
 
