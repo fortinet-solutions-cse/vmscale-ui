@@ -35,8 +35,8 @@ urls_fgt = [
     'https://10.210.14.34/',
     'https://10.210.14.100/',
     'https://10.210.14.101/',
-    'https://10.210.14.37/',
-    'https://10.210.14.38/'
+    'https://10.210.14.102/',
+    'https://10.210.14.103/'
 ]
 
 # URLs to access hypervisor REST API (cpu load)
