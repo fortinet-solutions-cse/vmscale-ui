@@ -229,10 +229,10 @@ def start_traffic():
                "Cache-Control": "no-cache"}
 
     result_login = requests.post(url,
-                           data=payload,
-                           timeout=TIMEOUT,
-                           headers=headers,
-                           verify=False)
+                                 data=payload,
+                                 timeout=TIMEOUT,
+                                 headers=headers,
+                                 verify=False)
 
     # Start case
     url = "http://" + FTS_IP + "/api/case/" + FTS_CASE_ID + "/start"
@@ -247,10 +247,10 @@ def start_traffic():
             response.data = "<b>Success.</b> Traffic started."
         else:
             response.data = "<b>Error:</b> Could not start traffic. <br>" + \
-                   " Code: " + str(result_start.status_code) + " Text: " + result_start.text
+                            " Code: " + str(result_start.status_code) + " Text: " + result_start.text
     else:
         response.data = "<b>Error:</b> Could not log in to FortiTester. <br> " + \
-               " Code: " + str(result_login.status_code) + " Text: " + result_login.text
+                        " Code: " + str(result_login.status_code) + " Text: " + result_login.text
 
     # Logout
     url = "http://" + FTS_IP + "/api/user/logout"
@@ -265,6 +265,7 @@ def start_traffic():
 
     return response
 
+
 @app.route("/stop_traffic", methods=['POST'])
 def stop_traffic():
     response = Response()
@@ -278,10 +279,10 @@ def stop_traffic():
                "Cache-Control": "no-cache"}
 
     result_login = requests.post(url,
-                           data=payload,
-                           timeout=TIMEOUT,
-                           headers=headers,
-                           verify=False)
+                                 data=payload,
+                                 timeout=TIMEOUT,
+                                 headers=headers,
+                                 verify=False)
 
     # Stop case
     url = "http://" + FTS_IP + "/api/case/stop"
@@ -296,10 +297,10 @@ def stop_traffic():
             response.data = "<b>Success.</b> Traffic stopped."
         else:
             response.data = "<b>Error:</b> Could not stop traffic. <br>" + \
-                   " Code: " + str(result_start.status_code) + " Text: " + result_start.text
+                            " Code: " + str(result_start.status_code) + " Text: " + result_start.text
     else:
         response.data = "<b>Error:</b> Could not log in to FortiTester. <br> " + \
-               " Code: " + str(result_login.status_code) + " Text: " + result_login.text
+                        " Code: " + str(result_login.status_code) + " Text: " + result_login.text
 
     # Logout
     url = "http://" + FTS_IP + "/api/user/logout"
