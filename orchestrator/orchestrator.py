@@ -12,6 +12,7 @@ import paramiko
 # and grequests: https://github.com/paramiko/paramiko/issues/633
 
 from gevent import monkey
+import time
 
 monkey.patch_all()
 
@@ -126,6 +127,8 @@ def start_vm():
                    "<b>FortiGate VM instantiation: </b>" + str(stderr).replace('\\n', '<br>') + \
                    ":" + str(stdout).replace('\\n', '<br>') + "<br>"
 
+    time.sleep(40)
+
     global url_cybermapper
 
     # Get dpid
@@ -171,22 +174,6 @@ def stop_vm():
 
     print("Parameter received:", fgt_id)
 
-    response = Response()
-    response.headers.add('Access-Control-Allow-Origin', '*')
-
-    ssh = paramiko.SSHClient()
-    ssh.load_system_host_keys()
-    ssh.connect(fgt_hypervisors[fgt_id - 1], username=USERNAME_HYPERVISOR)
-    ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-        "LIBVIRT_DEFAULT_URI=qemu:///system virsh shutdown fortigate" + str(fgt_id))
-
-    stdout = ssh_stdout.read().decode('ascii').strip('\n')
-    stderr = ssh_stderr.read().decode('ascii').strip('\n')
-
-    returned_str = "<b>FortiGate id: </b>" + str(fgt_id) + "<br>" + \
-                   "<b>FortiGate VM shutdown: </b>" + str(stderr).replace('\\n', '<br>') + \
-                   ":" + str(stdout).replace('\\n', '<br>') + "<br>"
-
     global url_cybermapper
 
     # Get dpid
@@ -201,8 +188,26 @@ def stop_vm():
     results = requests.delete(url_cybermapper + '/v1.0/loadbal/' + dpid + '/0/targets/dpi' + str(fgt_id),
                               timeout=TIMEOUT)
 
-    returned_str += "<b>NoviFlow response (code): </b>" + str(results.status_code)
+    returned_str = "<b>NoviFlow response (code): </b>" + str(results.status_code)
 
+    time.sleep(10)
+    # StopVm
+
+    ssh = paramiko.SSHClient()
+    ssh.load_system_host_keys()
+    ssh.connect(fgt_hypervisors[fgt_id - 1], username=USERNAME_HYPERVISOR)
+    ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+        "LIBVIRT_DEFAULT_URI=qemu:///system virsh shutdown fortigate" + str(fgt_id))
+
+    stdout = ssh_stdout.read().decode('ascii').strip('\n')
+    stderr = ssh_stderr.read().decode('ascii').strip('\n')
+
+    returned_str += "<b>FortiGate id: </b>" + str(fgt_id) + "<br>" + \
+                   "<b>FortiGate VM shutdown: </b>" + str(stderr).replace('\\n', '<br>') + \
+                   ":" + str(stdout).replace('\\n', '<br>') + "<br>"
+
+    response = Response()
+    response.headers.add('Access-Control-Allow-Origin', '*')
     response.data = returned_str
 
     return response
