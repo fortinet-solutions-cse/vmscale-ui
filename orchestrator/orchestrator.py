@@ -246,11 +246,59 @@ def start_traffic():
         if result_start.status_code == 200:
             response.data = "<b>Success.</b> Traffic started."
         else:
-            response.data = "<b>Error:</b> Could login into FortiTester. <br> <b>Error given:</b> " + \
+            response.data = "<b>Error:</b> Could not start traffic. <br>" + \
                    " Code: " + str(result_start.status_code) + " Text: " + result_start.text
-
     else:
-        response.data = "<b>Error:</b> Could login into FortiTester. <br> <b>Error given:</b> " + \
+        response.data = "<b>Error:</b> Could not log in to FortiTester. <br> " + \
+               " Code: " + str(result_login.status_code) + " Text: " + result_login.text
+
+    # Logout
+    url = "http://" + FTS_IP + "/api/user/logout"
+
+    result_start = requests.get(url,
+                                timeout=TIMEOUT,
+                                cookies=result_login.cookies,
+                                verify=False)
+
+    if result_start.status_code != 200:
+        response.data += "<br> <b>Note:</b> User was not logged out."
+
+    return response
+
+@app.route("/stop_traffic", methods=['POST'])
+def stop_traffic():
+    response = Response()
+    response.headers.add('Access-Control-Allow-Origin', '*')
+
+    # Login
+    url = "http://" + FTS_IP + "/api/user/login"
+
+    payload = '{ "name":"admin", "password":"" }'
+    headers = {"Content-Type": "application/json",
+               "Cache-Control": "no-cache"}
+
+    result_login = requests.post(url,
+                           data=payload,
+                           timeout=TIMEOUT,
+                           headers=headers,
+                           verify=False)
+
+    # Stop case
+    url = "http://" + FTS_IP + "/api/case/stop"
+
+    if result_login.status_code == 200:
+        result_start = requests.get(url,
+                                    timeout=TIMEOUT,
+                                    cookies=result_login.cookies,
+                                    verify=False)
+
+        if result_start.status_code == 200:
+            response.data = "<b>Success.</b> Traffic stopped."
+        else:
+            response.data = "<b>Error:</b> Could not stop traffic. <br>" + \
+                   " Code: " + str(result_start.status_code) + " Text: " + result_start.text
+    else:
+        response.data = "<b>Error:</b> Could not log in to FortiTester. <br> " + \
                " Code: " + str(result_login.status_code) + " Text: " + result_login.text
 
     # Logout
