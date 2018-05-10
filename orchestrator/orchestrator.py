@@ -188,7 +188,7 @@ def stop_vm():
     results = requests.delete(url_cybermapper + '/v1.0/loadbal/' + dpid + '/0/targets/dpi' + str(fgt_id),
                               timeout=TIMEOUT)
 
-    returned_str = "<b>NoviFlow response (code): </b>" + str(results.status_code)
+    returned_str = "<b>NoviFlow response (code): </b>" + str(results.status_code) + "<br>"
 
     time.sleep(10)
     # StopVm
