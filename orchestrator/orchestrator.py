@@ -62,6 +62,9 @@ fgt_hypervisors = [
 
 url_cybermapper = 'http://10.210.9.132:8080'
 
+FTS_IP = "10.210.1.28"
+
+FTS_CASE_ID = '5af4339cdfaa0f02ec656be4'
 TIMEOUT = 1
 POLL_INTERVAL = 4
 USER_FGT = 'admin'
@@ -157,7 +160,7 @@ def start_vm():
     returned_str += "<br><b>NoviFlow response (content): </b>" + \
                     str(dumps(loads(results.content.decode('utf-8')),
                               indent=4,
-                              sort_keys=True).replace('\n', '<br>').replace(' ','&nbsp;'))
+                              sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;'))
 
     response.data = returned_str
 
@@ -203,12 +206,63 @@ def stop_vm():
     stderr = ssh_stderr.read().decode('ascii').strip('\n')
 
     returned_str += "<b>FortiGate id: </b>" + str(fgt_id) + "<br>" + \
-                   "<b>FortiGate VM shutdown: </b>" + str(stderr).replace('\\n', '<br>') + \
-                   ":" + str(stdout).replace('\\n', '<br>') + "<br>"
+                    "<b>FortiGate VM shutdown: </b>" + str(stderr).replace('\\n', '<br>') + \
+                    ":" + str(stdout).replace('\\n', '<br>') + "<br>"
 
     response = Response()
     response.headers.add('Access-Control-Allow-Origin', '*')
     response.data = returned_str
+
+    return response
+
+
+@app.route("/start_traffic", methods=['POST'])
+def start_traffic():
+    response = Response()
+    response.headers.add('Access-Control-Allow-Origin', '*')
+
+    # Login
+    url = "http://" + FTS_IP + "/api/user/login"
+
+    payload = '{ "name":"admin", "password":"" }'
+    headers = {"Content-Type": "application/json",
+               "Cache-Control": "no-cache"}
+
+    result_login = requests.post(url,
+                           data=payload,
+                           timeout=TIMEOUT,
+                           headers=headers,
+                           verify=False)
+
+    # Start case
+    url = "http://" + FTS_IP + "/api/case/" + FTS_CASE_ID + "/start"
+
+    if result_login.status_code == 200:
+        result_start = requests.get(url,
+                                    timeout=TIMEOUT,
+                                    cookies=result_login.cookies,
+                                    verify=False)
+
+        if result_start.status_code == 200:
+            response.data = "<b>Success.</b> Traffic started."
+        else:
+            response.data = "<b>Error:</b> Could login into FortiTester. <br> <b>Error given:</b> " + \
+                   " Code: " + str(result_start.status_code) + " Text: " + result_start.text
+
+    else:
+        response.data = "<b>Error:</b> Could login into FortiTester. <br> <b>Error given:</b> " + \
+               " Code: " + str(result_login.status_code) + " Text: " + result_login.text
+
+    # Logout
+    url = "http://" + FTS_IP + "/api/user/logout"
+
+    result_start = requests.get(url,
+                                timeout=TIMEOUT,
+                                cookies=result_login.cookies,
+                                verify=False)
+
+    if result_start.status_code != 200:
+        response.data += "<br> <b>Note:</b> User was not logged out."
 
     return response
 
