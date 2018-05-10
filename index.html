@@ -591,6 +591,17 @@
 
         $("#stoptest").click(function() {
             $('#stop_test').modal('toggle');
+            $("body").css("cursor", "progress");
+            $.ajax({
+                url: "http://" + window.location.hostname + ":5000/stop_traffic",
+                type: "POST",
+                success: function(result) {
+                    $('#stop_test_log').html(result);
+                },
+                complete: function() {
+                    $("body").css("cursor", "default");
+                }
+            });
         });
 
         $("#start_fgt_btn").click(start_fgt)
@@ -632,6 +643,17 @@
                 .prop("checked", "")
                 .end();
             $('#start_test_log').html('');
+        })
+
+        $('#stop_test').on('hidden.bs.modal', function(e) {
+            $(this)
+                .find("input,textarea,select")
+                .val('')
+                .end()
+                .find("input[type=checkbox], input[type=radio]")
+                .prop("checked", "")
+                .end();
+            $('#stop_test_log').html('');
         })
 
     });
