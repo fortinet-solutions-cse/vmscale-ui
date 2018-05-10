@@ -574,7 +574,27 @@
             $('#scalein_fgt').modal('toggle');
         });
 
+        $("#starttest").click(function() {
+            $('#start_test').modal('toggle');
+            $("body").css("cursor", "progress");
+            $.ajax({
+                url: "http://" + window.location.hostname + ":5000/start_traffic",
+                type: "POST",
+                success: function(result) {
+                    $('#start_test_log').html(result);
+                },
+                complete: function() {
+                    $("body").css("cursor", "default");
+                }
+            });
+        });
+
+        $("#stoptest").click(function() {
+            $('#stop_test').modal('toggle');
+        });
+
         $("#start_fgt_btn").click(start_fgt)
+
         $("#stop_fgt_btn").click(stop_fgt)
 
 
@@ -602,7 +622,6 @@
             $('#stop_fgt_btn').prop('disabled', false)
             $('#stop_vm_log').html('');
         })
-
 
     });
 </script>
@@ -706,17 +725,34 @@
                 <li><a data-toggle="pill" href="#menu1">Snapshot</a></li>
                 <li class="dropdown">
                     <a class="dropdown-toggle" data-toggle="dropdown" href="#">Scaling
-                    <span class="caret"></span>
-                </a>
+                        <span class="caret"></span>
+                    </a>
                     <ul class="dropdown-menu">
                         <li>
                             <a href="#">
-                                <div id="scalingout">Scaling Out FortiGate</div>
+                                <div id="scalingout">Scale Out FortiGate</div>
                             </a>
                         </li>
                         <li>
                             <a href="#">
-                                <div id="scalingin">Scaling In FortiGate</div>
+                                <div id="scalingin">Scale In FortiGate</div>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">Tester
+                        <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a href="#">
+                                <div id="starttest">Start Test Traffic</div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div id="stoptest">Stop Test Traffic</div>
                             </a>
                         </li>
                     </ul>
@@ -825,7 +861,6 @@
                         <div id="start_vm_log">
                             <p></p>
                         </div>
-                        <p id="result"></p>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-success" id="start_fgt_btn">Start</button>
@@ -854,7 +889,6 @@
                         <div id="stop_vm_log">
                             <p></p>
                         </div>
-                        <p id="result"></p>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-success" id="stop_fgt_btn">Stop</button>
@@ -865,6 +899,51 @@
             </div>
         </div>
 
+        <!-- Modal -->
+        <div id="start_test" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Start Traffic</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div id="start_test_log">
+                            <p></p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Modal -->
+        <div id="stop_test" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Stop Trafic</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div id="stop_test_log">
+                            <p></p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
 </body>
 
 </html>
