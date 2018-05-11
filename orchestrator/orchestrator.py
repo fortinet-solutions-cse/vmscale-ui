@@ -62,7 +62,8 @@ fgt_hypervisors = [
 
 url_cybermapper = 'http://10.210.9.132:8080'
 
-FTS_IP = "10.210.1.28"
+FTS1_IP = "10.210.1.28"
+FTS2_IP = "10.210.1.29"
 
 FTS_CASE_ID = '5af4339cdfaa0f02ec656be4'
 TIMEOUT = 1
@@ -220,7 +221,7 @@ def start_traffic():
     response.headers.add('Access-Control-Allow-Origin', '*')
 
     # Login
-    url = "http://" + FTS_IP + "/api/user/login"
+    url = "http://" + FTS1_IP + "/api/user/login"
 
     payload = '{ "name":"admin", "password":"" }'
     headers = {"Content-Type": "application/json",
@@ -233,7 +234,7 @@ def start_traffic():
                                  verify=False)
 
     # Start case
-    url = "http://" + FTS_IP + "/api/case/" + FTS_CASE_ID + "/start"
+    url = "http://" + FTS1_IP + "/api/case/" + FTS_CASE_ID + "/start"
 
     if result_login.status_code == 200:
         result_start = requests.get(url,
@@ -251,7 +252,7 @@ def start_traffic():
                         " Code: " + str(result_login.status_code) + " Text: " + result_login.text
 
     # Logout
-    url = "http://" + FTS_IP + "/api/user/logout"
+    url = "http://" + FTS1_IP + "/api/user/logout"
 
     result_start = requests.get(url,
                                 timeout=TIMEOUT,
@@ -270,7 +271,7 @@ def stop_traffic():
     response.headers.add('Access-Control-Allow-Origin', '*')
 
     # Login
-    url = "http://" + FTS_IP + "/api/user/login"
+    url = "http://" + FTS1_IP + "/api/user/login"
 
     payload = '{ "name":"admin", "password":"" }'
     headers = {"Content-Type": "application/json",
@@ -283,7 +284,7 @@ def stop_traffic():
                                  verify=False)
 
     # Stop case
-    url = "http://" + FTS_IP + "/api/case/stop"
+    url = "http://" + FTS1_IP + "/api/case/stop"
 
     if result_login.status_code == 200:
         result_start = requests.get(url,
@@ -301,7 +302,7 @@ def stop_traffic():
                         " Code: " + str(result_login.status_code) + " Text: " + result_login.text
 
     # Logout
-    url = "http://" + FTS_IP + "/api/user/logout"
+    url = "http://" + FTS1_IP + "/api/user/logout"
 
     result_start = requests.get(url,
                                 timeout=TIMEOUT,
