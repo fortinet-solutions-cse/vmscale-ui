@@ -163,7 +163,7 @@ def start_vm():
                                   indent=4,
                                   sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;'))
 
-        # Increase traffic load
+        # Increase traffic load FTS1
         time.sleep(5)
 
         headers = {
@@ -172,7 +172,7 @@ def start_vm():
 
         url_fts = "http://" + FTS1_IP + "/api/networkLimit/modify"
         fts_data = '{"config": { \
-                       "SpeedLimit": ' + str(fgt_id * FTS_CPS_PER_VM) + ', \
+                       "SpeedLimit": ' + str(fgt_id * FTS_CPS_PER_VM / 2) + ', \
                        "RampUpSecond": "0", \
                        "RampDownSecond": "0", \
                        "TestType": "HttpCps", \
@@ -184,8 +184,21 @@ def start_vm():
                                 headers=headers,
                                 timeout=TIMEOUT)
 
-        returned_str += "<br><b>FortiTester response (code): </b>" + str(results.status_code)
-        returned_str += "<br><b>FortiTester response (content): </b>" + \
+        returned_str += "<br><b>FortiTester1 response (code): </b>" + str(results.status_code)
+        returned_str += "<br><b>FortiTester1 response (content): </b>" + \
+                        str(dumps(loads(results.content.decode('utf-8')),
+                                  indent=4,
+                                  sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;'))
+
+        # Increase traffic load FTS2
+        url_fts = "http://" + FTS2_IP + "/api/networkLimit/modify"
+        results = requests.post(url_fts,
+                                data=fts_data,
+                                headers=headers,
+                                timeout=TIMEOUT)
+
+        returned_str += "<br><b>FortiTester2 response (code): </b>" + str(results.status_code)
+        returned_str += "<br><b>FortiTester2 response (content): </b>" + \
                         str(dumps(loads(results.content.decode('utf-8')),
                                   indent=4,
                                   sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;'))
@@ -209,21 +222,19 @@ def stop_vm():
     print("Parameter received:", fgt_id)
 
     try:
-        # Decrease traffic load
+        # Decrease traffic load FTS1
         headers = {
             'Content-Type': "application/json",
         }
 
         url_fts = "http://" + FTS1_IP + "/api/networkLimit/modify"
         fts_data = '{"config": { \
-                       "SpeedLimit": ' + str((fgt_id - 1) * FTS_CPS_PER_VM) + ', \
+                       "SpeedLimit": ' + str((fgt_id - 1) * FTS_CPS_PER_VM / 2) + ', \
                        "RampUpSecond": "0", \
                        "RampDownSecond": "0", \
                        "TestType": "HttpCps", \
                        "LimitType": "speed"}, \
                     "order": 0}'
-
-        print(fts_data)
 
         results = requests.post(url_fts,
                                 data=fts_data,
@@ -231,8 +242,22 @@ def stop_vm():
                                 timeout=TIMEOUT)
 
         returned_str = "<b>FortiGate id: </b>" + str(fgt_id) + "<br>" + \
-                       "<b>FortiTester response (code): </b>" + str(results.status_code) + \
-                       "<br><b>FortiTester response (content): </b>" + \
+                       "<b>FortiTester1 response (code): </b>" + str(results.status_code) + \
+                       "<br><b>FortiTester1 response (content): </b>" + \
+                       str(dumps(loads(results.content.decode('utf-8')),
+                                 indent=4,
+                                 sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;'))
+
+        # Decrease traffic load FTS2
+        url_fts = "http://" + FTS2_IP + "/api/networkLimit/modify"
+
+        results = requests.post(url_fts,
+                                data=fts_data,
+                                headers=headers,
+                                timeout=TIMEOUT)
+
+        returned_str += "<b>FortiTester2 response (code): </b>" + str(results.status_code) + \
+                       "<br><b>FortiTester2 response (content): </b>" + \
                        str(dumps(loads(results.content.decode('utf-8')),
                                  indent=4,
                                  sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;'))
