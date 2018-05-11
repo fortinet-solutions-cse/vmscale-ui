@@ -42,7 +42,7 @@ urls_fgt = [
 
 # URLs to access hypervisor REST API (cpu load)
 urls_hypervisors = [
-    'http://10.210.14.6:61208/api/2/cpu',
+    'http://10.210.14.18:61208/api/2/cpu',
     'http://10.210.14.6:61208/api/2/cpu',
     'http://10.210.14.22:61208/api/2/cpu',
     'http://10.210.14.23:61208/api/2/cpu'
@@ -50,7 +50,7 @@ urls_hypervisors = [
 
 # Address of the hypervisor of each fortigate
 fgt_hypervisors = [
-    '127.0.0.1',
+    '10.210.14.18',
     '10.210.14.6',
     '10.210.14.22',
     '10.210.14.22',
@@ -148,8 +148,6 @@ def start_vm():
         "port_ingress": ' + str(fgt_id * 2 + 3) + ', \
         "port_egress": ' + str(fgt_id * 2 + 4) + ', \
         "id": "dpi' + str(fgt_id) + '" }'
-
-    print(target_data)
 
     results = requests.post(url_cybermapper + '/v1.0/loadbal/' + dpid + '/0/targets',
                             data=target_data,
