@@ -66,7 +66,8 @@ url_cybermapper = 'http://10.210.9.132:8080'
 FTS1_IP = "10.210.1.28"
 FTS2_IP = "10.210.1.29"
 
-FTS_CASE_ID = '5af4339cdfaa0f02ec656be4'
+FTS1_CASE_ID = '5af4339cdfaa0f02ec656be4'
+FTS2_CASE_ID = '5af5c795ac929f0348c9c968'
 FTS_CPS_PER_VM = 5200
 
 TIMEOUT = 3
@@ -257,10 +258,10 @@ def stop_vm():
                                 timeout=TIMEOUT)
 
         returned_str += "<b>FortiTester2 response (code): </b>" + str(results.status_code) + \
-                       "<br><b>FortiTester2 response (content): </b>" + \
-                       str(dumps(loads(results.content.decode('utf-8')),
-                                 indent=4,
-                                 sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;'))
+                        "<br><b>FortiTester2 response (content): </b>" + \
+                        str(dumps(loads(results.content.decode('utf-8')),
+                                  indent=4,
+                                  sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;'))
 
         time.sleep(1)
 
@@ -311,47 +312,87 @@ def start_traffic():
     response = Response()
     response.headers.add('Access-Control-Allow-Origin', '*')
 
-    # Login
+    # Login FTS1
     url = "http://" + FTS1_IP + "/api/user/login"
 
     payload = '{ "name":"admin", "password":"" }'
     headers = {"Content-Type": "application/json",
                "Cache-Control": "no-cache"}
 
-    result_login = requests.post(url,
-                                 data=payload,
-                                 timeout=TIMEOUT,
-                                 headers=headers,
-                                 verify=False)
+    result_login_fts1 = requests.post(url,
+                                      data=payload,
+                                      timeout=TIMEOUT,
+                                      headers=headers,
+                                      verify=False)
 
-    # Start case
-    url = "http://" + FTS1_IP + "/api/case/" + FTS_CASE_ID + "/start"
+    # Login FTS2
+    url = "http://" + FTS2_IP + "/api/user/login"
 
-    if result_login.status_code == 200:
-        result_start = requests.get(url,
-                                    timeout=TIMEOUT,
-                                    cookies=result_login.cookies,
-                                    verify=False)
+    result_login_fts2 = requests.post(url,
+                                      data=payload,
+                                      timeout=TIMEOUT,
+                                      headers=headers,
+                                      verify=False)
 
-        if result_start.status_code == 200:
-            response.data = "<b>Success.</b> Traffic started."
+    # Start case FTS1
+    url = "http://" + FTS1_IP + "/api/case/" + FTS1_CASE_ID + "/start"
+
+    if result_login_fts1.status_code == 200:
+        result_start_fts1 = requests.get(url,
+                                         timeout=TIMEOUT,
+                                         cookies=result_login_fts1.cookies,
+                                         verify=False)
+
+        if result_start_fts1.status_code == 200:
+            returned_str = "<b>Success.</b> Traffic started in FortiTester1."
         else:
-            response.data = "<b>Error:</b> Could not start traffic. <br>" + \
-                            " Code: " + str(result_start.status_code) + " Text: " + result_start.text
+            returned_str = "<b>Error:</b> Could not start traffic in FortiTester1. <br>" + \
+                           " Code: " + str(result_start_fts1.status_code) + " Text: " + result_start_fts1.text
     else:
-        response.data = "<b>Error:</b> Could not log in to FortiTester. <br> " + \
-                        " Code: " + str(result_login.status_code) + " Text: " + result_login.text
+        returned_str = "<b>Error:</b> Could not log in to FortiTester1. <br> " + \
+                       " Code: " + str(result_login_fts1.status_code) + " Text: " + strresult_login_fts1.text
 
-    # Logout
+    # Start case FTS2
+    url = "http://" + FTS2_IP + "/api/case/" + FTS2_CASE_ID + "/start"
+
+    if result_login_fts2.status_code == 200:
+        result_start_fts2 = requests.get(url,
+                                         timeout=TIMEOUT,
+                                         cookies=result_login_fts2.cookies,
+                                         verify=False)
+
+        if result_start_fts2.status_code == 200:
+            returned_str += "<br><b>Success.</b> Traffic started in FortiTester2."
+        else:
+            returned_str += "<br><b>Error:</b> Could not start traffic in FortiTester2. <br>" + \
+                            " Code: " + str(result_start_fts2.status_code) + " Text: " + str(result_start_fts2.text)
+    else:
+        returned_str += "<br><b>Error:</b> Could not log in to FortiTester2. <br> " + \
+                        " Code: " + str(result_login_fts2.status_code) + " Text: " + str(result_login_fts2.text)
+
+    # Logout FTS1
     url = "http://" + FTS1_IP + "/api/user/logout"
 
-    result_start = requests.get(url,
-                                timeout=TIMEOUT,
-                                cookies=result_login.cookies,
-                                verify=False)
+    result_logout_fts1 = requests.get(url,
+                                      timeout=TIMEOUT,
+                                      cookies=result_login_fts1.cookies,
+                                      verify=False)
 
-    if result_start.status_code != 200:
-        response.data += "<br> <b>Note:</b> User was not logged out."
+    if result_logout_fts1.status_code != 200:
+        returned_str += "<br> <b>Note:</b> User was not logged out of FortiTester1."
+
+    # Logout FTS2
+    url = "http://" + FTS2_IP + "/api/user/logout"
+
+    result_logout_fts2 = requests.get(url,
+                                      timeout=TIMEOUT,
+                                      cookies=result_login_fts2.cookies,
+                                      verify=False)
+
+    if result_logout_fts2.status_code != 200:
+        returned_str += "<br> <b>Note:</b> User was not logged out of FortiTester2."
+
+    response.data = returned_str
 
     return response
 
@@ -361,47 +402,87 @@ def stop_traffic():
     response = Response()
     response.headers.add('Access-Control-Allow-Origin', '*')
 
-    # Login
+    # Login FTS1
     url = "http://" + FTS1_IP + "/api/user/login"
 
     payload = '{ "name":"admin", "password":"" }'
     headers = {"Content-Type": "application/json",
                "Cache-Control": "no-cache"}
 
-    result_login = requests.post(url,
-                                 data=payload,
-                                 timeout=TIMEOUT,
-                                 headers=headers,
-                                 verify=False)
+    result_login_fts1 = requests.post(url,
+                                      data=payload,
+                                      timeout=TIMEOUT,
+                                      headers=headers,
+                                      verify=False)
 
-    # Stop case
+    # Login FTS2
+    url = "http://" + FTS2_IP + "/api/user/login"
+
+    result_login_fts2 = requests.post(url,
+                                      data=payload,
+                                      timeout=TIMEOUT,
+                                      headers=headers,
+                                      verify=False)
+
+    # Stop case FTS1
     url = "http://" + FTS1_IP + "/api/case/stop"
 
-    if result_login.status_code == 200:
-        result_start = requests.get(url,
-                                    timeout=TIMEOUT,
-                                    cookies=result_login.cookies,
-                                    verify=False)
+    if result_login_fts1.status_code == 200:
+        result_start_fts1 = requests.get(url,
+                                         timeout=TIMEOUT,
+                                         cookies=result_login_fts1.cookies,
+                                         verify=False)
 
-        if result_start.status_code == 200:
-            response.data = "<b>Success.</b> Traffic stopped."
+        if result_start_fts1.status_code == 200:
+            returned_str = "<b>Success.</b> Traffic stopped in FortiTester1."
         else:
-            response.data = "<b>Error:</b> Could not stop traffic. <br>" + \
-                            " Code: " + str(result_start.status_code) + " Text: " + result_start.text
+            returned_str = "<b>Error:</b> Could not stop traffic in FortiTester1. <br>" + \
+                           " Code: " + str(result_start_fts1.status_code) + " Text: " + result_start_fts1.text
     else:
-        response.data = "<b>Error:</b> Could not log in to FortiTester. <br> " + \
-                        " Code: " + str(result_login.status_code) + " Text: " + result_login.text
+        returned_str = "<b>Error:</b> Could not log in to FortiTester1. <br> " + \
+                       " Code: " + str(result_login_fts1.status_code) + " Text: " + result_login_fts1.text
 
-    # Logout
+    # Stop case FTS2
+    url = "http://" + FTS2_IP + "/api/case/stop"
+
+    if result_login_fts2.status_code == 200:
+        result_start_fts2 = requests.get(url,
+                                         timeout=TIMEOUT,
+                                         cookies=result_login_fts2.cookies,
+                                         verify=False)
+
+        if result_start_fts2.status_code == 200:
+            returned_str += "<br><b>Success.</b> Traffic stopped in FortiTester2."
+        else:
+            returned_str += "<b>Error:</b> Could not stop traffic in FortiTester2. <br>" + \
+                           " Code: " + str(result_start_fts2.status_code) + " Text: " + result_start_fts2.text
+    else:
+        returned_str += "<b>Error:</b> Could not log in to FortiTester2. <br> " + \
+                       " Code: " + str(result_login_fts2.status_code) + " Text: " + result_login_fts2.text
+
+    # Logout FTS1
     url = "http://" + FTS1_IP + "/api/user/logout"
 
-    result_start = requests.get(url,
-                                timeout=TIMEOUT,
-                                cookies=result_login.cookies,
-                                verify=False)
+    result_logout_fts1 = requests.get(url,
+                                 timeout=TIMEOUT,
+                                 cookies=result_login_fts1.cookies,
+                                 verify=False)
 
-    if result_start.status_code != 200:
-        response.data += "<br> <b>Note:</b> User was not logged out."
+    if result_logout_fts1.status_code != 200:
+        returned_str += "<br> <b>Note:</b> User was not logged out of FortiTester1."
+
+    # Logout FTS2
+    url = "http://" + FTS2_IP + "/api/user/logout"
+
+    result_logout_fts2 = requests.get(url,
+                                 timeout=TIMEOUT,
+                                 cookies=result_login_fts2.cookies,
+                                 verify=False)
+
+    if result_logout_fts2.status_code != 200:
+        returned_str += "<br> <b>Note:</b> User was not logged out of FortiTester2."
+
+    response.data = returned_str
 
     return response
 
