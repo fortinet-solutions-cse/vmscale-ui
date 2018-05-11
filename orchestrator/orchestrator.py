@@ -88,8 +88,6 @@ data_fgtload_time3 = [-1] * 60
 data_fgtload_time4 = [-1] * 60
 data_fgtload_time5 = [-1] * 60
 data_fgtload_time6 = [-1] * 60
-data_fgtload_time7 = [-1] * 60
-data_fgtload_time8 = [-1] * 60
 
 data_totalthroughput_ingress_time = [-1] * 60
 data_totalthroughput_egress_time = [-1] * 60
@@ -100,13 +98,12 @@ data_fgtthroughput3_time = [-1] * 60
 data_fgtthroughput4_time = [-1] * 60
 data_fgtthroughput5_time = [-1] * 60
 data_fgtthroughput6_time = [-1] * 60
-data_fgtthroughput7_time = [-1] * 60
-data_fgtthroughput8_time = [-1] * 60
 
 
 def push_value_to_list(list, value):
     list.append(value)
-    del list[0]
+    if list[0]<=0:
+        del list[0]
 
 
 @app.route("/start_vm", methods=['POST'])
@@ -387,11 +384,6 @@ def stop_traffic():
 
 @app.route("/status", methods=['GET'])
 def status():
-    push_value_to_list(data_fgtload_time7, random() * 100)
-    push_value_to_list(data_fgtload_time8, random() * 100)
-
-    push_value_to_list(data_fgtthroughput7_time, random() * 10 + 60)
-    push_value_to_list(data_fgtthroughput8_time, random() * 10 + 70)
 
     newData = """{
         "cpuload_time1": """ + str(data_cpuload_time1) + """,
@@ -404,8 +396,6 @@ def status():
         "fgtload_time4": """ + str(data_fgtload_time4) + """,
         "fgtload_time5": """ + str(data_fgtload_time5) + """,
         "fgtload_time6": """ + str(data_fgtload_time6) + """,
-        "fgtload_time7": """ + str(data_fgtload_time7) + """,
-        "fgtload_time8": """ + str(data_fgtload_time8) + """,
         "totalthroughput_ingress_time": """ + str(data_totalthroughput_ingress_time) + """,
         "totalthroughput_egress_time": """ + str(data_totalthroughput_egress_time) + """,
         "fgtthroughput1_time": """ + str(data_fgtthroughput1_time) + """,
@@ -413,9 +403,7 @@ def status():
         "fgtthroughput3_time": """ + str(data_fgtthroughput3_time) + """,
         "fgtthroughput4_time": """ + str(data_fgtthroughput4_time) + """,
         "fgtthroughput5_time": """ + str(data_fgtthroughput5_time) + """,
-        "fgtthroughput6_time": """ + str(data_fgtthroughput6_time) + """,
-        "fgtthroughput7_time": """ + str(data_fgtthroughput7_time) + """,
-        "fgtthroughput8_time": """ + str(data_fgtthroughput8_time) + """
+        "fgtthroughput6_time": """ + str(data_fgtthroughput6_time) + """
         }"""
     response = Response()
     response.headers.add('Access-Control-Allow-Origin', '*')
