@@ -7,6 +7,8 @@ import grequests
 import requests
 import gevent
 import paramiko
+import traceback
+
 
 # Note previous patch to avoid error with paramiko
 # and grequests: https://github.com/paramiko/paramiko/issues/633
@@ -26,7 +28,7 @@ app = Flask(__name__)
 # install the package and run: glances -w & disown
 #
 # Ensure ports are open in the server (CentOS 7):
-# firewall-cmd --zone=public --permanent --add-port=8080/tcp
+# firewall-cmd --zone=public --permanent --add-port=61208/tcp
 # firewall-cmd --reload
 
 
@@ -66,7 +68,9 @@ FTS1_IP = "10.210.1.28"
 FTS2_IP = "10.210.1.29"
 
 FTS_CASE_ID = '5af4339cdfaa0f02ec656be4'
-TIMEOUT = 1
+FTS_CPS_PER_VM = 5200
+
+TIMEOUT = 3
 POLL_INTERVAL = 4
 USER_FGT = 'admin'
 PASSWORD_FGT = ''
@@ -115,55 +119,86 @@ def start_vm():
 
     print("Parameter received:", fgt_id)
 
-    response = Response()
-    response.headers.add('Access-Control-Allow-Origin', '*')
+    try:
+        response = Response()
+        response.headers.add('Access-Control-Allow-Origin', '*')
 
-    ssh = paramiko.SSHClient()
-    ssh.load_system_host_keys()
-    ssh.connect(fgt_hypervisors[fgt_id - 1], username=USERNAME_HYPERVISOR)
-    ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-        "LIBVIRT_DEFAULT_URI=qemu:///system virsh start fortigate" + str(fgt_id))
+        ssh = paramiko.SSHClient()
+        ssh.load_system_host_keys()
+        ssh.connect(fgt_hypervisors[fgt_id - 1], username=USERNAME_HYPERVISOR)
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "LIBVIRT_DEFAULT_URI=qemu:///system virsh start fortigate" + str(fgt_id))
 
-    stdout = ssh_stdout.read().decode('ascii').strip('\n')
-    stderr = ssh_stderr.read().decode('ascii').strip('\n')
+        stdout = ssh_stdout.read().decode('ascii').strip('\n')
+        stderr = ssh_stderr.read().decode('ascii').strip('\n')
 
-    returned_str = "<b>FortiGate id: </b>" + str(fgt_id) + "<br>" + \
-                   "<b>FortiGate VM instantiation: </b>" + str(stderr).replace('\\n', '<br>') + \
-                   ":" + str(stdout).replace('\\n', '<br>') + "<br>"
+        returned_str = "<b>FortiGate id: </b>" + str(fgt_id) + "<br>" + \
+                       "<b>FortiGate VM instantiation: </b>" + str(stderr).replace('\\n', '<br>') + \
+                       ":" + str(stdout).replace('\\n', '<br>') + "<br>"
 
-    time.sleep(40)
+        time.sleep(40)
 
-    global url_cybermapper
+        global url_cybermapper
 
-    # Get dpid
+        # Get dpid
 
-    loadbal = requests.get(url_cybermapper + '/v1.0/loadbal',
-                           timeout=TIMEOUT)
+        loadbal = requests.get(url_cybermapper + '/v1.0/loadbal',
+                               timeout=TIMEOUT)
 
-    # Use this notation '[*' to get the keys extracted into a list
-    dpid = [*loads(loadbal.content.decode('utf-8')).keys()][0]
+        # Use this notation '[*' to get the keys extracted into a list
+        dpid = [*loads(loadbal.content.decode('utf-8')).keys()][0]
 
-    # Send "add target" request
-    target_data = '{ \
-        "type": "pair", \
-        "port_ingress": ' + str(fgt_id * 2 + 3) + ', \
-        "port_egress": ' + str(fgt_id * 2 + 4) + ', \
-        "id": "dpi' + str(fgt_id) + '" }'
+        # Send "add target" request
+        target_data = '{ \
+            "type": "pair", \
+            "port_ingress": ' + str(fgt_id * 2 + 3) + ', \
+            "port_egress": ' + str(fgt_id * 2 + 4) + ', \
+            "id": "dpi' + str(fgt_id) + '" }'
 
-    results = requests.post(url_cybermapper + '/v1.0/loadbal/' + dpid + '/0/targets',
-                            data=target_data,
-                            timeout=TIMEOUT)
+        results = requests.post(url_cybermapper + '/v1.0/loadbal/' + dpid + '/0/targets',
+                                data=target_data,
+                                timeout=TIMEOUT)
 
-    returned_str += "<b>NoviFlow response (code): </b>" + str(results.status_code)
+        returned_str += "<b>NoviFlow response (code): </b>" + str(results.status_code)
 
-    returned_str += "<br><b>NoviFlow response (content): </b>" + \
-                    str(dumps(loads(results.content.decode('utf-8')),
-                              indent=4,
-                              sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;'))
+        returned_str += "<br><b>NoviFlow response (content): </b>" + \
+                        str(dumps(loads(results.content.decode('utf-8')),
+                                  indent=4,
+                                  sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;'))
 
-    response.data = returned_str
+        # Increase traffic load
+        time.sleep(5)
 
-    return response
+        headers = {
+            'Content-Type': "application/json",
+        }
+
+        url_fts = "http://" + FTS1_IP + "/api/networkLimit/modify"
+        fts_data = '{"config": { \
+                       "SpeedLimit": ' + str(fgt_id * FTS_CPS_PER_VM) + ', \
+                       "RampUpSecond": "0", \
+                       "RampDownSecond": "0", \
+                       "TestType": "HttpCps", \
+                       "LimitType": "speed"}, \
+                    "order": 0}'
+
+        results = requests.post(url_fts,
+                                data=fts_data,
+                                headers=headers,
+                                timeout=TIMEOUT)
+
+        returned_str += "<br><b>FortiTester response (code): </b>" + str(results.status_code)
+        returned_str += "<br><b>FortiTester response (content): </b>" + \
+                        str(dumps(loads(results.content.decode('utf-8')),
+                                  indent=4,
+                                  sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;'))
+
+        response.data = returned_str
+        return response
+
+    except:
+        response.data = returned_str + traceback.format_exc()
+        return response
 
 
 @app.route("/stop_vm", methods=['POST'])
@@ -176,43 +211,78 @@ def stop_vm():
 
     print("Parameter received:", fgt_id)
 
-    global url_cybermapper
+    try:
+        # Decrease traffic load
+        headers = {
+            'Content-Type': "application/json",
+        }
 
-    # Get dpid
+        url_fts = "http://" + FTS1_IP + "/api/networkLimit/modify"
+        fts_data = '{"config": { \
+                       "SpeedLimit": ' + str((fgt_id - 1) * FTS_CPS_PER_VM) + ', \
+                       "RampUpSecond": "0", \
+                       "RampDownSecond": "0", \
+                       "TestType": "HttpCps", \
+                       "LimitType": "speed"}, \
+                    "order": 0}'
 
-    loadbal = requests.get(url_cybermapper + '/v1.0/loadbal',
-                           timeout=TIMEOUT)
+        print(fts_data)
 
-    # Use this notation '[*' to get the keys extracted into a list
-    dpid = [*loads(loadbal.content.decode('utf-8')).keys()][0]
+        results = requests.post(url_fts,
+                                data=fts_data,
+                                headers=headers,
+                                timeout=TIMEOUT)
 
-    # Send "remove target" request
-    results = requests.delete(url_cybermapper + '/v1.0/loadbal/' + dpid + '/0/targets/dpi' + str(fgt_id),
-                              timeout=TIMEOUT)
+        returned_str = "<b>FortiGate id: </b>" + str(fgt_id) + "<br>" + \
+                       "<b>FortiTester response (code): </b>" + str(results.status_code) + \
+                       "<br><b>FortiTester response (content): </b>" + \
+                       str(dumps(loads(results.content.decode('utf-8')),
+                                 indent=4,
+                                 sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;'))
 
-    returned_str = "<b>NoviFlow response (code): </b>" + str(results.status_code) + "<br>"
+        time.sleep(1)
 
-    time.sleep(10)
-    # StopVm
+        global url_cybermapper
 
-    ssh = paramiko.SSHClient()
-    ssh.load_system_host_keys()
-    ssh.connect(fgt_hypervisors[fgt_id - 1], username=USERNAME_HYPERVISOR)
-    ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-        "LIBVIRT_DEFAULT_URI=qemu:///system virsh shutdown fortigate" + str(fgt_id))
+        # Get dpid
 
-    stdout = ssh_stdout.read().decode('ascii').strip('\n')
-    stderr = ssh_stderr.read().decode('ascii').strip('\n')
+        loadbal = requests.get(url_cybermapper + '/v1.0/loadbal',
+                               timeout=TIMEOUT)
 
-    returned_str += "<b>FortiGate id: </b>" + str(fgt_id) + "<br>" + \
-                    "<b>FortiGate VM shutdown: </b>" + str(stderr).replace('\\n', '<br>') + \
-                    ":" + str(stdout).replace('\\n', '<br>') + "<br>"
+        # Use this notation '[*' to get the keys extracted into a list
+        dpid = [*loads(loadbal.content.decode('utf-8')).keys()][0]
 
-    response = Response()
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.data = returned_str
+        # Send "remove target" request
+        results = requests.delete(url_cybermapper + '/v1.0/loadbal/' + dpid + '/0/targets/dpi' + str(fgt_id),
+                                  timeout=TIMEOUT)
 
-    return response
+        returned_str += "<br><b>NoviFlow response (code): </b>" + str(results.status_code) + "<br>"
+
+        time.sleep(10)
+        # StopVm
+
+        ssh = paramiko.SSHClient()
+        ssh.load_system_host_keys()
+        ssh.connect(fgt_hypervisors[fgt_id - 1], username=USERNAME_HYPERVISOR)
+        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "LIBVIRT_DEFAULT_URI=qemu:///system virsh shutdown fortigate" + str(fgt_id))
+
+        stdout = ssh_stdout.read().decode('ascii').strip('\n')
+        stderr = ssh_stderr.read().decode('ascii').strip('\n')
+
+        returned_str += "<b>FortiGate VM shutdown: </b>" + str(stderr).replace('\\n', '<br>') + \
+                        ":" + str(stdout).replace('\\n', '<br>') + "<br>"
+
+        response = Response()
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.data = returned_str
+
+        return response
+
+    except:
+        response.data = returned_str + traceback.format_exc()
+        return response
+
 
 
 @app.route("/start_traffic", methods=['POST'])
