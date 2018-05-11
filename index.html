@@ -604,6 +604,39 @@
             });
         });
 
+        $("#resetdata").click(function() {
+            $("body").css("cursor", "progress");
+            $.ajax({
+                url: "http://" + window.location.hostname + ":5000/reset_data",
+                type: "POST",
+                complete: function() {
+                    $("body").css("cursor", "default");
+                }
+            });
+        });
+
+        $("#deleteolddata").click(function() {
+            $("body").css("cursor", "progress");
+            $.ajax({
+                url: "http://" + window.location.hostname + ":5000/keep_old_data?value=0",
+                type: "POST",
+                complete: function() {
+                    $("body").css("cursor", "default");
+                }
+            });
+        });
+
+        $("#keepolddata").click(function() {
+            $("body").css("cursor", "progress");
+            $.ajax({
+                url: "http://" + window.location.hostname + ":5000/keep_old_data?value=1",
+                type: "POST",
+                complete: function() {
+                    $("body").css("cursor", "default");
+                }
+            });
+        });
+
         $("#start_fgt_btn").click(start_fgt)
 
         $("#stop_fgt_btn").click(stop_fgt)

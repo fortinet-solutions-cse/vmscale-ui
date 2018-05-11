@@ -382,6 +382,45 @@ def stop_traffic():
     return response
 
 
+@app.route("/reset_data", methods=['POST'])
+def reset_data():
+    global data_cpuload_time1, data_cpuload_time2, data_cpuload_time3,\
+        data_cpuload_time4,data_fgtload_time1, data_fgtload_time2,\
+        data_fgtload_time3, data_fgtload_time4, data_fgtload_time5, \
+        data_fgtload_time6, data_totalthroughput_ingress_time, \
+        data_totalthroughput_egress_time, data_fgtthroughput1_time, \
+        data_fgtthroughput2_time, data_fgtthroughput3_time, \
+        data_fgtthroughput4_time, data_fgtthroughput5_time, \
+        data_fgtthroughput6_time
+
+    data_cpuload_time1 = [-1] * 60
+    data_cpuload_time2 = [-1] * 60
+    data_cpuload_time3 = [-1] * 60
+    data_cpuload_time4 = [-1] * 60
+    data_fgtload_time1 = [-1] * 60
+    data_fgtload_time2 = [-1] * 60
+    data_fgtload_time3 = [-1] * 60
+    data_fgtload_time4 = [-1] * 60
+    data_fgtload_time5 = [-1] * 60
+    data_fgtload_time6 = [-1] * 60
+
+    data_totalthroughput_ingress_time = [-1] * 60
+    data_totalthroughput_egress_time = [-1] * 60
+
+    data_fgtthroughput1_time = [-1] * 60
+    data_fgtthroughput2_time = [-1] * 60
+    data_fgtthroughput3_time = [-1] * 60
+    data_fgtthroughput4_time = [-1] * 60
+    data_fgtthroughput5_time = [-1] * 60
+    data_fgtthroughput6_time = [-1] * 60
+
+    response = Response()
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.data = "Records emptied"
+    return response
+
+
+
 @app.route("/status", methods=['GET'])
 def status():
 
