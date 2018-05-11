@@ -75,6 +75,7 @@ POLL_INTERVAL = 4
 USER_FGT = 'admin'
 PASSWORD_FGT = ''
 USERNAME_HYPERVISOR = 'root'
+KEEP_DATA = 1
 
 fgt_sessions = [requests.Session() for u in urls_fgt]
 
@@ -102,7 +103,7 @@ data_fgtthroughput6_time = [-1] * 60
 
 def push_value_to_list(list, value):
     list.append(value)
-    if list[0]<=0:
+    if list[0]<=-1 or not KEEP_DATA:
         del list[0]
 
 
@@ -419,6 +420,24 @@ def reset_data():
     response.data = "Records emptied"
     return response
 
+@app.route("/keep_old_data", methods=['POST'])
+def keep_old_data():
+
+    keep_data = request.args.get('value')
+    try:
+        keep_data = int(keep_data)
+    except:
+        return "Error, identifier not recognized"
+
+    print("Parameter received:", keep_data)
+
+    global KEEP_DATA
+    KEEP_DATA = keep_data
+
+    response = Response()
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.data = "Keeping data: " + str(KEEP_DATA)
+    return response
 
 
 @app.route("/status", methods=['GET'])
