@@ -9,7 +9,6 @@ import gevent
 import paramiko
 import traceback
 
-
 # Note previous patch to avoid error with paramiko
 # and grequests: https://github.com/paramiko/paramiko/issues/633
 
@@ -103,7 +102,7 @@ data_fgtthroughput6_time = [-1] * 60
 
 def push_value_to_list(list, value):
     list.append(value)
-    if list[0]<=-1 or not KEEP_DATA:
+    if list[0] <= -1 or not KEEP_DATA:
         del list[0]
 
 
@@ -282,7 +281,6 @@ def stop_vm():
         return response
 
 
-
 @app.route("/start_traffic", methods=['POST'])
 def start_traffic():
     response = Response()
@@ -385,8 +383,8 @@ def stop_traffic():
 
 @app.route("/reset_data", methods=['POST'])
 def reset_data():
-    global data_cpuload_time1, data_cpuload_time2, data_cpuload_time3,\
-        data_cpuload_time4,data_fgtload_time1, data_fgtload_time2,\
+    global data_cpuload_time1, data_cpuload_time2, data_cpuload_time3, \
+        data_cpuload_time4, data_fgtload_time1, data_fgtload_time2, \
         data_fgtload_time3, data_fgtload_time4, data_fgtload_time5, \
         data_fgtload_time6, data_totalthroughput_ingress_time, \
         data_totalthroughput_egress_time, data_fgtthroughput1_time, \
@@ -420,9 +418,9 @@ def reset_data():
     response.data = "Records emptied"
     return response
 
+
 @app.route("/keep_old_data", methods=['POST'])
 def keep_old_data():
-
     keep_data = request.args.get('value')
     try:
         keep_data = int(keep_data)
@@ -442,7 +440,6 @@ def keep_old_data():
 
 @app.route("/status", methods=['GET'])
 def status():
-
     newData = """{
         "cpuload_time1": """ + str(data_cpuload_time1) + """,
         "cpuload_time2": """ + str(data_cpuload_time2) + """,
@@ -572,8 +569,12 @@ def request_cpu_load_from_nodes():
                            port['rx_bytes'] - port['last']['rx_bytes']) / \
                           (port['timestamp'] - port['last']['timestamp'])
 
-    push_value_to_list(data_totalthroughput_ingress_time, (bps[1] + bps[3]) / 1000000000 * 8)
-    push_value_to_list(data_totalthroughput_egress_time, (bps[2] + bps[4]) / 1000000000 * 8)
+    # Instead of port3 (which is faulty) we use 21-24
+    # Instead of port4 we use 25-28
+    push_value_to_list(data_totalthroughput_ingress_time,
+                       (bps[1] + bps[21] + bps[22] + bps[23] + bps[24]) / 1000000000 * 8)
+    push_value_to_list(data_totalthroughput_egress_time,
+                       (bps[2] + bps[25] + bps[26] + bps[27] + bps[28]) / 1000000000 * 8)
 
     push_value_to_list(data_fgtthroughput1_time, (bps[5] + bps[6]) / 2000000000 * 8)
     push_value_to_list(data_fgtthroughput2_time, (bps[7] + bps[8]) / 2000000000 * 8)
