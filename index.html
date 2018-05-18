@@ -637,6 +637,22 @@
             });
         });
 
+        $("#panic").click(function() {
+            $('#panic_view').modal('toggle');
+            $("body").css("cursor", "progress");
+            $.ajax({
+                url: "http://" + window.location.hostname + ":5000/panic",
+                type: "POST",
+                success: function(result) {
+                    $('#panic_log').html(result);
+                },
+                complete: function() {
+                    $("body").css("cursor", "default");
+                }
+            });
+        });
+
+
         $("#start_fgt_btn").click(start_fgt)
 
         $("#stop_fgt_btn").click(stop_fgt)
@@ -849,12 +865,24 @@
                         </li>
                         <li>
                             <a href="#">
-                                <div id="keepolddata">Infinite X-axis</div>
+                                <div id="keepolddata">Unlimited X-axis (500 samples)</div>
                             </a>
                         </li>
                         <li>
                             <a href="#">
                                 <div id="deleteolddata">Limited X-axis</div>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">Reset
+                        <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a href="#">
+                                <div id="panic">* Panic: General Reset *</div>
                             </a>
                         </li>
                     </ul>
@@ -1036,6 +1064,29 @@
                     </div>
                     <div class="modal-body">
                         <div id="stop_test_log">
+                            <p></p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Modal -->
+        <div id="panic_view" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">General Reset Log</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div id="panic_log">
                             <p></p>
                         </div>
                     </div>
