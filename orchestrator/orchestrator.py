@@ -125,33 +125,7 @@ def start_vm():
 
         time.sleep(40)
 
-        global url_cybermapper
-
-        # Get dpid
-
-        loadbal = requests.get(url_cybermapper + '/v1.0/loadbal',
-                               timeout=TIMEOUT)
-
-        # Use this notation '[*' to get the keys extracted into a list
-        dpid = [*loads(loadbal.content.decode('utf-8')).keys()][0]
-
-        # Send "add target" request
-        target_data = '{ \
-            "type": "pair", \
-            "port_ingress": ' + str(fgt_id * 2 + 3) + ', \
-            "port_egress": ' + str(fgt_id * 2 + 4) + ', \
-            "id": "dpi' + str(fgt_id) + '" }'
-
-        results = requests.post(url_cybermapper + '/v1.0/loadbal/' + dpid + '/0/targets',
-                                data=target_data,
-                                timeout=TIMEOUT)
-
-        returned_str += "<b>NoviFlow response (code): </b>" + str(results.status_code)
-
-        returned_str += "<br><b>NoviFlow response (content): </b>" + \
-                        str(dumps(loads(results.content.decode('utf-8')),
-                                  indent=4,
-                                  sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;'))
+        returned_str += execute_add_target(fgt_id)
 
         # Increase traffic load FTS1
         time.sleep(5)
@@ -254,21 +228,7 @@ def stop_vm():
 
         time.sleep(1)
 
-        global url_cybermapper
-
-        # Get dpid
-
-        loadbal = requests.get(url_cybermapper + '/v1.0/loadbal',
-                               timeout=TIMEOUT)
-
-        # Use this notation '[*' to get the keys extracted into a list
-        dpid = [*loads(loadbal.content.decode('utf-8')).keys()][0]
-
-        # Send "remove target" request
-        results = requests.delete(url_cybermapper + '/v1.0/loadbal/' + dpid + '/0/targets/dpi' + str(fgt_id),
-                                  timeout=TIMEOUT)
-
-        returned_str += "<br><b>NoviFlow response (code): </b>" + str(results.status_code) + "<br>"
+        returned_str += execute_remove_target(fgt_id)
 
         time.sleep(10)
 
@@ -550,6 +510,28 @@ def status():
     response.data = newData
     return response
 
+@app.route("/panic", methods=['POST'])
+def panic():
+
+    returned_str = stop_traffic()
+
+    for vm in range(2-7):
+        returned_str += execute_remove_target(vm)
+
+    returned_str += execute_add_target(1)
+
+    for vm in range(2-7):
+        returned_str += execute_stop_vm(vm)
+
+    returned_str += execute_start_vm(1)
+
+    returned_str += reset_data()
+
+    global KEEP_DATA
+    KEEP_DATA = 1
+
+    return returned_str
+
 
 def request_cpu_load_from_nodes():
     # ******************************
@@ -699,6 +681,56 @@ def execute_stop_vm(fgt_id):
 
     returned_str = "<b>FortiGate VM shutdown: </b>" + str(stderr).replace('\\n', '<br>') + \
                     ":" + str(stdout).replace('\\n', '<br>') + "<br>"
+
+    return returned_str
+
+
+def execute_add_target(fgt_id):
+
+    # Get dpid
+    global url_cybermapper
+    loadbal = requests.get(url_cybermapper + '/v1.0/loadbal',
+                           timeout=TIMEOUT)
+
+    # Use this notation '[*' to get the keys extracted into a list
+    dpid = [*loads(loadbal.content.decode('utf-8')).keys()][0]
+
+    # Send "add target" request
+    target_data = '{ \
+        "type": "pair", \
+        "port_ingress": ' + str(fgt_id * 2 + 3) + ', \
+        "port_egress": ' + str(fgt_id * 2 + 4) + ', \
+        "id": "dpi' + str(fgt_id) + '" }'
+
+    results = requests.post(url_cybermapper + '/v1.0/loadbal/' + dpid + '/0/targets',
+                            data=target_data,
+                            timeout=TIMEOUT)
+
+    returned_str = "<b>NoviFlow response (code): </b>" + str(results.status_code)
+
+    returned_str += "<br><b>NoviFlow response (content): </b>" + \
+                    str(dumps(loads(results.content.decode('utf-8')),
+                              indent=4,
+                              sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;'))
+
+    return returned_str
+
+
+def execute_remove_target(fgt_id):
+
+    # Get dpid
+    global url_cybermapper
+    loadbal = requests.get(url_cybermapper + '/v1.0/loadbal',
+                           timeout=TIMEOUT)
+
+    # Use this notation '[*' to get the keys extracted into a list
+    dpid = [*loads(loadbal.content.decode('utf-8')).keys()][0]
+
+    # Send "remove target" request
+    results = requests.delete(url_cybermapper + '/v1.0/loadbal/' + dpid + '/0/targets/dpi' + str(fgt_id),
+                              timeout=TIMEOUT)
+
+    returned_str = "<br><b>NoviFlow response (code): </b>" + str(results.status_code) + "<br>"
 
     return returned_str
 
