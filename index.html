@@ -705,6 +705,16 @@
             $('#stop_test_log').html('');
         })
 
+        $('#panic_view').on('hidden.bs.modal', function(e) {
+            $(this)
+                .find("input,textarea,select")
+                .val('')
+                .end()
+                .find("input[type=checkbox], input[type=radio]")
+                .prop("checked", "")
+                .end();
+            $('#panic_log').html('');
+        })
     });
 </script>
 
@@ -882,7 +892,7 @@
                     <ul class="dropdown-menu">
                         <li>
                             <a href="#">
-                                <div id="panic">* Panic: General Reset *</div>
+                                <div id="panic">Panic: General Reset</div>
                             </a>
                         </li>
                     </ul>
@@ -1083,7 +1093,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal">&times;</button>
-                        <h4 class="modal-title">General Reset Log</h4>
+                        <h4 class="modal-title">General Reset</h4>
                     </div>
                     <div class="modal-body">
                         <div id="panic_log">

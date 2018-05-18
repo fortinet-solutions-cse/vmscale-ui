@@ -394,18 +394,18 @@ def stop_traffic():
             returned_str += "<br><b>Success.</b> Traffic stopped in FortiTester2."
         else:
             returned_str += "<b>Error:</b> Could not stop traffic in FortiTester2. <br>" + \
-                           " Code: " + str(result_start_fts2.status_code) + " Text: " + result_start_fts2.text
+                            " Code: " + str(result_start_fts2.status_code) + " Text: " + result_start_fts2.text
     else:
         returned_str += "<b>Error:</b> Could not log in to FortiTester2. <br> " + \
-                       " Code: " + str(result_login_fts2.status_code) + " Text: " + result_login_fts2.text
+                        " Code: " + str(result_login_fts2.status_code) + " Text: " + result_login_fts2.text
 
     # Logout FTS1
     url = "http://" + FTS1_IP + "/api/user/logout"
 
     result_logout_fts1 = requests.get(url,
-                                 timeout=TIMEOUT,
-                                 cookies=result_login_fts1.cookies,
-                                 verify=False)
+                                      timeout=TIMEOUT,
+                                      cookies=result_login_fts1.cookies,
+                                      verify=False)
 
     if result_logout_fts1.status_code != 200:
         returned_str += "<br> <b>Note:</b> User was not logged out of FortiTester1."
@@ -414,9 +414,9 @@ def stop_traffic():
     url = "http://" + FTS2_IP + "/api/user/logout"
 
     result_logout_fts2 = requests.get(url,
-                                 timeout=TIMEOUT,
-                                 cookies=result_login_fts2.cookies,
-                                 verify=False)
+                                      timeout=TIMEOUT,
+                                      cookies=result_login_fts2.cookies,
+                                      verify=False)
 
     if result_logout_fts2.status_code != 200:
         returned_str += "<br> <b>Note:</b> User was not logged out of FortiTester2."
@@ -511,30 +511,37 @@ def status():
     response.data = newData
     return response
 
+
 @app.route("/panic", methods=['POST'])
 def panic():
+    try:
 
-    returned_str = stop_traffic().data
+        returned_str = "Panic log: <br>" + str(stop_traffic().data.decode('ascii').strip('\n')) + "<br>"
 
-    for vm in range(2-7):
-        returned_str += execute_remove_target(vm)
+        for vm in range(2, 7):
+            returned_str += "Removing target: " + str(vm) + " : " + execute_remove_target(vm)
 
-    returned_str += execute_add_target(1)
+        returned_str += "Adding target: 1 : <br>" + execute_add_target(1) + "<br>"
 
-    for vm in range(2-7):
-        returned_str += execute_stop_vm(vm)
+        for vm in range(2, 7):
+            returned_str += execute_stop_vm(vm)
 
-    returned_str += execute_start_vm(1)
+        returned_str += execute_start_vm(1)
 
-    returned_str += reset_data().data
+        returned_str += "<br> Resetting charts: " + str(reset_data().data.decode('ascii').strip('\n'))
 
-    global KEEP_DATA
-    KEEP_DATA = 1
+        global KEEP_DATA
+        KEEP_DATA = 1
 
-    response = Response()
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.data = returned_str
-    return response
+        response = Response()
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.data = returned_str
+        return response
+
+    except:
+
+        response.data = returned_str + traceback.format_exc()
+        return response
 
 
 def request_cpu_load_from_nodes():
@@ -654,8 +661,8 @@ def request_cpu_load_from_nodes():
     push_value_to_list(data_fgtthroughput5_time, (bps[13] + bps[14]) / 2000000000 * 8)
     push_value_to_list(data_fgtthroughput6_time, (bps[15] + bps[16]) / 2000000000 * 8)
 
-def execute_start_vm(fgt_id):
 
+def execute_start_vm(fgt_id):
     ssh = paramiko.SSHClient()
     ssh.load_system_host_keys()
     ssh.connect(fgt_hypervisors[fgt_id - 1], username=USERNAME_HYPERVISOR)
@@ -673,7 +680,6 @@ def execute_start_vm(fgt_id):
 
 
 def execute_stop_vm(fgt_id):
-
     ssh = paramiko.SSHClient()
     ssh.load_system_host_keys()
     ssh.connect(fgt_hypervisors[fgt_id - 1], username=USERNAME_HYPERVISOR)
@@ -684,13 +690,12 @@ def execute_stop_vm(fgt_id):
     stderr = ssh_stderr.read().decode('ascii').strip('\n')
 
     returned_str = "<b>FortiGate VM shutdown: </b>" + str(stderr).replace('\\n', '<br>') + \
-                    ":" + str(stdout).replace('\\n', '<br>') + "<br>"
+                   ":" + str(stdout).replace('\\n', '<br>') + "<br>"
 
     return returned_str
 
 
 def execute_add_target(fgt_id):
-
     # Get dpid
     global url_cybermapper
     loadbal = requests.get(url_cybermapper + '/v1.0/loadbal',
@@ -721,7 +726,6 @@ def execute_add_target(fgt_id):
 
 
 def execute_remove_target(fgt_id):
-
     # Get dpid
     global url_cybermapper
     loadbal = requests.get(url_cybermapper + '/v1.0/loadbal',
