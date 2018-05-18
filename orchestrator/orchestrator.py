@@ -514,7 +514,7 @@ def status():
 @app.route("/panic", methods=['POST'])
 def panic():
 
-    returned_str = stop_traffic()
+    returned_str = stop_traffic().data
 
     for vm in range(2-7):
         returned_str += execute_remove_target(vm)
@@ -526,7 +526,7 @@ def panic():
 
     returned_str += execute_start_vm(1)
 
-    returned_str += reset_data()
+    returned_str += reset_data().data
 
     global KEEP_DATA
     KEEP_DATA = 1
