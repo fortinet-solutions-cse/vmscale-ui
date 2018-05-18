@@ -505,6 +505,7 @@ def status():
         "fgtthroughput5_time": """ + str(data_fgtthroughput5_time) + """,
         "fgtthroughput6_time": """ + str(data_fgtthroughput6_time) + """
         }"""
+
     response = Response()
     response.headers.add('Access-Control-Allow-Origin', '*')
     response.data = newData
@@ -530,7 +531,10 @@ def panic():
     global KEEP_DATA
     KEEP_DATA = 1
 
-    return returned_str
+    response = Response()
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.data = returned_str
+    return response
 
 
 def request_cpu_load_from_nodes():
