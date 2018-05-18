@@ -121,18 +121,7 @@ def start_vm():
         response = Response()
         response.headers.add('Access-Control-Allow-Origin', '*')
 
-        ssh = paramiko.SSHClient()
-        ssh.load_system_host_keys()
-        ssh.connect(fgt_hypervisors[fgt_id - 1], username=USERNAME_HYPERVISOR)
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "LIBVIRT_DEFAULT_URI=qemu:///system virsh start fortigate" + str(fgt_id))
-
-        stdout = ssh_stdout.read().decode('ascii').strip('\n')
-        stderr = ssh_stderr.read().decode('ascii').strip('\n')
-
-        returned_str = "<b>FortiGate id: </b>" + str(fgt_id) + "<br>" + \
-                       "<b>FortiGate VM instantiation: </b>" + str(stderr).replace('\\n', '<br>') + \
-                       ":" + str(stdout).replace('\\n', '<br>') + "<br>"
+        returned_str = execute_start_vm(fgt_id)
 
         time.sleep(40)
 
@@ -282,19 +271,9 @@ def stop_vm():
         returned_str += "<br><b>NoviFlow response (code): </b>" + str(results.status_code) + "<br>"
 
         time.sleep(10)
+
         # StopVm
-
-        ssh = paramiko.SSHClient()
-        ssh.load_system_host_keys()
-        ssh.connect(fgt_hypervisors[fgt_id - 1], username=USERNAME_HYPERVISOR)
-        ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-            "LIBVIRT_DEFAULT_URI=qemu:///system virsh shutdown fortigate" + str(fgt_id))
-
-        stdout = ssh_stdout.read().decode('ascii').strip('\n')
-        stderr = ssh_stderr.read().decode('ascii').strip('\n')
-
-        returned_str += "<b>FortiGate VM shutdown: </b>" + str(stderr).replace('\\n', '<br>') + \
-                        ":" + str(stdout).replace('\\n', '<br>') + "<br>"
+        returned_str += execute_stop_vm(fgt_id)
 
         response = Response()
         response.headers.add('Access-Control-Allow-Origin', '*')
@@ -688,6 +667,40 @@ def request_cpu_load_from_nodes():
     push_value_to_list(data_fgtthroughput4_time, (bps[11] + bps[12]) / 2000000000 * 8)
     push_value_to_list(data_fgtthroughput5_time, (bps[13] + bps[14]) / 2000000000 * 8)
     push_value_to_list(data_fgtthroughput6_time, (bps[15] + bps[16]) / 2000000000 * 8)
+
+def execute_start_vm(fgt_id):
+
+    ssh = paramiko.SSHClient()
+    ssh.load_system_host_keys()
+    ssh.connect(fgt_hypervisors[fgt_id - 1], username=USERNAME_HYPERVISOR)
+    ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+        "LIBVIRT_DEFAULT_URI=qemu:///system virsh start fortigate" + str(fgt_id))
+
+    stdout = ssh_stdout.read().decode('ascii').strip('\n')
+    stderr = ssh_stderr.read().decode('ascii').strip('\n')
+
+    returned_str = "<b>FortiGate id: </b>" + str(fgt_id) + "<br>" + \
+                   "<b>FortiGate VM instantiation: </b>" + str(stderr).replace('\\n', '<br>') + \
+                   ":" + str(stdout).replace('\\n', '<br>') + "<br>"
+
+    return returned_str
+
+
+def execute_stop_vm(fgt_id):
+
+    ssh = paramiko.SSHClient()
+    ssh.load_system_host_keys()
+    ssh.connect(fgt_hypervisors[fgt_id - 1], username=USERNAME_HYPERVISOR)
+    ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+        "LIBVIRT_DEFAULT_URI=qemu:///system virsh shutdown fortigate" + str(fgt_id))
+
+    stdout = ssh_stdout.read().decode('ascii').strip('\n')
+    stderr = ssh_stderr.read().decode('ascii').strip('\n')
+
+    returned_str = "<b>FortiGate VM shutdown: </b>" + str(stderr).replace('\\n', '<br>') + \
+                    ":" + str(stdout).replace('\\n', '<br>') + "<br>"
+
+    return returned_str
 
 
 cron = BackgroundScheduler(daemon=True)
