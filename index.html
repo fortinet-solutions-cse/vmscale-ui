@@ -534,7 +534,7 @@
         function start_fgt() {
             $("body").css("cursor", "progress");
             $('#start_fgt_btn').prop('disabled', true)
-            fortigate_id = $("#scaleout_fgt #fgt_id").val().trim()
+            fortigate_id = $("#scaleout_fgt #fgt_id_scale_out").val().trim()
             $.ajax({
                 url: "http://" + window.location.hostname + ":5000/start_vm?fgt=" + fortigate_id,
                 type: "POST",
@@ -551,7 +551,7 @@
         function stop_fgt() {
             $("body").css("cursor", "progress");
             $('#stop_fgt_btn').prop('disabled', true)
-            fortigate_id = $("#scalein_fgt #fgt_id").val().trim()
+            fortigate_id = $("#scalein_fgt #fgt_id_scale_in").val().trim()
             $.ajax({
                 url: "http://" + window.location.hostname + ":5000/stop_vm?fgt=" + fortigate_id,
                 type: "POST",
@@ -995,8 +995,14 @@
                     </div>
                     <div class="modal-body">
                         <div class="form-group">
-                            <label for="text">FortiGate identifier(1-6):</label>
-                            <input type="text" class="form-control" id="fgt_id">
+                            <label for="text">FortiGate identifier(2-6):</label>
+                            <select class="form-control" id="fgt_id_scale_out">
+                              <option>2</option>
+                              <option>3</option>
+                              <option>4</option>
+                              <option>5</option>
+                              <option>6</option>
+                            </select>
                         </div>
                         <div id="start_vm_log">
                             <p></p>
@@ -1023,8 +1029,14 @@
                     </div>
                     <div class="modal-body">
                         <div class="form-group">
-                            <label for="text">FortiGate identifier (1-6):</label>
-                            <input type="text" class="form-control" id="fgt_id">
+                            <label for="text">FortiGate identifier (2-6):</label>
+                            <select class="form-control" id="fgt_id_scale_in">
+                              <option>2</option>
+                              <option>3</option>
+                              <option>4</option>
+                              <option>5</option>
+                              <option>6</option>
+                            </select>
                         </div>
                         <div id="stop_vm_log">
                             <p></p>
