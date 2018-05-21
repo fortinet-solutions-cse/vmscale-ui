@@ -77,6 +77,8 @@ PASSWORD_FGT = ''
 USERNAME_HYPERVISOR = 'root'
 KEEP_DATA = 1
 
+MAX_NUMBER_OF_SAMPLES = 500
+
 fgt_sessions = [requests.Session() for u in urls_fgt]
 
 data_cpuload_time1 = [-1] * 60
@@ -103,7 +105,7 @@ data_fgtthroughput6_time = [-1] * 60
 
 def push_value_to_list(list, value):
     list.append(value)
-    if list[0] <= -1 or not KEEP_DATA:
+    if list[0] <= -1 or not KEEP_DATA or len(list) > MAX_NUMBER_OF_SAMPLES:
         del list[0]
 
 
