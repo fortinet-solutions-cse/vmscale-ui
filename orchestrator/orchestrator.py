@@ -77,7 +77,7 @@ PASSWORD_FGT = ''
 USERNAME_HYPERVISOR = 'root'
 KEEP_DATA = 1
 
-MAX_NUMBER_OF_SAMPLES = 500
+MAX_NUMBER_OF_SAMPLES = 300
 
 fgt_sessions = [requests.Session() for u in urls_fgt]
 
@@ -104,24 +104,19 @@ data_fgtthroughput6_time = [-1] * 60
 
 
 def push_value_to_list(list, value):
-    list.append(value)
+    list.append(float("{0:.2f}".format(value)))
     if list[0] <= -1 or not KEEP_DATA or len(list) > MAX_NUMBER_OF_SAMPLES:
         del list[0]
 
 
 @app.route("/start_vm", methods=['POST'])
 def start_vm():
-    fgt_id = request.args.get('fgt')
-    try:
-        fgt_id = int(fgt_id)
-    except:
-        return "Error, identifier not recognized"
-
-    print("Parameter received:", fgt_id)
-
     try:
         response = Response()
         response.headers.add('Access-Control-Allow-Origin', '*')
+
+        fgt_id = request.args.get('fgt')
+        fgt_id = int(fgt_id)
 
         returned_str = execute_start_vm(fgt_id)
 
@@ -179,15 +174,14 @@ def start_vm():
 
 @app.route("/stop_vm", methods=['POST'])
 def stop_vm():
-    fgt_id = request.args.get('fgt')
+
     try:
+        response = Response()
+        response.headers.add('Access-Control-Allow-Origin', '*')
+
+        fgt_id = request.args.get('fgt')
         fgt_id = int(fgt_id)
-    except:
-        return "Error, identifier not recognized"
 
-    print("Parameter received:", fgt_id)
-
-    try:
         # Decrease traffic load FTS1
         headers = {
             'Content-Type': "application/json",
@@ -237,8 +231,6 @@ def stop_vm():
         # StopVm
         returned_str += execute_stop_vm(fgt_id)
 
-        response = Response()
-        response.headers.add('Access-Control-Allow-Origin', '*')
         response.data = returned_str
 
         return response
@@ -518,6 +510,9 @@ def status():
 def panic():
     try:
 
+        response = Response()
+        response.headers.add('Access-Control-Allow-Origin', '*')
+
         returned_str = "Panic log: <br>" + str(stop_traffic().data.decode('ascii').strip('\n')) + "<br>"
 
         for vm in range(2, 7):
@@ -530,13 +525,13 @@ def panic():
 
         returned_str += execute_start_vm(1)
 
+        time.sleep(10)
+
         returned_str += "<br> Resetting charts: " + str(reset_data().data.decode('ascii').strip('\n'))
 
         global KEEP_DATA
         KEEP_DATA = 1
 
-        response = Response()
-        response.headers.add('Access-Control-Allow-Origin', '*')
         response.data = returned_str
         return response
 
@@ -698,6 +693,7 @@ def execute_stop_vm(fgt_id):
 
 
 def execute_add_target(fgt_id):
+
     # Get dpid
     global url_cybermapper
     loadbal = requests.get(url_cybermapper + '/v1.0/loadbal',
@@ -728,6 +724,7 @@ def execute_add_target(fgt_id):
 
 
 def execute_remove_target(fgt_id):
+
     # Get dpid
     global url_cybermapper
     loadbal = requests.get(url_cybermapper + '/v1.0/loadbal',
