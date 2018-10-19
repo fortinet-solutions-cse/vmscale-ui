@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>FortiElastic CGNAT</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/highcharts-more.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<script>
+    $(function() {
+        $('#totalthroughtput').highcharts({
+            chart: {
+                type: 'bar'
+            },
+            title: {
+                text: ''
+            },
+            colors: ['#FF7200', '#AA7200', '#8bbc21', '#910000', '#1aadce',
+                '#492970', '#f28f43', '#77a1e5', '#c42525', '#a6c96a'
+            ],
+
+            legend: {
+                enabled: true,
+                floating: true,
+                align: 'right',
+                verticalAlign: 'top'
+            },
+            xAxis: {
+                categories: ['40G A', '40G B']
+            },
+            yAxis: {
+                title: {
+                    text: 'Bps'
+                }
+            },
+            series: [{
+                name: 'ingress',
+                data: [17, 38]
+            }, {
+                name: 'egress',
+                data: [16, 37]
+            }],
+        });
+    });
+</script>
+<script>
+    $(function() {
+        $('#fgtthroughtput').highcharts({
+            chart: {
+                type: 'bar'
+            },
+            legend: {
+                enabled: true
+            },
+            title: {
+                text: ''
+            },
+            xAxis: {
+                categories: ['FGT1', 'FGT2', 'FGT3', 'FGT4', 'FGT5', 'FGT6']
+            },
+            yAxis: {
+                title: {
+                    text: 'Bps'
+                }
+            },
+            series: [{
+                name: 'ingress',
+                data: [1.2, 8, 4.3, 3.5, 4.2, 6.2, 7, 3.4]
+            }, {
+                name: 'egress',
+                data: [1.2, 7.5, 3.5, 3.5, 4.2, 5.4, 6.5, 3]
+            }],
+        });
+    });
+</script>
+<script>
+    $(function() {
+
+        var template = {
+            chart: {
+                type: 'gauge',
+                plotBackgroundColor: null,
+                plotBackgroundImage: null,
+                plotBorderWidth: 0,
+                plotShadow: false
+            },
+
+            title: {
+                text: 'Host',
+                margin: 0
+            },
+
+            pane: {
+                startAngle: -150,
+                endAngle: 150,
+                background: [{
+                    backgroundColor: {
+                        linearGradient: {
+                            x1: 0,
+                            y1: 0,
+                            x2: 0,
+                            y2: 1
+                        },
+                        stops: [
+                            [0, '#FFF'],
+                            [1, '#333']
+                        ]
+                    },
+                    borderWidth: 0,
+                    outerRadius: '109%'
+                }, {
+                    backgroundColor: {
+                        linearGradient: {
+                            x1: 0,
+                            y1: 0,
+                            x2: 0,
+                            y2: 1
+                        },
+                        stops: [
+                            [0, '#333'],
+                            [1, '#FFF']
+                        ]
+                    },
+                    borderWidth: 1,
+                    outerRadius: '107%'
+                }, {
+                    // default background
+                }, {
+                    backgroundColor: '#DDD',
+                    borderWidth: 0,
+                    outerRadius: '105%',
+                    innerRadius: '103%'
+                }]
+            },
+
+            // the value axis
+            yAxis: {
+                min: 0,
+                max: 100,
+
+                minorTickInterval: 'auto',
+                minorTickWidth: 1,
+                minorTickLength: 10,
+                minorTickPosition: 'inside',
+                minorTickColor: '#666',
+
+                tickPixelInterval: 30,
+                tickWidth: 2,
+                tickPosition: 'inside',
+                tickLength: 10,
+                tickColor: '#666',
+                labels: {
+                    step: 2,
+                    rotation: 'auto'
+                },
+                title: {
+                    text: '% CPU',
+                    margin: 0
+                },
+
+                plotBands: [{
+                    from: 0,
+                    to: 60,
+                    color: '#55BF3B' // green
+                }, {
+                    from: 60,
+                    to: 75,
+                    color: '#DDDF0D' // yellow
+                }, {
+                    from: 75,
+                    to: 100,
+                    color: '#DF5353' // red
+                }]
+            },
+
+            series: [{
+                name: 'CPU Load',
+                data: [80],
+                tooltip: {
+                    valueSuffix: ' %'
+                }
+            }]
+
+        };
+
+        var template_fgt = $.extend(true, {}, template);
+        template_fgt.chart.height = '120%';
+        template_fgt.series.name = '';
+        template_fgt.yAxis = {
+            min: 0,
+            max: 100,
+
+            minorTickInterval: 'auto',
+            minorTickWidth: 1,
+            minorTickLength: 10,
+            minorTickPosition: 'outside',
+            minorTickColor: '#666',
+
+            tickPixelInterval: 50,
+            tickWidth: 2,
+            tickLength: 10,
+            tickColor: '#766',
+            labels: {
+                step: 2,
+                rotation: 'auto'
+            },
+            title: {
+                text: '',
+                margin: 0
+            },
+            labels: {
+                enabled: false
+            },
+            showFirstLabel: false,
+            showLastLabel: false,
+            plotBands: [{
+                from: 0,
+                to: 60,
+                color: '#55BF3B' // green
+            }, {
+                from: 60,
+                to: 75,
+                color: '#DDDF0D' // yellow
+            }, {
+                from: 75,
+                to: 100,
+                color: '#DF5353' // red
+            }]
+        };
+
+        // CPULoad1
+        var template1 = $.extend(true, {}, template);
+        template1.title.text = 'Host1';
+        $('#cpuload1').highcharts(template1);
+
+        // CPULoad2
+        var template2 = $.extend(true, {}, template);
+        template2.title.text = 'Host2';
+        $('#cpuload2').highcharts(template2);
+
+        // CPULoad3
+        var template3 = $.extend(true, {}, template);
+        template3.title.text = 'Host3';
+        $('#cpuload3').highcharts(template3);
+
+        // CPULoad4
+        var template4 = $.extend(true, {}, template);
+        template4.title.text = 'Host4';
+        $('#cpuload4').highcharts(template4);
+
+
+        // FGTLoad1
+        var template_fgt1 = $.extend(true, {}, template_fgt);
+        template_fgt1.title.text = 'FGT1';
+        $('#fgtload1').highcharts(template_fgt1);
+
+        // FGTLoad2
+        var template_fgt2 = $.extend(true, {}, template_fgt);
+        template_fgt2.title.text = 'FGT2';
+        $('#fgtload2').highcharts(template_fgt2);
+
+        // FGTLoad3
+        var template_fgt3 = $.extend(true, {}, template_fgt);
+        template_fgt3.title.text = 'FGT3';
+        $('#fgtload3').highcharts(template_fgt3);
+
+        // FGTLoad4
+        var template_fgt4 = $.extend(true, {}, template_fgt);
+        template_fgt4.title.text = 'FGT4';
+        $('#fgtload4').highcharts(template_fgt4);
+
+        // FGTLoad5
+        var template_fgt5 = $.extend(true, {}, template_fgt);
+        template_fgt5.title.text = 'FGT5';
+        $('#fgtload5').highcharts(template_fgt5);
+
+        // FGTLoad6
+        var template_fgt6 = $.extend(true, {}, template_fgt);
+        template_fgt6.title.text = 'FGT6';
+        $('#fgtload6').highcharts(template_fgt6);
+
+    });
+</script>
+
+<script>
+    $(function() {
+        var template_cpuload_time = {
+            chart: {
+                type: 'line',
+                animation: false
+            },
+            title: {
+                text: 'Host1',
+                align: 'center'
+
+            },
+            yAxis: {
+                title: {
+                    text: '% CPU Load'
+                },
+                min: 0,
+                max: 100,
+                tickInterval: 50
+
+            },
+            legend: false,
+            plotOptions: {
+                line: {
+                    dataLabels: {
+                        enabled: false
+                    },
+                    enableMouseTracking: false
+                }
+            },
+            series: [{
+                marker: {
+                    enabled: false,
+                }
+            }]
+        };
+
+        var template_cpuload_time1 = $.extend(true, {}, template_cpuload_time);
+        template_cpuload_time1.title.text = "Host 1";
+        $('#cpuload_time1').highcharts(template_cpuload_time1);
+
+        var template_cpuload_time2 = $.extend(true, {}, template_cpuload_time);
+        template_cpuload_time2.title.text = "Host 2";
+        template_cpuload_time2.yAxis.title.text = '';
+        $('#cpuload_time2').highcharts(template_cpuload_time2);
+
+        var template_cpuload_time3 = $.extend(true, {}, template_cpuload_time);
+        template_cpuload_time3.title.text = "Host 3";
+        template_cpuload_time3.yAxis.title.text = '';
+        $('#cpuload_time3').highcharts(template_cpuload_time3);
+
+        var template_cpuload_time4 = $.extend(true, {}, template_cpuload_time);
+        template_cpuload_time4.title.text = "Host 4";
+        template_cpuload_time4.yAxis.title.text = '';
+        $('#cpuload_time4').highcharts(template_cpuload_time4);
+
+
+
+
+        var template_fgtload_time = $.extend(true, {}, template_cpuload_time);
+        template_fgtload_time.colors = ['#3F30A0'];
+        template_fgtload_time.series = [{
+            marker: {
+                enabled: false,
+            }
+        }];
+
+        //template_fgtload_time.xAxis.tickInterval = 5;
+
+
+        var template_fgtload_time1 = $.extend(true, {}, template_fgtload_time);
+        template_fgtload_time1.title.text = "FGT1";
+        $('#fgtload_time1').highcharts(template_fgtload_time1);
+
+        var template_fgtload_time2 = $.extend(true, {}, template_fgtload_time);
+        template_fgtload_time2.title.text = "FGT2";
+        template_fgtload_time2.yAxis.title.text = '';
+        $('#fgtload_time2').highcharts(template_fgtload_time2);
+
+        var template_fgtload_time3 = $.extend(true, {}, template_fgtload_time);
+        template_fgtload_time3.title.text = "FGT3";
+        template_fgtload_time3.yAxis.title.text = '';
+        $('#fgtload_time3').highcharts(template_fgtload_time3);
+
+        var template_fgtload_time4 = $.extend(true, {}, template_fgtload_time);
+        template_fgtload_time4.title.text = "FGT4";
+        template_fgtload_time4.yAxis.title.text = '';
+        $('#fgtload_time4').highcharts(template_fgtload_time4);
+
+        var template_fgtload_time5 = $.extend(true, {}, template_fgtload_time);
+        template_fgtload_time5.title.text = "FGT5";
+        template_fgtload_time5.yAxis.title.text = '';
+        $('#fgtload_time5').highcharts(template_fgtload_time5);
+
+        var template_fgtload_time6 = $.extend(true, {}, template_fgtload_time);
+        template_fgtload_time6.title.text = "FGT6";
+        template_fgtload_time6.yAxis.title.text = '';
+        $('#fgtload_time6').highcharts(template_fgtload_time6);
+
+    });
+</script>
+
+
+<script>
+    $(function() {
+        var template_total_throughput_time = {
+            chart: {
+                type: 'line',
+                animation: false
+
+            },
+            title: {
+                text: ''
+            },
+            yAxis: {
+                title: {
+                    text: 'GBps'
+                },
+                min: 0,
+                max: 120,
+                tickInterval: 20
+            },
+            colors: ['#FF7200', '#AA7200', '#8bbc21', '#910000', '#1aadce',
+                '#492970', '#f28f43', '#77a1e5', '#c42525', '#a6c96a'
+            ],
+            legend: {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'middle'
+            },
+            plotOptions: {
+                line: {
+                    dataLabels: {
+                        enabled: false
+                    },
+                    enableMouseTracking: false
+                }
+            },
+            responsive: {
+                rules: [{
+                    condition: {
+                        maxWidth: 500
+                    },
+                    chartOptions: {
+                        legend: {
+                            layout: 'horizontal',
+                            align: 'center',
+                            verticalAlign: 'bottom'
+                        }
+                    }
+                }]
+            },
+            series: [{
+                name: 'ingress',
+                marker: {
+                    enabled: false,
+                }
+            }, {
+                name: 'egress',
+                marker: {
+                    enabled: false,
+                }
+            }]
+        };
+
+        $('#totalthroughput_time').highcharts(template_total_throughput_time);
+
+        var template_fgt_throughput_time = {
+            chart: {
+                type: 'line',
+                animation: false
+            },
+            title: {
+                text: ''
+            },
+            yAxis: {
+                title: {
+                    text: 'Gbps'
+                },
+                min: 0,
+                max: 20,
+                tickInterval: 4
+            },
+            legend: {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'middle'
+            },
+            plotOptions: {
+                line: {
+                    dataLabels: {
+                        enabled: false
+                    },
+                    enableMouseTracking: false
+                }
+            },
+            series: [{
+                name: 'FGT1',
+                marker: {
+                    enabled: false,
+                }
+            }, {
+                name: 'FGT2',
+                marker: {
+                    enabled: false,
+                }
+            }, {
+                name: 'FGT3',
+                marker: {
+                    enabled: false,
+                }
+            }, {
+                name: 'FGT4',
+                marker: {
+                    enabled: false,
+                }
+            }, {
+                name: 'FGT5',
+                marker: {
+                    enabled: false,
+                }
+            }, {
+                name: 'FGT6',
+                marker: {
+                    enabled: false,
+                }
+            }]
+        };
+
+        $('#fgtthroughput_time').highcharts(template_fgt_throughput_time);
+
+    });
+</script>
+
+
+<!--
+***********************************
+  Functions to open windows
+  and start/stop vms
+***********************************
+-->
+<script>
+    $(function() {
+
+        // Action functions
+
+        function start_fgt() {
+            $("body").css("cursor", "progress");
+            $('#start_fgt_btn').prop('disabled', true)
+            fortigate_id = $("#scaleout_fgt #fgt_id_scale_out").val().trim()
+            $.ajax({
+                url: "http://" + window.location.hostname + ":5000/start_vm?fgt=" + fortigate_id,
+                type: "POST",
+                success: function(result) {
+                    $('#start_vm_log').html(result);
+                },
+                complete: function() {
+                    $("body").css("cursor", "default");
+                }
+            });
+        };
+
+
+        function stop_fgt() {
+            $("body").css("cursor", "progress");
+            $('#stop_fgt_btn').prop('disabled', true)
+            fortigate_id = $("#scalein_fgt #fgt_id_scale_in").val().trim()
+            $.ajax({
+                url: "http://" + window.location.hostname + ":5000/stop_vm?fgt=" + fortigate_id,
+                type: "POST",
+                success: function(result) {
+                    $('#stop_vm_log').html(result);
+                },
+                complete: function() {
+                    $("body").css("cursor", "default");
+                }
+            });
+        };
+
+        // Event handlers
+
+        $("#scalingout").click(function() {
+            $('#scaleout_fgt').modal('toggle');
+        });
+
+        $("#scalingin").click(function() {
+            $('#scalein_fgt').modal('toggle');
+        });
+
+        $("#starttest").click(function() {
+            $('#start_test').modal('toggle');
+            $("body").css("cursor", "progress");
+            $.ajax({
+                url: "http://" + window.location.hostname + ":5000/start_traffic",
+                type: "POST",
+                success: function(result) {
+                    $('#start_test_log').html(result);
+                },
+                complete: function() {
+                    $("body").css("cursor", "default");
+                }
+            });
+        });
+
+        $("#stoptest").click(function() {
+            $('#stop_test').modal('toggle');
+            $("body").css("cursor", "progress");
+            $.ajax({
+                url: "http://" + window.location.hostname + ":5000/stop_traffic",
+                type: "POST",
+                success: function(result) {
+                    $('#stop_test_log').html(result);
+                },
+                complete: function() {
+                    $("body").css("cursor", "default");
+                }
+            });
+        });
+
+        $("#resetdata").click(function() {
+            $("body").css("cursor", "progress");
+            $.ajax({
+                url: "http://" + window.location.hostname + ":5000/reset_data",
+                type: "POST",
+                complete: function() {
+                    $("body").css("cursor", "default");
+                }
+            });
+        });
+
+        $("#deleteolddata").click(function() {
+            $("body").css("cursor", "progress");
+            $.ajax({
+                url: "http://" + window.location.hostname + ":5000/keep_old_data?value=0",
+                type: "POST",
+                complete: function() {
+                    $("body").css("cursor", "default");
+                }
+            });
+        });
+
+        $("#keepolddata").click(function() {
+            $("body").css("cursor", "progress");
+            $.ajax({
+                url: "http://" + window.location.hostname + ":5000/keep_old_data?value=1",
+                type: "POST",
+                complete: function() {
+                    $("body").css("cursor", "default");
+                }
+            });
+        });
+
+        $("#panic").click(function() {
+            $('#panic_view').modal('toggle');
+            $("body").css("cursor", "progress");
+            $.ajax({
+                url: "http://" + window.location.hostname + ":5000/panic",
+                type: "POST",
+                success: function(result) {
+                    $('#panic_log').html(result);
+                },
+                complete: function() {
+                    $("body").css("cursor", "default");
+                }
+            });
+        });
+
+
+        $("#start_fgt_btn").click(start_fgt)
+
+        $("#stop_fgt_btn").click(stop_fgt)
+
+
+        $('#scaleout_fgt').on('hidden.bs.modal', function(e) {
+            $(this)
+                .find("input,textarea,select")
+                .val('')
+                .end()
+                .find("input[type=checkbox], input[type=radio]")
+                .prop("checked", "")
+                .end();
+            $('#start_fgt_btn').prop('disabled', false)
+            $('#start_vm_log').html('');
+        })
+
+
+        $('#scalein_fgt').on('hidden.bs.modal', function(e) {
+            $(this)
+                .find("input,textarea,select")
+                .val('')
+                .end()
+                .find("input[type=checkbox], input[type=radio]")
+                .prop("checked", "")
+                .end();
+            $('#stop_fgt_btn').prop('disabled', false)
+            $('#stop_vm_log').html('');
+        })
+
+        $('#start_test').on('hidden.bs.modal', function(e) {
+            $(this)
+                .find("input,textarea,select")
+                .val('')
+                .end()
+                .find("input[type=checkbox], input[type=radio]")
+                .prop("checked", "")
+                .end();
+            $('#start_test_log').html('');
+        })
+
+        $('#stop_test').on('hidden.bs.modal', function(e) {
+            $(this)
+                .find("input,textarea,select")
+                .val('')
+                .end()
+                .find("input[type=checkbox], input[type=radio]")
+                .prop("checked", "")
+                .end();
+            $('#stop_test_log').html('');
+        })
+
+        $('#panic_view').on('hidden.bs.modal', function(e) {
+            $(this)
+                .find("input,textarea,select")
+                .val('')
+                .end()
+                .find("input[type=checkbox], input[type=radio]")
+                .prop("checked", "")
+                .end();
+            $('#panic_log').html('');
+        })
+    });
+</script>
+
+
+<!--
+***********************************
+  Functions to fetch data regularly
+***********************************
+-->
+<script>
+    $(function() {
+
+        function updateTitle(data, index) {
+            var chart = $("#fgtload_time" + index).highcharts();
+            if (data["fgtload_time" + index][(data["fgtload_time" + index].length) - 1] == -1) {
+                chart.setTitle({
+                    text: "FGT" + index + " - off"
+                });
+            } else {
+                chart.setTitle({
+                    text: "FGT" + index + " - on"
+                });
+            }
+            chart.redraw();
+
+        }
+
+
+        function update_data() {
+            $.ajax({
+                url: "http://" + window.location.hostname + ":5000/status",
+                success: function(result) {
+
+                    var parsedJSONResult = $.parseJSON(result);
+
+                    $('#cpuload_time1').highcharts().series[0].setData(parsedJSONResult[
+                        'cpuload_time1'], true);
+                    $('#cpuload_time2').highcharts().series[0].setData(parsedJSONResult[
+                        'cpuload_time2'], true);
+                    $('#cpuload_time3').highcharts().series[0].setData(parsedJSONResult[
+                        'cpuload_time3'], true);
+                    $('#cpuload_time4').highcharts().series[0].setData(parsedJSONResult[
+                        'cpuload_time4'], true);
+
+                    $('#fgtload_time1').highcharts().series[0].setData(parsedJSONResult[
+                        'fgtload_time1'], true);
+                    $('#fgtload_time2').highcharts().series[0].setData(parsedJSONResult[
+                        'fgtload_time2'], true);
+                    $('#fgtload_time3').highcharts().series[0].setData(parsedJSONResult[
+                        'fgtload_time3'], true);
+                    $('#fgtload_time4').highcharts().series[0].setData(parsedJSONResult[
+                        'fgtload_time4'], true);
+                    $('#fgtload_time5').highcharts().series[0].setData(parsedJSONResult[
+                        'fgtload_time5'], true);
+                    $('#fgtload_time6').highcharts().series[0].setData(parsedJSONResult[
+                        'fgtload_time6'], true);
+
+                    $('#totalthroughput_time').highcharts().series[0].setData(parsedJSONResult[
+                        'totalthroughput_ingress_time'], true);
+                    $('#totalthroughput_time').highcharts().series[1].setData(parsedJSONResult[
+                        'totalthroughput_egress_time'], true);
+
+                    $('#fgtthroughput_time').highcharts().series[0].setData(parsedJSONResult[
+                        'fgtthroughput1_time'], true);
+                    $('#fgtthroughput_time').highcharts().series[1].setData(parsedJSONResult[
+                        'fgtthroughput2_time'], true);
+                    $('#fgtthroughput_time').highcharts().series[2].setData(parsedJSONResult[
+                        'fgtthroughput3_time'], true);
+                    $('#fgtthroughput_time').highcharts().series[3].setData(parsedJSONResult[
+                        'fgtthroughput4_time'], true);
+                    $('#fgtthroughput_time').highcharts().series[4].setData(parsedJSONResult[
+                        'fgtthroughput5_time'], true);
+                    $('#fgtthroughput_time').highcharts().series[5].setData(parsedJSONResult[
+                        'fgtthroughput6_time'], true);
+
+                    updateTitle(parsedJSONResult, 1);
+                    updateTitle(parsedJSONResult, 2);
+                    updateTitle(parsedJSONResult, 3);
+                    updateTitle(parsedJSONResult, 4);
+                    updateTitle(parsedJSONResult, 5);
+                    updateTitle(parsedJSONResult, 6);
+
+                }
+            });
+        };
+
+        setInterval(update_data, 2000);
+
+    });
+</script>
+
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-2">
+                <a href="https://www.fortinet.com">
+                     <h3 class="text-center">
+                         <img src="Fortinet_Logo_Black-Red.png" alt="Fortinet" style="width:300px;">
+                     </h3>
+                </a>
+            </div>
+            <div class="col-sm-8">
+                <h1 class="text-center">
+                    <b>Elastic CGNAT - Virtual FortiGate</b>
+                </h1>
+            </div>
+            <div class="col-sm-2">
+            </div>
+         </div>
+        <div class="container" style="width:100%">
+            <ul class="nav nav-pills">
+                <li class="active"><a data-toggle="pill" href="#home">Dashboard</a></li>
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">Scaling
+                        <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a href="#">
+                                <div id="scalingout">Scale Out FortiGate</div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div id="scalingin">Scale In FortiGate</div>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">Tester
+                        <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a href="#">
+                                <div id="starttest">Start Test Traffic</div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div id="stoptest">Stop Test Traffic</div>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">Charts & Data
+                        <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a href="#">
+                                <div id="resetdata">Clean Charts</div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div id="keepolddata">Accumulative X-axis (300 samples or 20 mins)</div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div id="deleteolddata">Moving X-axis</div>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">Reset
+                        <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a href="#">
+                                <div id="panic">Panic: General Reset</div>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <div id="home" class="tab-pane fade in active">
+                    <div class="row">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">CPU Load</div>
+                            <div class="panel-body">
+                                <div id="cpuload_time1" style="width:24.9%; float:left; height:20vh;"></div>
+                                <div id="cpuload_time2" style="width:24.9%; float:left; height:20vh;"></div>
+                                <div id="cpuload_time3" style="width:24.9%; float:left; height:20vh;"></div>
+                                <div id="cpuload_time4" style="width:24.9%; float:left; height:20vh;"></div>
+                            </div>
+                        </div>
+                        <div class="panel panel-default">
+                            <div class="panel-heading">FortiGate Load</div>
+                            <div class="panel-body">
+                                <div id="fgtload_time1" style="width:24.8%; float:left; height:19vh;"></div>
+                                <div id="fgtload_time2" style="width:24.8%; float:left; height:19vh;"></div>
+                                <div id="fgtload_time3" style="width:12.4%; float:left; height:19vh;"></div>
+                                <div id="fgtload_time4" style="width:12.4%; float:left; height:19vh;"></div>
+                                <div id="fgtload_time5" style="width:12.4%; float:left; height:19vh;"></div>
+                                <div id="fgtload_time6" style="width:12.4%; float:left; height:19vh;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-5">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">Total Throughput</div>
+                                <div class="panel-body">
+                                    <div id="totalthroughput_time" style="width:100%; float:left; height:25vh;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-7">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">FortiGate Throughput [SDN Layer]</div>
+                                <div class="panel-body">
+                                    <div id="fgtthroughput_time" style="width:100%; float:left; height:25vh;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="menu1" class="tab-pane fade">
+                    <div class="row">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">Total Throughput</div>
+                            <div class="panel-body" style="height:16vh;" id="totalthroughtput" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">FortiGate Port Throughput</div>
+                                <div class="panel-body" id="fgtthroughtput" style=""></div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">Load per Host and FortiGate</div>
+                                <div class="panel-body">
+                                    <div style="width: 100%; float:right">
+                                        <div id="cpuload1" style="width:24%; height:25vh; float:left"></div>
+                                        <div id="cpuload2" style="width:24%; height:25vh; float:left"></div>
+                                        <div id="cpuload3" style="width:24%; height:25vh; float:left"></div>
+                                        <div id="cpuload4" style="width:24%; height:25vh; float:left"></div>
+                                    </div>
+                                    <div style="width: 100%; float:right">
+                                        <div id="fgtload1" style="width:12%; float:left"></div>
+                                        <div id="fgtload2" style="width:12%; float:left"></div>
+                                        <div id="fgtload3" style="width:12%; float:left"></div>
+                                        <div id="fgtload4" style="width:12%; float:left"></div>
+                                        <div id="fgtload5" style="width:12%; float:left"></div>
+                                        <div id="fgtload6" style="width:12%; float:left"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal -->
+        <div id="scaleout_fgt" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Scaling out FortiGate</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="text">FortiGate identifier(2-6):</label>
+                            <select class="form-control" id="fgt_id_scale_out">
+                              <option>2</option>
+                              <option>3</option>
+                              <option>4</option>
+                              <option>5</option>
+                              <option>6</option>
+                            </select>
+                        </div>
+                        <div id="start_vm_log">
+                            <p></p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-success" id="start_fgt_btn">Start</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Modal -->
+        <div id="scalein_fgt" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Scaling in FortiGate</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="text">FortiGate identifier (2-6):</label>
+                            <select class="form-control" id="fgt_id_scale_in">
+                              <option>2</option>
+                              <option>3</option>
+                              <option>4</option>
+                              <option>5</option>
+                              <option>6</option>
+                            </select>
+                        </div>
+                        <div id="stop_vm_log">
+                            <p></p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-success" id="stop_fgt_btn">Stop</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Modal -->
+        <div id="start_test" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Start Traffic</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div id="start_test_log">
+                            <p></p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Modal -->
+        <div id="stop_test" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Stop Trafic</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div id="stop_test_log">
+                            <p></p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Modal -->
+        <div id="panic_view" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">General Reset</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div id="panic_log">
+                            <p></p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+</body>
+
+</html>
