@@ -61,7 +61,7 @@ fgt_hypervisors = [
     '127.0.0.1'
 ]
 
-url_cybermapper = 'http://10.210.9.132:8080'
+url_cybermapper = 'http://10.210.9.133:8080'
 
 FTS1_IP = "10.210.1.28"
 FTS2_IP = "10.210.1.29"
@@ -78,6 +78,8 @@ USERNAME_HYPERVISOR = 'root'
 KEEP_DATA = 1
 
 MAX_NUMBER_OF_SAMPLES = 300
+
+VMS_RUNNING = 1
 
 fgt_sessions = [requests.Session() for u in urls_fgt]
 
@@ -123,6 +125,8 @@ def start_vm():
         time.sleep(40)
 
         returned_str += execute_add_target(fgt_id)
+
+        returned_str += execute_rebalance_public_ips()
 
         # Increase traffic load FTS1
         time.sleep(5)
@@ -479,30 +483,30 @@ def keep_old_data():
 
 @app.route("/status", methods=['GET'])
 def status():
-    newData = """{
-        "cpuload_time1": """ + str(data_cpuload_time1) + """,
-        "cpuload_time2": """ + str(data_cpuload_time2) + """,
-        "cpuload_time3": """ + str(data_cpuload_time3) + """,
-        "cpuload_time4": """ + str(data_cpuload_time4) + """,
-        "fgtload_time1": """ + str(data_fgtload_time1) + """,
-        "fgtload_time2": """ + str(data_fgtload_time2) + """,
-        "fgtload_time3": """ + str(data_fgtload_time3) + """,
-        "fgtload_time4": """ + str(data_fgtload_time4) + """,
-        "fgtload_time5": """ + str(data_fgtload_time5) + """,
-        "fgtload_time6": """ + str(data_fgtload_time6) + """,
-        "totalthroughput_ingress_time": """ + str(data_totalthroughput_ingress_time) + """,
-        "totalthroughput_egress_time": """ + str(data_totalthroughput_egress_time) + """,
-        "fgtthroughput1_time": """ + str(data_fgtthroughput1_time) + """,
-        "fgtthroughput2_time": """ + str(data_fgtthroughput2_time) + """,
-        "fgtthroughput3_time": """ + str(data_fgtthroughput3_time) + """,
-        "fgtthroughput4_time": """ + str(data_fgtthroughput4_time) + """,
-        "fgtthroughput5_time": """ + str(data_fgtthroughput5_time) + """,
-        "fgtthroughput6_time": """ + str(data_fgtthroughput6_time) + """
-        }"""
 
+    data = {"cpuload_time1": data_cpuload_time1,
+        "cpuload_time2": data_cpuload_time2,
+        "cpuload_time3": data_cpuload_time3,
+        "cpuload_time4": data_cpuload_time4,
+        "fgtload_time1": data_fgtload_time1,
+        "fgtload_time2": data_fgtload_time2,
+        "fgtload_time3": data_fgtload_time3,
+        "fgtload_time4": data_fgtload_time4,
+        "fgtload_time5": data_fgtload_time5,
+        "fgtload_time6": data_fgtload_time6,
+        "totalthroughput_ingress_time": data_totalthroughput_ingress_time,
+        "totalthroughput_egress_time": data_totalthroughput_egress_time,
+        "fgtthroughput1_time": data_fgtthroughput1_time,
+        "fgtthroughput2_time": data_fgtthroughput2_time,
+        "fgtthroughput3_time": data_fgtthroughput3_time,
+        "fgtthroughput4_time": data_fgtthroughput4_time,
+        "fgtthroughput5_time": data_fgtthroughput5_time,
+        "fgtthroughput6_time": data_fgtthroughput6_time
+     }
+     
     response = Response()
     response.headers.add('Access-Control-Allow-Origin', '*')
-    response.data = newData
+    response.data = dumps(data)
     return response
 
 
@@ -524,6 +528,9 @@ def panic():
             returned_str += execute_stop_vm(vm)
 
         returned_str += execute_start_vm(1)
+
+        global VMS_RUNNING
+        VMS_RUNNING = 1
 
         time.sleep(10)
 
@@ -669,6 +676,10 @@ def execute_start_vm(fgt_id):
     stdout = ssh_stdout.read().decode('ascii').strip('\n')
     stderr = ssh_stderr.read().decode('ascii').strip('\n')
 
+    if ssh_stdout.channel.recv_exit_status() == 0:
+        global VMS_RUNNING
+        VMS_RUNNING += 1
+
     returned_str = "<b>FortiGate id: </b>" + str(fgt_id) + "<br>" + \
                    "<b>FortiGate VM instantiation: </b>" + str(stderr).replace('\\n', '<br>') + \
                    ":" + str(stdout).replace('\\n', '<br>') + "<br>"
@@ -685,6 +696,10 @@ def execute_stop_vm(fgt_id):
 
     stdout = ssh_stdout.read().decode('ascii').strip('\n')
     stderr = ssh_stderr.read().decode('ascii').strip('\n')
+
+    if ssh_stdout.channel.recv_exit_status() == 0:
+        global VMS_RUNNING
+        VMS_RUNNING += 1
 
     returned_str = "<b>FortiGate VM shutdown: </b>" + str(stderr).replace('\\n', '<br>') + \
                    ":" + str(stdout).replace('\\n', '<br>') + "<br>"
@@ -745,3 +760,8 @@ def execute_remove_target(fgt_id):
 cron = BackgroundScheduler(daemon=True)
 cron.add_job(request_cpu_load_from_nodes, 'interval', seconds=POLL_INTERVAL)
 cron.start()
+
+
+def execute_rebalance_public_ips():
+
+    return

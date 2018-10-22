@@ -73,8 +73,7 @@ payload = "{  \n   \"poolname\":[  \n      {  \n         \"name\":\"dynip2\"\n  
 headers = {
     'Content-Type': "application/json",
     'x-csrftoken': "CAB2DC63339962EECD42D357CC5377",
-    'cache-control': "no-cache",
-    'Postman-Token': "1896a2f3-b27a-426b-b114-377311a19cd1"
+    'cache-control': "no-cache"
     }
 
 response = requests.request("PUT", url, data=payload, headers=headers)
