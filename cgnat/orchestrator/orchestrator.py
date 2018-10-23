@@ -775,11 +775,32 @@ def execute_rebalance_public_ips():
         upper_limit = vmId*TOP_IP_LIMIT/VMS_RUNNING
         print("New range for vm: %d Range: %d..%d " % (vmId, lower_limit, upper_limit))
 
-        # Send "add target" request
-        target_data = { 
-            'startip': PUBLIC_SUBNET_PREFIX + str(lower_limit),
-            'endip': PUBLIC_SUBNET_PREFIX + str(upper_limit)}
+        results_login = requests.post(urls_fgt[vmId] + '/logincheck',
+                                      data='username=admin&secretkey=&ajax=1',
+                                      verify=False,
+                                      timeout=TIMEOUT)
+        xsrfToken = results_login.cookies['ccsrftoken']
+        jar = results_login.cookies
 
-        results = requests.post(urls_fgt[vmId] + '/api/v2/cmdb/firewall/ippool/dynip1?vdom=root',
-                                data=dumps(target_data),
-                                timeout=TIMEOUT)
+        target_data = {'startip': PUBLIC_SUBNET_PREFIX + str(lower_limit),
+                       'endip': PUBLIC_SUBNET_PREFIX + str(upper_limit)}
+
+        headers = {"Content-Type": "application/json",
+                   "x-csrftoken": xsrfToken.strip('"')}
+
+        results_put_ippool = requests.put(urls_fgt[vmId] + 'api/v2/cmdb/firewall/ippool/dynip1?vdom=root',
+                                          data=dumps(target_data),
+                                          verify=False,
+                                          headers=headers,
+                                          cookies=jar,
+                                          timeout=TIMEOUT)
+
+        results_logout = requests.post(urls_fgt[vmId] + 'logout',
+                                       verify=False,
+                                       headers=headers,
+                                       cookies=jar,
+                                       timeout=TIMEOUT)
+
+        returned_str = "<br><b>FortiGate vm: %d. Response codes: Login:</b> %s <b>Modify Pool:</b> %s <b>Logout:</b> %s" % \
+            (vmId, str(results_login.status_code), str(results_put_ippool.status_code), str(results_logout.status_code))
+        return returned_str
