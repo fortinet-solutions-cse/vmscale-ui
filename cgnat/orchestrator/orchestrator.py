@@ -61,7 +61,7 @@ fgt_hypervisors = [
     '127.0.0.1'
 ]
 
-url_cybermapper = 'http://10.210.9.133:8080'
+url_cybermapper = 'http://10.210.9.132:8080'
 
 FTS1_IP = "10.210.1.28"
 FTS2_IP = "10.210.1.29"
@@ -80,6 +80,9 @@ KEEP_DATA = 1
 MAX_NUMBER_OF_SAMPLES = 300
 
 VMS_RUNNING = 1
+
+TOP_IP_LIMIT = 200
+PUBLIC_SUBNET_PREFIX = '64.84.84.'  # IP Pools will be contained in PUBLIC_SUBNET_PREFIX.1 up to PUBLIC_SUBNET_PREFIX.TOP_IP_LIMIT
 
 fgt_sessions = [requests.Session() for u in urls_fgt]
 
@@ -234,6 +237,8 @@ def stop_vm():
 
         # StopVm
         returned_str += execute_stop_vm(fgt_id)
+
+        returned_str += execute_rebalance_public_ips()
 
         response.data = returned_str
 
@@ -485,24 +490,24 @@ def keep_old_data():
 def status():
 
     data = {"cpuload_time1": data_cpuload_time1,
-        "cpuload_time2": data_cpuload_time2,
-        "cpuload_time3": data_cpuload_time3,
-        "cpuload_time4": data_cpuload_time4,
-        "fgtload_time1": data_fgtload_time1,
-        "fgtload_time2": data_fgtload_time2,
-        "fgtload_time3": data_fgtload_time3,
-        "fgtload_time4": data_fgtload_time4,
-        "fgtload_time5": data_fgtload_time5,
-        "fgtload_time6": data_fgtload_time6,
-        "totalthroughput_ingress_time": data_totalthroughput_ingress_time,
-        "totalthroughput_egress_time": data_totalthroughput_egress_time,
-        "fgtthroughput1_time": data_fgtthroughput1_time,
-        "fgtthroughput2_time": data_fgtthroughput2_time,
-        "fgtthroughput3_time": data_fgtthroughput3_time,
-        "fgtthroughput4_time": data_fgtthroughput4_time,
-        "fgtthroughput5_time": data_fgtthroughput5_time,
-        "fgtthroughput6_time": data_fgtthroughput6_time
-     }
+            "cpuload_time2": data_cpuload_time2,
+            "cpuload_time3": data_cpuload_time3,
+            "cpuload_time4": data_cpuload_time4,
+            "fgtload_time1": data_fgtload_time1,
+            "fgtload_time2": data_fgtload_time2,
+            "fgtload_time3": data_fgtload_time3,
+            "fgtload_time4": data_fgtload_time4,
+            "fgtload_time5": data_fgtload_time5,
+            "fgtload_time6": data_fgtload_time6,
+            "totalthroughput_ingress_time": data_totalthroughput_ingress_time,
+            "totalthroughput_egress_time": data_totalthroughput_egress_time,
+            "fgtthroughput1_time": data_fgtthroughput1_time,
+            "fgtthroughput2_time": data_fgtthroughput2_time,
+            "fgtthroughput3_time": data_fgtthroughput3_time,
+            "fgtthroughput4_time": data_fgtthroughput4_time,
+            "fgtthroughput5_time": data_fgtthroughput5_time,
+            "fgtthroughput6_time": data_fgtthroughput6_time
+            }
      
     response = Response()
     response.headers.add('Access-Control-Allow-Origin', '*')
@@ -764,4 +769,17 @@ cron.start()
 
 def execute_rebalance_public_ips():
 
-    return
+    print("Rebalancing public ip pool. Number of VMs running: %d" % VMS_RUNNING)
+    for vmId in range(1, VMS_RUNNING+1):
+        lower_limit = ((vmId-1)*TOP_IP_LIMIT/VMS_RUNNING)+1
+        upper_limit = vmId*TOP_IP_LIMIT/VMS_RUNNING
+        print("New range for vm: %d Range: %d..%d " % (vmId, lower_limit, upper_limit))
+
+        # Send "add target" request
+        target_data = { 
+            'startip': PUBLIC_SUBNET_PREFIX + str(lower_limit),
+            'endip': PUBLIC_SUBNET_PREFIX + str(upper_limit)}
+
+        results = requests.post(urls_fgt[vmId] + '/api/v2/cmdb/firewall/ippool/dynip1?vdom=root',
+                                data=dumps(target_data),
+                                timeout=TIMEOUT)
