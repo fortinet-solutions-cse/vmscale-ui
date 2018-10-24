@@ -1,0 +1,23 @@
+config firewall ippool
+  edit dynip1
+    set startip 64.84.84.1
+    set endip 64.84.84.200
+  next
+end
+    
+config firewall policy
+  edit 1
+    set name cgnat
+    set srcintf port2
+    set dstintf port3
+    set srcaddr all
+    set dstaddr all
+    set service ALL
+    set schedule always
+    set action accept
+    set nat enable
+    set fsso disable
+    set ippool enable
+    set poolname dynip1
+  next
+end
