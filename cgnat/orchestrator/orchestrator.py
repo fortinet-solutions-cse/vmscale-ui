@@ -34,32 +34,17 @@ app = Flask(__name__)
 # Urls to access FGT REST API
 urls_fgt = [
     'https://10.210.14.33/',
-    'https://10.210.14.34/',
-    'https://10.210.14.100/',
-    'https://10.210.14.101/',
-    'https://10.210.14.102/',
-    'https://10.210.14.103/'
-]
+    'https://10.210.14.34/']
 
 # URLs to access hypervisor REST API (cpu load)
 urls_hypervisors = [
     'http://10.210.14.18:61208/api/2/cpu',
-    'http://10.210.14.6:61208/api/2/cpu',
-    'http://10.210.14.22:61208/api/2/cpu',
-    'http://10.210.14.23:61208/api/2/cpu'
-]
+    'http://10.210.14.19:61208/api/2/cpu']
 
 # Address of the hypervisor of each fortigate
 fgt_hypervisors = [
     '10.210.14.18',
-    '10.210.14.6',
-    '10.210.14.22',
-    '10.210.14.22',
-    '10.210.14.23',
-    '10.210.14.23',
-    '127.0.0.1',
-    '127.0.0.1'
-]
+    '10.210.14.19']
 
 url_cybermapper = 'http://10.210.9.132:8080'
 
@@ -107,6 +92,8 @@ data_fgtthroughput4_time = [-1] * 60
 data_fgtthroughput5_time = [-1] * 60
 data_fgtthroughput6_time = [-1] * 60
 
+returned_str = ""
+
 
 def push_value_to_list(list, value):
     list.append(float("{0:.2f}".format(value)))
@@ -116,6 +103,9 @@ def push_value_to_list(list, value):
 
 @app.route("/start_vm", methods=['POST'])
 def start_vm():
+
+    global returned_str
+    returned_str = ""
     try:
         response = Response()
         response.headers.add('Access-Control-Allow-Origin', '*')
@@ -125,7 +115,19 @@ def start_vm():
 
         returned_str = execute_start_vm(fgt_id)
 
-        time.sleep(40)
+        fgt_contacted = False
+        counter = 0
+        while not fgt_contacted:
+            try:
+                results = requests.post(urls_fgt[fgt_id - 1] + '/logincheck',
+                                        data='username=admin&secretkey=&ajax=1',
+                                        verify=False,
+                                        timeout=TIMEOUT)
+                fgt_contacted = (results.status_code == 200 or counter >= 40)
+            except:
+                print("Monitoring FortiGate startup (%s). Attempt: %d" % (urls_fgt[fgt_id - 1], counter))
+            counter += 1
+            time.sleep(1)
 
         returned_str += execute_add_target(fgt_id)
 
@@ -182,6 +184,8 @@ def start_vm():
 @app.route("/stop_vm", methods=['POST'])
 def stop_vm():
 
+    global returned_str
+    returned_str = ""
     try:
         response = Response()
         response.headers.add('Access-Control-Allow-Origin', '*')
@@ -233,7 +237,7 @@ def stop_vm():
 
         returned_str += execute_remove_target(fgt_id)
 
-        time.sleep(10)
+        time.sleep(5)
 
         # StopVm
         returned_str += execute_stop_vm(fgt_id)
@@ -506,7 +510,8 @@ def status():
             "fgtthroughput3_time": data_fgtthroughput3_time,
             "fgtthroughput4_time": data_fgtthroughput4_time,
             "fgtthroughput5_time": data_fgtthroughput5_time,
-            "fgtthroughput6_time": data_fgtthroughput6_time
+            "fgtthroughput6_time": data_fgtthroughput6_time,
+            "vms_running": VMS_RUNNING
             }
      
     response = Response()
@@ -517,19 +522,22 @@ def status():
 
 @app.route("/panic", methods=['POST'])
 def panic():
-    try:
 
+    global returned_str
+    returned_str = ""
+
+    try:
         response = Response()
         response.headers.add('Access-Control-Allow-Origin', '*')
 
         returned_str = "Panic log: <br>" + str(stop_traffic().data.decode('ascii').strip('\n')) + "<br>"
 
-        for vm in range(2, 7):
+        for vm in range(2, len(urls_fgt)+1):
             returned_str += "Removing target: " + str(vm) + " : " + execute_remove_target(vm)
 
         returned_str += "Adding target: 1 : <br>" + execute_add_target(1) + "<br>"
 
-        for vm in range(2, 7):
+        for vm in range(2, len(urls_fgt)+1):
             returned_str += execute_stop_vm(vm)
 
         returned_str += execute_start_vm(1)
@@ -553,6 +561,12 @@ def panic():
         return response
 
 
+@app.route("/progress_report", methods=['GET'])
+def progress_report():
+    global returned_str
+    return returned_str
+
+
 def request_cpu_load_from_nodes():
     # ******************************
     # Get Values from Hypervisors
@@ -563,13 +577,16 @@ def request_cpu_load_from_nodes():
     rs = (grequests.get(u, timeout=TIMEOUT) for u in urls_hypervisors)
 
     results = grequests.map(rs)
-    if len(results) >= 0:
+    if len(results) > 0:
         if results[0] is not None: push_value_to_list(data_cpuload_time1,
                                                       loads(results[0].content.decode('utf-8'))['total'])
+    if len(results) > 1:
         if results[1] is not None: push_value_to_list(data_cpuload_time2,
                                                       loads(results[1].content.decode('utf-8'))['total'])
+    if len(results) > 2:
         if results[2] is not None: push_value_to_list(data_cpuload_time3,
                                                       loads(results[2].content.decode('utf-8'))['total'])
+    if len(results) > 3:
         if results[3] is not None: push_value_to_list(data_cpuload_time4,
                                                       loads(results[3].content.decode('utf-8'))['total'])
 
@@ -676,7 +693,7 @@ def execute_start_vm(fgt_id):
     ssh.load_system_host_keys()
     ssh.connect(fgt_hypervisors[fgt_id - 1], username=USERNAME_HYPERVISOR)
     ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-        "LIBVIRT_DEFAULT_URI=qemu:///system virsh start fortigate_cgnat" + str(fgt_id))
+        "LIBVIRT_DEFAULT_URI=qemu:///system virsh start fgt-cgnat-" + str(fgt_id))
 
     stdout = ssh_stdout.read().decode('ascii').strip('\n')
     stderr = ssh_stderr.read().decode('ascii').strip('\n')
@@ -697,14 +714,14 @@ def execute_stop_vm(fgt_id):
     ssh.load_system_host_keys()
     ssh.connect(fgt_hypervisors[fgt_id - 1], username=USERNAME_HYPERVISOR)
     ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-        "LIBVIRT_DEFAULT_URI=qemu:///system virsh shutdown fortigate_cgnat" + str(fgt_id))
+        "LIBVIRT_DEFAULT_URI=qemu:///system virsh shutdown fgt-cgnat-" + str(fgt_id))
 
     stdout = ssh_stdout.read().decode('ascii').strip('\n')
     stderr = ssh_stderr.read().decode('ascii').strip('\n')
 
     if ssh_stdout.channel.recv_exit_status() == 0:
         global VMS_RUNNING
-        VMS_RUNNING += 1
+        VMS_RUNNING -= 1
 
     returned_str = "<b>FortiGate VM shutdown: </b>" + str(stderr).replace('\\n', '<br>') + \
                    ":" + str(stdout).replace('\\n', '<br>') + "<br>"
@@ -769,13 +786,16 @@ cron.start()
 
 def execute_rebalance_public_ips():
 
+    global returned_str
+    returned_str = ""
+
     print("Rebalancing public ip pool. Number of VMs running: %d" % VMS_RUNNING)
     for vmId in range(1, VMS_RUNNING+1):
         lower_limit = ((vmId-1)*TOP_IP_LIMIT/VMS_RUNNING)+1
         upper_limit = vmId*TOP_IP_LIMIT/VMS_RUNNING
         print("New range for vm: %d Range: %d..%d " % (vmId, lower_limit, upper_limit))
 
-        results_login = requests.post(urls_fgt[vmId] + '/logincheck',
+        results_login = requests.post(urls_fgt[vmId-1] + '/logincheck',
                                       data='username=admin&secretkey=&ajax=1',
                                       verify=False,
                                       timeout=TIMEOUT)
@@ -788,19 +808,20 @@ def execute_rebalance_public_ips():
         headers = {"Content-Type": "application/json",
                    "x-csrftoken": xsrfToken.strip('"')}
 
-        results_put_ippool = requests.put(urls_fgt[vmId] + 'api/v2/cmdb/firewall/ippool/dynip1?vdom=root',
+        results_put_ippool = requests.put(urls_fgt[vmId-1] + 'api/v2/cmdb/firewall/ippool/dynip1?vdom=root',
                                           data=dumps(target_data),
                                           verify=False,
                                           headers=headers,
                                           cookies=jar,
                                           timeout=TIMEOUT)
 
-        results_logout = requests.post(urls_fgt[vmId] + 'logout',
+        results_logout = requests.post(urls_fgt[vmId-1] + 'logout',
                                        verify=False,
                                        headers=headers,
                                        cookies=jar,
                                        timeout=TIMEOUT)
 
-        returned_str = "<br><b>FortiGate vm: %d. Response codes: Login:</b> %s <b>Modify Pool:</b> %s <b>Logout:</b> %s" % \
+        returned_str += "<br><b>FortiGate vm: %d. Response codes: Login:</b> %s <b>Modify Pool:</b> %s <b>Logout:</b> %s" % \
             (vmId, str(results_login.status_code), str(results_put_ippool.status_code), str(results_logout.status_code))
-        return returned_str
+    
+    return returned_str
