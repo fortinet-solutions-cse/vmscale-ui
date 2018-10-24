@@ -545,6 +545,8 @@ def panic():
         global VMS_RUNNING
         VMS_RUNNING = 1
 
+        returned_str += execute_rebalance_public_ips()
+
         time.sleep(10)
 
         returned_str += "<br> Resetting charts: " + str(reset_data().data.decode('ascii').strip('\n'))
@@ -791,8 +793,8 @@ def execute_rebalance_public_ips():
 
     print("Rebalancing public ip pool. Number of VMs running: %d" % VMS_RUNNING)
     for vmId in range(1, VMS_RUNNING+1):
-        lower_limit = ((vmId-1)*TOP_IP_LIMIT/VMS_RUNNING)+1
-        upper_limit = vmId*TOP_IP_LIMIT/VMS_RUNNING
+        lower_limit = int(((vmId-1)*TOP_IP_LIMIT/VMS_RUNNING)+1)
+        upper_limit = int(vmId*TOP_IP_LIMIT/VMS_RUNNING)
         print("New range for vm: %d Range: %d..%d " % (vmId, lower_limit, upper_limit))
 
         results_login = requests.post(urls_fgt[vmId-1] + '/logincheck',
