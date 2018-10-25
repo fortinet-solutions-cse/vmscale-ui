@@ -8,6 +8,13 @@
     <script src="https://code.highcharts.com/highcharts-more.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <style>
+        .square {
+          height: 10px;
+          width: 10px;
+          background-color: #FF0000;
+        }
+        </style>
 </head>
 <script>
     $(function() {
@@ -878,6 +885,13 @@
                     updateTitle(parsedJSONResult, 5);
                     updateTitle(parsedJSONResult, 6);
 
+                    if (parsedJSONResult['vms_running'] != parsedJSONResult['vms_running_real']) {
+                        $('#sync_warning').show()
+                    }
+                    else {
+                        $('#sync_warning').hide()
+                    }
+
                 }
             });
         };
@@ -991,7 +1005,7 @@
                             </div>
                         </div>
                         <div class="panel panel-default">
-                            <div class="panel-heading">FortiGate Load</div>
+                            <div class="panel-heading">FortiGate Load<div class="square" id="sync_warning" style="float:right"></div></div>
                             <div class="panel-body">
                                 <div id="fgtload_time1" style="width:24.8%; float:left; height:19vh;"></div>
                                 <div id="fgtload_time2" style="width:24.8%; float:left; height:19vh;"></div>

@@ -513,7 +513,14 @@ def status():
             "fgtthroughput6_time": data_fgtthroughput6_time,
             "vms_running": VMS_RUNNING
             }
-     
+
+    vms_running_real = 0
+    for k, v in data.items():
+        if 'fgtload_time' in k:
+            if v[len(v)-1] != -1:
+                vms_running_real += 1
+    data['vms_running_real'] = vms_running_real
+
     response = Response()
     response.headers.add('Access-Control-Allow-Origin', '*')
     response.data = dumps(data)
@@ -828,7 +835,7 @@ def execute_rebalance_public_ips():
                                        cookies=jar,
                                        timeout=TIMEOUT)
 
-        returned_str += "<br><b>FortiGate id: %d. Response codes: Login:</b> %s <b>Modify IP Pool:</b> %s <b>Logout:</b> %s" % \
-            (vmId, str(results_login.status_code), str(results_put_ippool.status_code), str(results_logout.status_code))
+        returned_str += "<br><b>FortiGate %d. Response: Login:</b> %s <b>Set IPPool:</b> %s <b>(Range:</b> %d..%d <b>) Logout:</b> %s" % \
+            (vmId, str(results_login.status_code), str(results_put_ippool.status_code), lower_limit, upper_limit, str(results_logout.status_code))
     
     return returned_str
