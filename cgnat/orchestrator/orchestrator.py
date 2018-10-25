@@ -566,7 +566,12 @@ def panic():
 @app.route("/progress_report", methods=['GET'])
 def progress_report():
     global returned_str
-    return returned_str
+    
+    response = Response()
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.data = returned_str
+
+    return response
 
 
 def request_cpu_load_from_nodes():
