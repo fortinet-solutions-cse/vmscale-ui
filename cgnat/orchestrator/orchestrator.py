@@ -581,6 +581,29 @@ def progress_report():
     return response
 
 
+@app.route("/synchronize_counters", methods=['POST'])
+def synchronize_counters():
+
+    global VMS_RUNNING
+
+    data = {"fgtload_time1": data_fgtload_time1,
+            "fgtload_time2": data_fgtload_time2,
+            "fgtload_time3": data_fgtload_time3,
+            "fgtload_time4": data_fgtload_time4,
+            "fgtload_time5": data_fgtload_time5,
+            "fgtload_time6": data_fgtload_time6
+            }
+
+    vms_running_real = 0
+    for k, v in data.items():
+        if 'fgtload_time' in k:
+            if v[len(v)-1] != -1:
+                vms_running_real += 1
+
+    VMS_RUNNING = vms_running_real
+    return str(VMS_RUNNING)
+
+
 def request_cpu_load_from_nodes():
     # ******************************
     # Get Values from Hypervisors

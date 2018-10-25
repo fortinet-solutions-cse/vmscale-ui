@@ -734,6 +734,12 @@
             });
         });
 
+        $("#synchronize_counters").click(function() {
+            $.ajax({
+                url: "http://" + window.location.hostname + ":5000/synchronize_counters",
+                type: "POST"
+            });
+        });
 
         $("#start_fgt_btn").click(start_fgt)
 
@@ -986,6 +992,11 @@
                         <li>
                             <a href="#">
                                 <div id="panic">Panic: General Reset</div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <div id="synchronize_counters">Synchronize Orchestrator counters</div>
                             </a>
                         </li>
                     </ul>
