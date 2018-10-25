@@ -113,7 +113,7 @@ def start_vm():
         fgt_id = request.args.get('fgt')
         fgt_id = int(fgt_id)
 
-        returned_str = execute_start_vm(fgt_id)
+        returned_str = execute_start_vm(fgt_id) + "<!--status:10%-->"
 
         fgt_contacted = False
         counter = 0
@@ -129,12 +129,12 @@ def start_vm():
             counter += 1
             time.sleep(1)
 
-        returned_str += execute_add_target(fgt_id)
+        returned_str += execute_add_target(fgt_id) + "<!--status:60%-->"
 
-        returned_str += execute_rebalance_public_ips()
+        returned_str += execute_rebalance_public_ips() + "<!--status:70%-->"
 
         # Increase traffic load FTS1
-        time.sleep(5)
+        time.sleep(3)
 
         headers = {
             'Content-Type': "application/json",
@@ -158,7 +158,7 @@ def start_vm():
         returned_str += "<br><b>FortiTester1 response (content): </b>" + \
                         str(dumps(loads(results.content.decode('utf-8')),
                                   indent=4,
-                                  sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;'))
+                                  sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;')) + "<!--status:85%-->"
 
         # Increase traffic load FTS2
         url_fts = "http://" + FTS2_IP + "/api/networkLimit/modify"
@@ -171,7 +171,7 @@ def start_vm():
         returned_str += "<br><b>FortiTester2 response (content): </b>" + \
                         str(dumps(loads(results.content.decode('utf-8')),
                                   indent=4,
-                                  sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;'))
+                                  sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;')) + "<!--status:100%-->"
 
         response.data = returned_str
         return response
@@ -217,7 +217,7 @@ def stop_vm():
                        "<br><b>FortiTester1 response (content): </b>" + \
                        str(dumps(loads(results.content.decode('utf-8')),
                                  indent=4,
-                                 sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;'))
+                                 sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;')) + "<!--status:20%-->"
 
         # Decrease traffic load FTS2
         url_fts = "http://" + FTS2_IP + "/api/networkLimit/modify"
@@ -231,18 +231,18 @@ def stop_vm():
                         "<br><b>FortiTester2 response (content): </b>" + \
                         str(dumps(loads(results.content.decode('utf-8')),
                                   indent=4,
-                                  sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;'))
+                                  sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;')) + "<!--status:40%-->"
 
         time.sleep(1)
 
-        returned_str += execute_remove_target(fgt_id)
+        returned_str += execute_remove_target(fgt_id) + "<!--status:60%-->"
 
         time.sleep(5)
 
         # StopVm
-        returned_str += execute_stop_vm(fgt_id)
+        returned_str += execute_stop_vm(fgt_id) + "<!--status:80%-->"
 
-        returned_str += execute_rebalance_public_ips()
+        returned_str += execute_rebalance_public_ips() + "<!--status:100%-->"
 
         response.data = returned_str
 
@@ -530,26 +530,26 @@ def panic():
         response = Response()
         response.headers.add('Access-Control-Allow-Origin', '*')
 
-        returned_str = "Panic log: <br>" + str(stop_traffic().data.decode('ascii').strip('\n')) + "<br>"
+        returned_str = "Panic log: <br>" + str(stop_traffic().data.decode('ascii').strip('\n')) + "<br> <!--status:10%-->"
 
         for vm in range(2, len(urls_fgt)+1):
             returned_str += "Removing target: " + str(vm) + " : " + execute_remove_target(vm)
 
-        returned_str += "Adding target: 1 : <br>" + execute_add_target(1) + "<br>"
+        returned_str += "Adding target: 1 : <br>" + execute_add_target(1) + "<br> <!--status:30%-->"
 
         for vm in range(2, len(urls_fgt)+1):
             returned_str += execute_stop_vm(vm)
 
-        returned_str += execute_start_vm(1)
+        returned_str += execute_start_vm(1) + "<!--status:50%-->"
 
         global VMS_RUNNING
         VMS_RUNNING = 1
 
-        returned_str += execute_rebalance_public_ips()
+        returned_str += execute_rebalance_public_ips() + "<!--status:70%-->"
 
         time.sleep(5)
 
-        returned_str += "<br> Resetting charts: " + str(reset_data().data.decode('ascii').strip('\n'))
+        returned_str += "<br> Resetting charts: " + str(reset_data().data.decode('ascii').strip('\n')) + "<!--status:100%-->"
 
         global KEEP_DATA
         KEEP_DATA = 1

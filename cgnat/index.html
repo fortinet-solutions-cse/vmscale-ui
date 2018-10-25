@@ -536,12 +536,23 @@
             $('#start_fgt_btn').prop('disabled', true)
             $('#close_start_fgt_btn').prop('disabled', true)
             fortigate_id = $("#scaleout_fgt #fgt_id_scale_out").val().trim()
+            $('#progress_bar_scale_out').addClass('active')                
             var intervalID = setInterval(function(){
                 $.ajax({
                     url: "http://" + window.location.hostname + ":5000/progress_report",
                     type: "GET",
                     success: function(result) {
                         $('#start_vm_log').html(result);
+                        re = /<!--status:([0-9]*%)-->/g
+                        progress = '0%'
+
+                        match = re.exec(result)
+                        while (match != null){
+                            progress = match[1]
+                            match = re.exec(result)
+                        }
+                        $('#progress_bar_scale_out').attr('style', 'width:'+progress)
+                        $('#progress_bar_scale_out').html(progress)
                     }
                 });}, 500);
             $.ajax({
@@ -551,10 +562,13 @@
                     $('#start_vm_log').html(result);
                 },
                 complete: function() {
+                    clearInterval(intervalID);
                     $("body").css("cursor", "default");
                     $('#close_start_fgt_btn').prop('disabled', false)
-                    clearInterval(intervalID);
-                }
+                    $('#progress_bar_scale_out').attr('style', 'width:100%')
+                    $('#progress_bar_scale_out').html('100%')
+                    $('#progress_bar_scale_out').removeClass('active')                
+               }
             });
         };
 
@@ -564,12 +578,23 @@
             $('#stop_fgt_btn').prop('disabled', true)
             $('#close_stop_fgt_btn').prop('disabled', true)
             fortigate_id = $("#scalein_fgt #fgt_id_scale_in").val().trim()
+            $('#progress_bar_scale_in').addClass('active')                
             var intervalID = setInterval(function(){
                 $.ajax({
                     url: "http://" + window.location.hostname + ":5000/progress_report",
                     type: "GET",
                     success: function(result) {
                         $('#stop_vm_log').html(result);
+                        re = /<!--status:([0-9]*%)-->/g
+                        progress = '0%'
+
+                        match = re.exec(result)
+                        while (match != null){
+                            progress = match[1]
+                            match = re.exec(result)
+                        }
+                        $('#progress_bar_scale_in').attr('style', 'width:'+progress)
+                        $('#progress_bar_scale_in').html(progress)
                     }
                 });}, 500);
             $.ajax({
@@ -579,9 +604,12 @@
                     $('#stop_vm_log').html(result);
                 },
                 complete: function() {
+                    clearInterval(intervalID);
                     $("body").css("cursor", "default");
                     $('#close_stop_fgt_btn').prop('disabled', false)
-                    clearInterval(intervalID);
+                    $('#progress_bar_scale_in').attr('style', 'width:100%')
+                    $('#progress_bar_scale_in').html('100%')
+                    $('#progress_bar_scale_in').removeClass('active')                
                 }
             });
         };
@@ -663,12 +691,23 @@
             $('#panic_view').modal('toggle');
             $("body").css("cursor", "progress");
             $('#close_panic_btn').prop('disabled', true)
+            $('#progress_bar_panic').addClass('active')                
             var intervalID = setInterval(function(){
                 $.ajax({
                     url: "http://" + window.location.hostname + ":5000/progress_report",
                     type: "GET",
                     success: function(result) {
                         $('#panic_log').html(result);
+                        re = /<!--status:([0-9]*%)-->/g
+                        progress = '0%'
+
+                        match = re.exec(result)
+                        while (match != null){
+                            progress = match[1]
+                            match = re.exec(result)
+                        }
+                        $('#progress_bar_panic').attr('style', 'width:'+progress)
+                        $('#progress_bar_panic').html(progress)
                     }
                 });}, 500);
             $.ajax({
@@ -678,9 +717,12 @@
                     $('#panic_log').html(result);
                 },
                 complete: function() {
+                    clearInterval(intervalID);
                     $("body").css("cursor", "default");
                     $('#close_panic_btn').prop('disabled', false)
-                    clearInterval(intervalID);
+                    $('#progress_bar_panic').attr('style', 'width:100%')
+                    $('#progress_bar_panic').html('100%')
+                    $('#progress_bar_panic').removeClass('active')
                 }
             });
         });
@@ -702,6 +744,8 @@
                 .end();
             $('#start_fgt_btn').prop('disabled', false)
             $('#start_vm_log').html('');
+            $('#progress_bar_scale_out').attr('style', 'width:0%')
+            $('#progress_bar_scale_out').html('0%')
         })
 
 
@@ -715,7 +759,8 @@
                 .end();
             $('#stop_fgt_btn').prop('disabled', false)
             $('#stop_vm_log').html('');
-        })
+            $('#progress_bar_scale_in').attr('style', 'width:0%')
+            $('#progress_bar_scale_in').html('0%')        })
 
         $('#start_test').on('hidden.bs.modal', function(e) {
             $(this)
@@ -748,7 +793,9 @@
                 .prop("checked", "")
                 .end();
             $('#panic_log').html('');
-        })
+            $('#progress_bar_panic').attr('style', 'width:0%')
+            $('#progress_bar_panic').html('0%')
+})
     });
 </script>
 
@@ -998,6 +1045,11 @@
                               <option>6</option>
                             </select>
                         </div>
+                        <div class="progress">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated progress-bar-info active" 
+                                 role="progressbar" id="progress_bar_scale_out" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">0%
+                            </div>
+                        </div>
                         <div id="start_vm_log">
                             <p></p>
                         </div>
@@ -1031,6 +1083,11 @@
                               <option>5</option>
                               <option>6</option>
                             </select>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated progress-bar-info active" 
+                                 role="progressbar" id="progress_bar_scale_in" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">0%
+                            </div>
                         </div>
                         <div id="stop_vm_log">
                             <p></p>
@@ -1102,6 +1159,11 @@
                         <h4 class="modal-title">General Reset</h4>
                     </div>
                     <div class="modal-body">
+                        <div class="progress">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated progress-bar-info active" 
+                                 role="progressbar" id="progress_bar_panic" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">0%
+                            </div>
+                        </div>
                         <div id="panic_log">
                             <p></p>
                         </div>
