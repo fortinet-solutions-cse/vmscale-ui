@@ -547,7 +547,7 @@ def panic():
 
         returned_str += execute_rebalance_public_ips()
 
-        time.sleep(10)
+        time.sleep(5)
 
         returned_str += "<br> Resetting charts: " + str(reset_data().data.decode('ascii').strip('\n'))
 
@@ -566,7 +566,7 @@ def panic():
 @app.route("/progress_report", methods=['GET'])
 def progress_report():
     global returned_str
-    
+
     response = Response()
     response.headers.add('Access-Control-Allow-Origin', '*')
     response.data = returned_str
@@ -828,7 +828,7 @@ def execute_rebalance_public_ips():
                                        cookies=jar,
                                        timeout=TIMEOUT)
 
-        returned_str += "<br><b>FortiGate vm: %d. Response codes: Login:</b> %s <b>Modify Pool:</b> %s <b>Logout:</b> %s" % \
+        returned_str += "<br><b>FortiGate id: %d. Response codes: Login:</b> %s <b>Modify IP Pool:</b> %s <b>Logout:</b> %s" % \
             (vmId, str(results_login.status_code), str(results_put_ippool.status_code), str(results_logout.status_code))
     
     return returned_str

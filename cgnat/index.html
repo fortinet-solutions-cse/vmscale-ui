@@ -534,6 +534,7 @@
         function start_fgt() {
             $("body").css("cursor", "progress");
             $('#start_fgt_btn').prop('disabled', true)
+            $('#close_start_fgt_btn').prop('disabled', true)
             fortigate_id = $("#scaleout_fgt #fgt_id_scale_out").val().trim()
             var intervalID = setInterval(function(){
                 $.ajax({
@@ -551,6 +552,7 @@
                 },
                 complete: function() {
                     $("body").css("cursor", "default");
+                    $('#close_start_fgt_btn').prop('disabled', false)
                     clearInterval(intervalID);
                 }
             });
@@ -560,7 +562,16 @@
         function stop_fgt() {
             $("body").css("cursor", "progress");
             $('#stop_fgt_btn').prop('disabled', true)
+            $('#close_stop_fgt_btn').prop('disabled', true)
             fortigate_id = $("#scalein_fgt #fgt_id_scale_in").val().trim()
+            var intervalID = setInterval(function(){
+                $.ajax({
+                    url: "http://" + window.location.hostname + ":5000/progress_report",
+                    type: "GET",
+                    success: function(result) {
+                        $('#stop_vm_log').html(result);
+                    }
+                });}, 500);
             $.ajax({
                 url: "http://" + window.location.hostname + ":5000/stop_vm?fgt=" + fortigate_id,
                 type: "POST",
@@ -569,6 +580,8 @@
                 },
                 complete: function() {
                     $("body").css("cursor", "default");
+                    $('#close_stop_fgt_btn').prop('disabled', false)
+                    clearInterval(intervalID);
                 }
             });
         };
@@ -601,14 +614,6 @@
         $("#stoptest").click(function() {
             $('#stop_test').modal('toggle');
             $("body").css("cursor", "progress");
-            var intervalID = setInterval(function(){
-                $.ajax({
-                    url: "http://" + window.location.hostname + ":5000/progress_report",
-                    type: "GET",
-                    success: function(result) {
-                        $('#stop_test_log').html(result);
-                    }
-                });}, 500);
             $.ajax({
                 url: "http://" + window.location.hostname + ":5000/stop_traffic",
                 type: "POST",
@@ -617,7 +622,6 @@
                 },
                 complete: function() {
                     $("body").css("cursor", "default");
-                    clearInterval(intervalID);
                 }
             });
         });
@@ -658,6 +662,7 @@
         $("#panic").click(function() {
             $('#panic_view').modal('toggle');
             $("body").css("cursor", "progress");
+            $('#close_panic_btn').prop('disabled', true)
             var intervalID = setInterval(function(){
                 $.ajax({
                     url: "http://" + window.location.hostname + ":5000/progress_report",
@@ -674,6 +679,7 @@
                 },
                 complete: function() {
                     $("body").css("cursor", "default");
+                    $('#close_panic_btn').prop('disabled', false)
                     clearInterval(intervalID);
                 }
             });
@@ -972,7 +978,7 @@
         </div>
 
         <!-- Modal -->
-        <div id="scaleout_fgt" class="modal fade" role="dialog">
+        <div id="scaleout_fgt" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false">
             <div class="modal-dialog">
 
                 <!-- Modal content-->
@@ -998,7 +1004,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-success" id="start_fgt_btn">Start</button>
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-default" id="close_start_fgt_btn" data-dismiss="modal">Close</button>
                     </div>
                 </div>
 
@@ -1006,7 +1012,7 @@
         </div>
 
         <!-- Modal -->
-        <div id="scalein_fgt" class="modal fade" role="dialog">
+        <div id="scalein_fgt" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false">
             <div class="modal-dialog">
 
                 <!-- Modal content-->
@@ -1032,7 +1038,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-success" id="stop_fgt_btn">Stop</button>
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-default" id="close_stop_fgt_btn" data-dismiss="modal">Close</button>
                     </div>
                 </div>
 
@@ -1040,7 +1046,7 @@
         </div>
 
         <!-- Modal -->
-        <div id="start_test" class="modal fade" role="dialog">
+        <div id="start_test" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false">
             <div class="modal-dialog">
 
                 <!-- Modal content-->
@@ -1063,7 +1069,7 @@
         </div>
 
         <!-- Modal -->
-        <div id="stop_test" class="modal fade" role="dialog">
+        <div id="stop_test" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false">
             <div class="modal-dialog">
 
                 <!-- Modal content-->
@@ -1086,7 +1092,7 @@
         </div>
 
         <!-- Modal -->
-        <div id="panic_view" class="modal fade" role="dialog">
+        <div id="panic_view" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false">
             <div class="modal-dialog">
 
                 <!-- Modal content-->
@@ -1101,7 +1107,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-default" id="close_panic_btn" data-dismiss="modal">Close</button>
                     </div>
                 </div>
 
