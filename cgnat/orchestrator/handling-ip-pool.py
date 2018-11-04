@@ -1,4 +1,15 @@
-# GET ippool
+ cat > add-device-1.json <<EOF
+ {
+   "privatePort": 31,
+   "publicPort": 32,
+   "macAddress": "2A:E6:73:C6:F5:16",
+   "publicRanges": [["64.64.84.1", "64.84.84.200"]]
+ }
+EOF
+ 
+ 
+ 
+ # GET ippool
 import requests
 
 url = "http://192.168.122.40/api/v2/cmdb/firewall/ippool"

@@ -16,281 +16,50 @@
         }
         </style>
 </head>
-<script>
-    $(function() {
-        $('#totalthroughtput').highcharts({
-            chart: {
-                type: 'bar'
-            },
-            title: {
-                text: ''
-            },
-            colors: ['#FF7200', '#AA7200', '#8bbc21', '#910000', '#1aadce',
-                '#492970', '#f28f43', '#77a1e5', '#c42525', '#a6c96a'
-            ],
-
-            legend: {
-                enabled: true,
-                floating: true,
-                align: 'right',
-                verticalAlign: 'top'
-            },
-            xAxis: {
-                categories: ['40G A', '40G B']
-            },
-            yAxis: {
-                title: {
-                    text: 'Bps'
-                }
-            },
-            series: [{
-                name: 'ingress',
-                data: [17, 38]
-            }, {
-                name: 'egress',
-                data: [16, 37]
-            }],
-        });
-    });
-</script>
-<script>
-    $(function() {
-        $('#fgtthroughtput').highcharts({
-            chart: {
-                type: 'bar'
-            },
-            legend: {
-                enabled: true
-            },
-            title: {
-                text: ''
-            },
-            xAxis: {
-                categories: ['FGT1', 'FGT2', 'FGT3', 'FGT4', 'FGT5', 'FGT6']
-            },
-            yAxis: {
-                title: {
-                    text: 'Bps'
-                }
-            },
-            series: [{
-                name: 'ingress',
-                data: [1.2, 8, 4.3, 3.5, 4.2, 6.2, 7, 3.4]
-            }, {
-                name: 'egress',
-                data: [1.2, 7.5, 3.5, 3.5, 4.2, 5.4, 6.5, 3]
-            }],
-        });
-    });
-</script>
-<script>
-    $(function() {
-
-        var template = {
-            chart: {
-                type: 'gauge',
-                plotBackgroundColor: null,
-                plotBackgroundImage: null,
-                plotBorderWidth: 0,
-                plotShadow: false
-            },
-
-            title: {
-                text: 'Host',
-                margin: 0
-            },
-
-            pane: {
-                startAngle: -150,
-                endAngle: 150,
-                background: [{
-                    backgroundColor: {
-                        linearGradient: {
-                            x1: 0,
-                            y1: 0,
-                            x2: 0,
-                            y2: 1
-                        },
-                        stops: [
-                            [0, '#FFF'],
-                            [1, '#333']
-                        ]
-                    },
-                    borderWidth: 0,
-                    outerRadius: '109%'
-                }, {
-                    backgroundColor: {
-                        linearGradient: {
-                            x1: 0,
-                            y1: 0,
-                            x2: 0,
-                            y2: 1
-                        },
-                        stops: [
-                            [0, '#333'],
-                            [1, '#FFF']
-                        ]
-                    },
-                    borderWidth: 1,
-                    outerRadius: '107%'
-                }, {
-                    // default background
-                }, {
-                    backgroundColor: '#DDD',
-                    borderWidth: 0,
-                    outerRadius: '105%',
-                    innerRadius: '103%'
-                }]
-            },
-
-            // the value axis
-            yAxis: {
-                min: 0,
-                max: 100,
-
-                minorTickInterval: 'auto',
-                minorTickWidth: 1,
-                minorTickLength: 10,
-                minorTickPosition: 'inside',
-                minorTickColor: '#666',
-
-                tickPixelInterval: 30,
-                tickWidth: 2,
-                tickPosition: 'inside',
-                tickLength: 10,
-                tickColor: '#666',
-                labels: {
-                    step: 2,
-                    rotation: 'auto'
-                },
-                title: {
-                    text: '% CPU',
-                    margin: 0
-                },
-
-                plotBands: [{
-                    from: 0,
-                    to: 60,
-                    color: '#55BF3B' // green
-                }, {
-                    from: 60,
-                    to: 75,
-                    color: '#DDDF0D' // yellow
-                }, {
-                    from: 75,
-                    to: 100,
-                    color: '#DF5353' // red
-                }]
-            },
-
-            series: [{
-                name: 'CPU Load',
-                data: [80],
-                tooltip: {
-                    valueSuffix: ' %'
-                }
-            }]
-
-        };
-
-        var template_fgt = $.extend(true, {}, template);
-        template_fgt.chart.height = '120%';
-        template_fgt.series.name = '';
-        template_fgt.yAxis = {
-            min: 0,
-            max: 100,
-
-            minorTickInterval: 'auto',
-            minorTickWidth: 1,
-            minorTickLength: 10,
-            minorTickPosition: 'outside',
-            minorTickColor: '#666',
-
-            tickPixelInterval: 50,
-            tickWidth: 2,
-            tickLength: 10,
-            tickColor: '#766',
-            labels: {
-                step: 2,
-                rotation: 'auto'
-            },
-            title: {
-                text: '',
-                margin: 0
-            },
-            labels: {
-                enabled: false
-            },
-            showFirstLabel: false,
-            showLastLabel: false,
-            plotBands: [{
-                from: 0,
-                to: 60,
-                color: '#55BF3B' // green
-            }, {
-                from: 60,
-                to: 75,
-                color: '#DDDF0D' // yellow
-            }, {
-                from: 75,
-                to: 100,
-                color: '#DF5353' // red
-            }]
-        };
-
-        // CPULoad1
-        var template1 = $.extend(true, {}, template);
-        template1.title.text = 'Host1';
-        $('#cpuload1').highcharts(template1);
-
-        // CPULoad2
-        var template2 = $.extend(true, {}, template);
-        template2.title.text = 'Host2';
-        $('#cpuload2').highcharts(template2);
-
-        // CPULoad3
-        var template3 = $.extend(true, {}, template);
-        template3.title.text = 'Host3';
-        $('#cpuload3').highcharts(template3);
-
-        // CPULoad4
-        var template4 = $.extend(true, {}, template);
-        template4.title.text = 'Host4';
-        $('#cpuload4').highcharts(template4);
-
-
-        // FGTLoad1
-        var template_fgt1 = $.extend(true, {}, template_fgt);
-        template_fgt1.title.text = 'FGT1';
-        $('#fgtload1').highcharts(template_fgt1);
-
-        // FGTLoad2
-        var template_fgt2 = $.extend(true, {}, template_fgt);
-        template_fgt2.title.text = 'FGT2';
-        $('#fgtload2').highcharts(template_fgt2);
-
-        // FGTLoad3
-        var template_fgt3 = $.extend(true, {}, template_fgt);
-        template_fgt3.title.text = 'FGT3';
-        $('#fgtload3').highcharts(template_fgt3);
-
-        // FGTLoad4
-        var template_fgt4 = $.extend(true, {}, template_fgt);
-        template_fgt4.title.text = 'FGT4';
-        $('#fgtload4').highcharts(template_fgt4);
-
-        // FGTLoad5
-        var template_fgt5 = $.extend(true, {}, template_fgt);
-        template_fgt5.title.text = 'FGT5';
-        $('#fgtload5').highcharts(template_fgt5);
-
-        // FGTLoad6
-        var template_fgt6 = $.extend(true, {}, template_fgt);
-        template_fgt6.title.text = 'FGT6';
-        $('#fgtload6').highcharts(template_fgt6);
-
-    });
-</script>
+<style type="text/css" media="screen">
+    #fgtload_time1 {
+        background:url('green.png') 0% 0%;
+        background-position: center;
+        background-repeat: no-repeat;
+        height:50%;
+        opacity: 0.5;
+     }
+     #fgtload_time2 {
+        background:url('red.png') 0% 0%;
+        background-position: center;
+        background-repeat: no-repeat;
+        height:50%;
+        opacity: 0.5;
+     }
+     #fgtload_time3 {
+        background:url('red.png') 0% 0%;
+        background-position: center;
+        background-repeat: no-repeat;
+        height:50%;
+        opacity: 0.5;
+     }
+     #fgtload_time4 {
+        background:url('red.png') 0% 0%;
+        background-position: center;
+        background-repeat: no-repeat;
+        height:50%;
+        opacity: 0.5;
+     }
+     #fgtload_time5 {
+        background:url('red.png') 0% 0%;
+        background-position: center;
+        background-repeat: no-repeat;
+        height:50%;
+        opacity: 0.5;
+     }
+     #fgtload_time6 {
+        background:url('red.png') 0% 0%;
+        background-position: center;
+        background-repeat: no-repeat;
+        height:50%;
+        opacity: 0.5;
+     }
+</style>
 
 <script>
     $(function() {
@@ -348,19 +117,15 @@
         template_cpuload_time4.yAxis.title.text = '';
         $('#cpuload_time4').highcharts(template_cpuload_time4);
 
-
-
-
         var template_fgtload_time = $.extend(true, {}, template_cpuload_time);
+        template_fgtload_time.chart.backgroundColor = 'rgba(0,0,0,0)'
         template_fgtload_time.colors = ['#3F30A0'];
+        template_fgtload_time.title.color = '#FFEEEE'
         template_fgtload_time.series = [{
             marker: {
                 enabled: false,
             }
         }];
-
-        //template_fgtload_time.xAxis.tickInterval = 5;
-
 
         var template_fgtload_time1 = $.extend(true, {}, template_fgtload_time);
         template_fgtload_time1.title.text = "FGT1";
@@ -393,7 +158,6 @@
 
     });
 </script>
-
 
 <script>
     $(function() {
@@ -827,10 +591,14 @@
                 chart.setTitle({
                     text: "FGT" + index + " - off"
                 });
+                $('#fgtload_time' + index).css({opacity:0.5})
+                $('#fgtload_time' + index).css("background-image", "url('red.png')")
             } else {
                 chart.setTitle({
-                    text: "FGT" + index + " - on"
+                    text: "<b>FGT" + index + " - on</b>"
                 });
+                $('#fgtload_time' + index).css({opacity:1})
+                $('#fgtload_time' + index).css("background-image", "url('green.png')")
             }
             chart.redraw();
 
