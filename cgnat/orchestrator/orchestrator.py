@@ -69,6 +69,9 @@ VMS_RUNNING = 1
 TOP_IP_LIMIT = 200
 PUBLIC_SUBNET_PREFIX = '64.84.84.'  # IP Pools will be contained in PUBLIC_SUBNET_PREFIX.1 up to PUBLIC_SUBNET_PREFIX.TOP_IP_LIMIT
 
+BANDWITH_VALUE = 0
+LAST_BANDWITH_VALUE = 0
+
 fgt_sessions = [requests.Session() for u in urls_fgt]
 
 data_cpuload_time1 = [-1] * 60
@@ -604,6 +607,26 @@ def synchronize_counters():
     return str(VMS_RUNNING)
 
 
+@app.route("/update_bandwith", methods=['POST'])
+def update_bandwith():
+
+    global BANDWITH_VALUE
+    response = Response()
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    try:
+        BANDWITH_VALUE = request.args.get('value')
+        BANDWITH_VALUE = int(BANDWITH_VALUE)
+        response.status_code = 200
+
+    except:
+        response.status_code = 500
+        print("No value returned")
+        return response
+
+    print("Bandwith change request set to: " + str(BANDWITH_VALUE))
+    return response
+
+
 def request_cpu_load_from_nodes():
     # ******************************
     # Get Values from Hypervisors
@@ -816,11 +839,6 @@ def execute_remove_target(fgt_id):
     return returned_str
 
 
-cron = BackgroundScheduler(daemon=True)
-cron.add_job(request_cpu_load_from_nodes, 'interval', seconds=POLL_INTERVAL)
-cron.start()
-
-
 def execute_rebalance_public_ips():
 
     global returned_str
@@ -860,5 +878,85 @@ def execute_rebalance_public_ips():
 
         returned_str += "<br><b>FortiGate %d. Response: Login:</b> %s <b>Set IPPool:</b> %s <b>(Range:</b> %d..%d <b>) Logout:</b> %s" % \
             (vmId, str(results_login.status_code), str(results_put_ippool.status_code), lower_limit, upper_limit, str(results_logout.status_code))
-    
+
     return returned_str
+
+
+def execute_bandwith_change():
+
+    global BANDWITH_VALUE, LAST_BANDWITH_VALUE, VMS_RUNNING
+
+    if LAST_BANDWITH_VALUE != BANDWITH_VALUE:
+        LAST_BANDWITH_VALUE = BANDWITH_VALUE
+
+        reqid = BANDWITH_VALUE
+
+        # Send new bandwith limit to FTS
+
+        # Scale out/in according to new value
+
+        # TODO: Put this in two separate loops for scaling out/in
+
+        # TODO: Consider use a previous fixed BANDWITH_VALUE to avoid interferences during exec
+        
+        if BANDWITH_VALUE > 15 and VMS_RUNNING <= 1:
+            for i in range(0, 5):
+                print("Creating fgt: " + str(2) + " to service " + str(reqid) + " Gbps")
+                time.sleep(1)
+            VMS_RUNNING += 1
+        if BANDWITH_VALUE > 35 and VMS_RUNNING <= 2:
+            for i in range(0, 5):
+                print("Creating fgt: " + str(3) + " to service " + str(reqid) + " Gbps")
+                time.sleep(1)
+            VMS_RUNNING += 1
+        if BANDWITH_VALUE > 55 and VMS_RUNNING <= 3:
+            for i in range(0, 5):
+                print("Creating fgt: " + str(4) + " to service " + str(reqid) + " Gbps")
+                time.sleep(1)
+            VMS_RUNNING += 1
+        if BANDWITH_VALUE > 75 and VMS_RUNNING <= 4:
+            for i in range(0, 5):
+                print("Creating fgt: " + str(5) + " to service " + str(reqid) + " Gbps")
+                time.sleep(1)
+            VMS_RUNNING += 1
+        if BANDWITH_VALUE > 95 and VMS_RUNNING <= 5:
+            for i in range(0, 5):
+                print("Creating fgt: " + str(6) + " to service " + str(reqid) + " Gbps")
+                time.sleep(1)
+            VMS_RUNNING += 1
+
+        if BANDWITH_VALUE < 95 and VMS_RUNNING >= 6:
+            for i in range(0, 5):
+                print("Destroying fgt: " + str(6) + " to service " + str(reqid) + " Gbps")
+                time.sleep(1)
+            VMS_RUNNING -= 1
+        if BANDWITH_VALUE < 75 and VMS_RUNNING >= 5:
+            for i in range(0, 5):
+                print("Destroying fgt: " + str(5) + " to service " + str(reqid) + " Gbps")
+                time.sleep(1)
+            VMS_RUNNING -= 1
+        if BANDWITH_VALUE < 55 and VMS_RUNNING >= 4:
+            for i in range(0, 5):
+                print("Destroying fgt: " + str(4) + " to service " + str(reqid) + " Gbps")
+                time.sleep(1)
+            VMS_RUNNING -= 1
+        if BANDWITH_VALUE < 35 and VMS_RUNNING >= 3:
+            for i in range(0, 5):
+                print("Destroying fgt: " + str(3) + " to service " + str(reqid) + " Gbps")
+                time.sleep(1)
+            VMS_RUNNING -= 1
+        if BANDWITH_VALUE < 15 and VMS_RUNNING >= 2:
+            for i in range(0, 5):
+                print("Destroying fgt: " + str(2) + " to service " + str(reqid) + " Gbps")
+                time.sleep(1)
+            VMS_RUNNING -= 1
+
+
+
+
+
+
+cron = BackgroundScheduler(daemon=True)
+cron.add_job(request_cpu_load_from_nodes, 'interval', seconds=POLL_INTERVAL)
+cron.add_job(execute_bandwith_change, 'interval', seconds=POLL_INTERVAL*2)
+cron.start()
