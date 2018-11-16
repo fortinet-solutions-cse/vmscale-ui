@@ -1,7 +1,7 @@
 config firewall ippool
   edit dynip1
-    set startip 64.84.84.1
-    set endip 64.84.84.200
+    set startip 64.64.84.1
+    set endip 64.64.84.200
   next
 end
     
