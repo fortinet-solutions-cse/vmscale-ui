@@ -46,7 +46,7 @@ fgt_hypervisors = [
     '10.210.14.18',
     '10.210.14.19']
 
-url_cybermapper = 'http://10.210.9.132:8080'
+url_cgnatmapper = 'http://10.210.9.133:8080'
 
 FTS1_IP = "10.210.1.28"
 FTS2_IP = "10.210.1.29"
@@ -132,7 +132,7 @@ def start_vm():
             counter += 1
             time.sleep(1)
 
-        returned_str += execute_add_target(fgt_id) + "<!--status:60%-->"
+        returned_str += execute_add_device(fgt_id) + "<!--status:60%-->"
 
         returned_str += execute_rebalance_public_ips() + "<!--status:70%-->"
 
@@ -238,7 +238,7 @@ def stop_vm():
 
         time.sleep(1)
 
-        returned_str += execute_remove_target(fgt_id) + "<!--status:60%-->"
+        returned_str += execute_remove_device(fgt_id) + "<!--status:60%-->"
 
         time.sleep(5)
 
@@ -543,9 +543,9 @@ def panic():
         returned_str = "Panic log: <br>" + str(stop_traffic().data.decode('ascii').strip('\n')) + "<br> <!--status:10%-->"
 
         for vm in range(2, len(urls_fgt)+1):
-            returned_str += "Removing target: " + str(vm) + " : " + execute_remove_target(vm)
+            returned_str += "Removing device: " + str(vm) + " : " + execute_remove_device(vm)
 
-        returned_str += "Adding target: 1 : <br>" + execute_add_target(1) + "<br> <!--status:30%-->"
+        returned_str += "Adding device: 1 : <br>" + execute_add_device(1) + "<br> <!--status:30%-->"
 
         for vm in range(2, len(urls_fgt)+1):
             returned_str += execute_stop_vm(vm)
@@ -589,6 +589,9 @@ def synchronize_counters():
 
     global VMS_RUNNING
 
+    response = Response()
+    response.headers.add('Access-Control-Allow-Origin', '*')
+
     data = {"fgtload_time1": data_fgtload_time1,
             "fgtload_time2": data_fgtload_time2,
             "fgtload_time3": data_fgtload_time3,
@@ -604,7 +607,8 @@ def synchronize_counters():
                 vms_running_real += 1
 
     VMS_RUNNING = vms_running_real
-    return str(VMS_RUNNING)
+    response.data = str(VMS_RUNNING)
+    return response
 
 
 @app.route("/update_bandwith", methods=['POST'])
@@ -706,14 +710,14 @@ def request_cpu_load_from_nodes():
             push_value_to_list(globals()['data_fgtload_time' + str(i + 1)], -1)
 
     # ********************************
-    # Get Values from DSO CyberMapper
+    # Get Values from DSO CGNATMapper
     # ********************************
 
-    global url_cybermapper
+    global url_cgnatmapper
 
     # Get dpid
 
-    loadbal = requests.get(url_cybermapper + '/v1.0/loadbal',
+    loadbal = requests.get(url_cgnatmapper + '/v1.0/loadbal',
                            timeout=TIMEOUT)
 
     # Use this notation '[*' to get the keys extracted into a list
@@ -721,7 +725,7 @@ def request_cpu_load_from_nodes():
 
     # Get port statistics
 
-    results = requests.get(url_cybermapper + '/v1.0/switch_stats/switches/' + dpid + '/port_stats',
+    results = requests.get(url_cgnatmapper + '/v1.0/switch_stats/switches/' + dpid + '/port_stats',
                            timeout=TIMEOUT)
 
     port_stats = loads(results.content.decode('utf-8'))
@@ -789,52 +793,72 @@ def execute_stop_vm(fgt_id):
     return returned_str
 
 
-def execute_add_target(fgt_id):
+def execute_add_device(fgt_id):
 
-    # Get dpid
-    global url_cybermapper
-    loadbal = requests.get(url_cybermapper + '/v1.0/loadbal',
-                           timeout=TIMEOUT)
+    # Send "add device" request: modify every device config and add a new one
+    returned_str = ""
+    private_port = [31, 27]
+    public_port = [32, 28]
+    public_mac_addr = ["52:54:00:EE:AA:01", "52:54:00:AE:CA:01"]
+    for device in range(1, fgt_id+1):
 
-    # Use this notation '[*' to get the keys extracted into a list
-    dpid = [*loads(loadbal.content.decode('utf-8')).keys()][0]
+        lower_limit = int(((device-1)*TOP_IP_LIMIT/VMS_RUNNING)+1)
+        upper_limit = int(device*TOP_IP_LIMIT/VMS_RUNNING)
 
-    # Send "add target" request
-    target_data = '{ \
-        "type": "pair", \
-        "port_ingress": ' + str(fgt_id * 2 + 3) + ', \
-        "port_egress": ' + str(fgt_id * 2 + 4) + ', \
-        "id": "dpi' + str(fgt_id) + '" }'
+        device_data = {
+            "private_port": private_port[device - 1],
+            "public_port": public_port[device - 1],
+            "public_mac_addr": public_mac_addr[device - 1],
+            "public_ranges": [[PUBLIC_SUBNET_PREFIX + str(lower_limit), PUBLIC_SUBNET_PREFIX + str(upper_limit)]]
+        }
 
-    results = requests.post(url_cybermapper + '/v1.0/loadbal/' + dpid + '/0/targets',
-                            data=target_data,
-                            timeout=TIMEOUT)
+        if device == fgt_id:
+            results = requests.post(url_cgnatmapper + '/v1/devices/' + str(fgt_id),
+                                    data=device_data,
+                                    timeout=TIMEOUT)
+        else:
+            results = requests.put(url_cgnatmapper + '/v1/devices/' + str(fgt_id),
+                                   data=device_data,
+                                   timeout=TIMEOUT)
 
-    returned_str = "<b>NoviFlow response (code): </b>" + str(results.status_code)
+        returned_str += "<b>NoviFlow response (code): </b>" + str(results.status_code)
 
-    returned_str += "<br><b>NoviFlow response (content): </b>" + \
-                    str(dumps(loads(results.content.decode('utf-8')),
-                              indent=4,
-                              sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;'))
+        returned_str += "<br><b>NoviFlow response (content): </b>" + \
+                        str(dumps(loads(results.content.decode('utf-8')),
+                                  indent=4,
+                                  sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;'))
 
     return returned_str
 
 
-def execute_remove_target(fgt_id):
+def execute_remove_device(fgt_id):
 
-    # Get dpid
-    global url_cybermapper
-    loadbal = requests.get(url_cybermapper + '/v1.0/loadbal',
-                           timeout=TIMEOUT)
+    # Send "remove device" request
+    returned_str = ""
+    private_port = [31, 27]
+    public_port = [32, 28]
+    public_mac_addr = ["52:54:00:EE:AA:01", "52:54:00:AE:CA:01"]
+    for device in range(1, fgt_id+1):
 
-    # Use this notation '[*' to get the keys extracted into a list
-    dpid = [*loads(loadbal.content.decode('utf-8')).keys()][0]
+        lower_limit = int(((device-1)*TOP_IP_LIMIT/(VMS_RUNNING - 1))+1)
+        upper_limit = int(device*TOP_IP_LIMIT/(VMS_RUNNING - 1))
 
-    # Send "remove target" request
-    results = requests.delete(url_cybermapper + '/v1.0/loadbal/' + dpid + '/0/targets/dpi' + str(fgt_id),
-                              timeout=TIMEOUT)
+        device_data = {
+            "private_port": private_port[device - 1],
+            "public_port": public_port[device - 1],
+            "public_mac_addr": public_mac_addr[device - 1],
+            "public_ranges": [[PUBLIC_SUBNET_PREFIX + str(lower_limit), PUBLIC_SUBNET_PREFIX + str(upper_limit)]]
+        }
 
-    returned_str = "<br><b>NoviFlow response (code): </b>" + str(results.status_code) + "<br>"
+        if device == fgt_id:
+            results = requests.delete(url_cgnatmapper + '/v1/devices/' + str(fgt_id),
+                                      timeout=TIMEOUT)
+        else:
+            results = requests.put(url_cgnatmapper + '/v1/devices/' + str(fgt_id),
+                                   data=device_data,
+                                   timeout=TIMEOUT)
+
+        returned_str += "<br><b>NoviFlow response (code): </b>" + str(results.status_code) + "<br>"
 
     return returned_str
 
