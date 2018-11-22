@@ -196,15 +196,25 @@ def _start_vm(fgt_id):
 @app.route("/stop_vm", methods=['POST'])
 def stop_vm():
 
-    global returned_str
-    returned_str = ""
-    try:
-        response = Response()
-        response.headers.add('Access-Control-Allow-Origin', '*')
+    response = Response()
+    response.headers.add('Access-Control-Allow-Origin', '*')
 
+    try:
         fgt_id = request.args.get('fgt')
         fgt_id = int(fgt_id)
+        
+        response.data = _stop_vm(fgt_id)
+        return response
+    except:
+        response.data = traceback.format_exc()
+        return response
 
+
+def _stop_vm(fgt_id):
+    global returned_str
+    returned_str = ""
+
+    try:
         # Decrease traffic load FTS1
         headers = {
             'Content-Type': "application/json",
@@ -255,14 +265,10 @@ def stop_vm():
         returned_str += execute_stop_vm(fgt_id) + "<!--status:80%-->"
 
         returned_str += execute_rebalance_public_ips() + "<!--status:100%-->"
-
-        response.data = returned_str
-
-        return response
+        return returned_str
 
     except:
-        response.data = returned_str + traceback.format_exc()
-        return response
+        return returned_str + traceback.format_exc()
 
 
 @app.route("/start_traffic", methods=['POST'])
@@ -941,30 +947,20 @@ def execute_bandwith_change():
             _start_vm(6)
 
         if BANDWITH_VALUE < 95 and VMS_RUNNING >= 6:
-            for i in range(0, 5):
-                print("Destroying fgt: " + str(6) + " to service " + str(reqid) + " Gbps")
-                time.sleep(1)
-            VMS_RUNNING -= 1
+            print("Destroying fgt: " + str(6) + " to service " + str(reqid) + " Gbps")
+            _stop_vm(6)
         if BANDWITH_VALUE < 75 and VMS_RUNNING >= 5:
-            for i in range(0, 5):
-                print("Destroying fgt: " + str(5) + " to service " + str(reqid) + " Gbps")
-                time.sleep(1)
-            VMS_RUNNING -= 1
+            print("Destroying fgt: " + str(5) + " to service " + str(reqid) + " Gbps")
+            _stop_vm(5)
         if BANDWITH_VALUE < 55 and VMS_RUNNING >= 4:
-            for i in range(0, 5):
-                print("Destroying fgt: " + str(4) + " to service " + str(reqid) + " Gbps")
-                time.sleep(1)
-            VMS_RUNNING -= 1
+            print("Destroying fgt: " + str(4) + " to service " + str(reqid) + " Gbps")
+            _stop_vm(4)
         if BANDWITH_VALUE < 35 and VMS_RUNNING >= 3:
-            for i in range(0, 5):
-                print("Destroying fgt: " + str(3) + " to service " + str(reqid) + " Gbps")
-                time.sleep(1)
-            VMS_RUNNING -= 1
+            print("Destroying fgt: " + str(3) + " to service " + str(reqid) + " Gbps")
+            _stop_vm(3)
         if BANDWITH_VALUE < 15 and VMS_RUNNING >= 2:
-            for i in range(0, 5):
-                print("Destroying fgt: " + str(2) + " to service " + str(reqid) + " Gbps")
-                time.sleep(1)
-            VMS_RUNNING -= 1
+            print("Destroying fgt: " + str(2) + " to service " + str(reqid) + " Gbps")
+            _stop_vm(2)
 
 
 cron = BackgroundScheduler(daemon=True)
