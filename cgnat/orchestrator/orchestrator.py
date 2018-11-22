@@ -8,6 +8,7 @@ import requests
 import gevent
 import paramiko
 import traceback
+import html2text
 
 # Note previous patch to avoid error with paramiko
 # and grequests: https://github.com/paramiko/paramiko/issues/633
@@ -48,10 +49,10 @@ fgt_hypervisors = [
 
 url_cgnatmapper = 'http://10.210.9.133:8080'
 
-FTS1_IP = "10.210.1.28"
+FTS1_IP = "10.210.1.50"
 FTS2_IP = "10.210.1.29"
 
-FTS1_CASE_ID = '5b02db2ddfaa0f02ec656c76'
+FTS1_CASE_ID = '5bf58e0aedc8ea034a053791'
 FTS2_CASE_ID = '5b02d8acac929f0348c9c9d0'
 FTS_CPS_PER_VM = 5200
 
@@ -107,18 +108,27 @@ def push_value_to_list(list, value):
 @app.route("/start_vm", methods=['POST'])
 def start_vm():
 
-    global returned_str
-    returned_str = ""
-    try:
-        response = Response()
-        response.headers.add('Access-Control-Allow-Origin', '*')
+    response = Response()
+    response.headers.add('Access-Control-Allow-Origin', '*')
 
+    try:
         fgt_id = request.args.get('fgt')
         fgt_id = int(fgt_id)
 
+        response.data = _start_vm(fgt_id)
+        return response
+    except:
+        response.data = traceback.format_exc()
+        return response
+
+
+def _start_vm(fgt_id):
+
+    global returned_str
+    returned_str = ""
+    try:
         returned_str = execute_start_vm(fgt_id) + "<!--status:10%-->"
 
-        """
         fgt_contacted = False
         counter = 0
         while not fgt_contacted:
@@ -132,7 +142,6 @@ def start_vm():
                 print("Monitoring FortiGate startup (%s). Attempt: %d" % (urls_fgt[fgt_id - 1], counter))
             counter += 1
             time.sleep(1)
-        """
 
         returned_str += execute_add_device(fgt_id) + "<!--status:60%-->"
 
@@ -178,12 +187,10 @@ def start_vm():
                                   indent=4,
                                   sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;')) + "<!--status:100%-->"
 
-        response.data = returned_str
-        return response
+        return returned_str
 
     except:
-        response.data = returned_str + traceback.format_exc()
-        return response
+        return returned_str + traceback.format_exc()
 
 
 @app.route("/stop_vm", methods=['POST'])
@@ -295,7 +302,7 @@ def start_traffic():
                                          verify=False)
 
         if result_start_fts1.status_code == 200:
-            returned_str = "<b>Success.</b> Traffic started in FortiTester1."
+            returned_str = "<b>FortiTester 1.</b> Traffic started successfully."
         else:
             returned_str = "<b>Error:</b> Could not start traffic in FortiTester1. <br>" + \
                            " Code: " + str(result_start_fts1.status_code) + " Text: " + result_start_fts1.text
@@ -313,7 +320,7 @@ def start_traffic():
                                          verify=False)
 
         if result_start_fts2.status_code == 200:
-            returned_str += "<br><b>Success.</b> Traffic started in FortiTester2."
+            returned_str += "<br><b>FortiTester 2.</b> Traffic started successfully."
         else:
             returned_str += "<br><b>Error:</b> Could not start traffic in FortiTester2. <br>" + \
                             " Code: " + str(result_start_fts2.status_code) + " Text: " + str(result_start_fts2.text)
@@ -385,7 +392,7 @@ def stop_traffic():
                                          verify=False)
 
         if result_start_fts1.status_code == 200:
-            returned_str = "<b>Success.</b> Traffic stopped in FortiTester1."
+            returned_str = "<b>FortiTester 1</b>: Traffic stopped succesfully"
         else:
             returned_str = "<b>Error:</b> Could not stop traffic in FortiTester1. <br>" + \
                            " Code: " + str(result_start_fts1.status_code) + " Text: " + result_start_fts1.text
@@ -403,7 +410,7 @@ def stop_traffic():
                                          verify=False)
 
         if result_start_fts2.status_code == 200:
-            returned_str += "<br><b>Success.</b> Traffic stopped in FortiTester2."
+            returned_str = "<b>FortiTester 2</b>: Traffic stopped succesfully"
         else:
             returned_str += "<b>Error:</b> Could not stop traffic in FortiTester2. <br>" + \
                             " Code: " + str(result_start_fts2.status_code) + " Text: " + result_start_fts2.text
@@ -545,12 +552,12 @@ def panic():
         response = Response()
         response.headers.add('Access-Control-Allow-Origin', '*')
 
-        returned_str = "Panic log: <br>" + str(stop_traffic().data.decode('ascii').strip('\n')) + "<br> <!--status:10%-->"
+        returned_str = "<b>Panic log:</b> <br>" + str(stop_traffic().data.decode('ascii').strip('\n')) + "<br><br> <!--status:10%-->"
 
         for vm in range(2, len(urls_fgt)+1):
-            returned_str += "Removing device: " + str(vm) + " : " + execute_remove_device(vm)
+            returned_str += "<b>Orchestrating removal for device: </b>" + str(vm) + execute_remove_device(vm) + "<br>"
 
-        returned_str += "Adding device: 1 : <br>" + execute_add_device(1) + "<br> <!--status:30%-->"
+        returned_str += "<b>Orchestrating creation for device:</b> 1 " + execute_add_device(1) + "<br> <!--status:30%-->"
 
         for vm in range(2, len(urls_fgt)+1):
             returned_str += execute_stop_vm(vm)
@@ -561,7 +568,7 @@ def panic():
 
         time.sleep(5)
 
-        returned_str += "<br> Resetting charts: " + str(reset_data().data.decode('ascii').strip('\n')) + "<!--status:100%-->"
+        returned_str += "<br><b>Resetting charts:</b> " + str(reset_data().data.decode('ascii').strip('\n')) + "<!--status:100%-->"
 
         global KEEP_DATA
         KEEP_DATA = 1
@@ -762,7 +769,7 @@ def execute_start_vm(fgt_id):
     VMS_RUNNING += 1
 
     returned_str = "<b>FortiGate id: </b>" + str(fgt_id) + "<br>" + \
-                   "<b>FortiGate VM instantiation: </b>" + str(stderr).replace('\\n', '<br>') + \
+                   "<b>VM instantiation: </b>" + str(stderr).replace('\\n', '<br>') + \
                    ":" + str(stdout).replace('\\n', '<br>') + "<br>"
 
     return returned_str
@@ -773,7 +780,7 @@ def execute_stop_vm(fgt_id):
     ssh.load_system_host_keys()
     ssh.connect(fgt_hypervisors[fgt_id - 1], username=USERNAME_HYPERVISOR)
     _, ssh_stdout, ssh_stderr = ssh.exec_command(
-        "LIBVIRT_DEFAULT_URI=qemu:///system virsh // shutdown fgt-cgnat-" + str(fgt_id))
+        "LIBVIRT_DEFAULT_URI=qemu:///system virsh shutdown fgt-cgnat-" + str(fgt_id))
 
     stdout = ssh_stdout.read().decode('ascii').strip('\n')
     stderr = ssh_stderr.read().decode('ascii').strip('\n')
@@ -782,7 +789,8 @@ def execute_stop_vm(fgt_id):
     global VMS_RUNNING
     VMS_RUNNING -= 1
 
-    returned_str = "<b>FortiGate VM shutdown: </b>" + str(stderr).replace('\\n', '<br>') + \
+    returned_str = "<b>FortiGate id: </b>" + str(fgt_id) + "<br>" + \
+                   "<b>VM shutdown: </b>" + str(stderr).replace('\\n', '<br>') + \
                    ":" + str(stdout).replace('\\n', '<br>') + "<br>"
 
     return returned_str
@@ -819,9 +827,9 @@ def execute_add_device(fgt_id):
         returned_str += "<br><b>NoviFlow response (code): </b>" + str(results.status_code)
 
         returned_str += "<br><b>NoviFlow response (content): </b>" + \
-                        str(results.content.decode('utf-8'))
+                        str(html2text.html2text(results.content.decode('utf-8'))) 
 
-    return returned_str
+    return returned_str + "<br>"
 
 
 def execute_remove_device(fgt_id):
@@ -851,9 +859,9 @@ def execute_remove_device(fgt_id):
                                    data=dumps(device_data),
                                    timeout=TIMEOUT)
 
-        returned_str += "<br><b>NoviFlow response (code): </b>" + str(results.status_code) + "<br>"
+        returned_str += "<br><b>NoviFlow response (code): </b>" + str(results.status_code) 
 
-    return returned_str
+    return returned_str + "<br>"
 
 
 def execute_rebalance_public_ips():
@@ -893,7 +901,7 @@ def execute_rebalance_public_ips():
                                        cookies=jar,
                                        timeout=TIMEOUT)
 
-        returned_str += "<br><b>FortiGate %d. Response: Login:</b> %s <b>Set IPPool:</b> %s <b>(Range:</b> %d..%d <b>) Logout:</b> %s" % \
+        returned_str += "<br><b>FortiGate %d. Re-balancing IPs. Responses: <br>     Login:</b> %s <b>Set IPPool:</b> %s <b>(Range:</b> %d..%d <b>) Logout:</b> %s" % \
             (vmId, str(results_login.status_code), str(results_put_ippool.status_code), lower_limit, upper_limit, str(results_logout.status_code))
 
     return returned_str
@@ -917,30 +925,20 @@ def execute_bandwith_change():
         # TODO: Consider use a previous fixed BANDWITH_VALUE to avoid interferences during exec
         
         if BANDWITH_VALUE > 15 and VMS_RUNNING <= 1:
-            for i in range(0, 5):
-                print("Creating fgt: " + str(2) + " to service " + str(reqid) + " Gbps")
-                time.sleep(1)
-            VMS_RUNNING += 1
+            print("Creating fgt: " + str(2) + " to service " + str(reqid) + " Gbps")
+            _start_vm(2)
         if BANDWITH_VALUE > 35 and VMS_RUNNING <= 2:
-            for i in range(0, 5):
-                print("Creating fgt: " + str(3) + " to service " + str(reqid) + " Gbps")
-                time.sleep(1)
-            VMS_RUNNING += 1
+            print("Creating fgt: " + str(3) + " to service " + str(reqid) + " Gbps")
+            _start_vm(3)
         if BANDWITH_VALUE > 55 and VMS_RUNNING <= 3:
-            for i in range(0, 5):
-                print("Creating fgt: " + str(4) + " to service " + str(reqid) + " Gbps")
-                time.sleep(1)
-            VMS_RUNNING += 1
+            print("Creating fgt: " + str(4) + " to service " + str(reqid) + " Gbps")
+            _start_vm(4)
         if BANDWITH_VALUE > 75 and VMS_RUNNING <= 4:
-            for i in range(0, 5):
-                print("Creating fgt: " + str(5) + " to service " + str(reqid) + " Gbps")
-                time.sleep(1)
-            VMS_RUNNING += 1
+            print("Creating fgt: " + str(5) + " to service " + str(reqid) + " Gbps")
+            _start_vm(5)
         if BANDWITH_VALUE > 95 and VMS_RUNNING <= 5:
-            for i in range(0, 5):
-                print("Creating fgt: " + str(6) + " to service " + str(reqid) + " Gbps")
-                time.sleep(1)
-            VMS_RUNNING += 1
+            print("Creating fgt: " + str(6) + " to service " + str(reqid) + " Gbps")
+            _start_vm(6)
 
         if BANDWITH_VALUE < 95 and VMS_RUNNING >= 6:
             for i in range(0, 5):
