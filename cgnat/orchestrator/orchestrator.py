@@ -887,7 +887,7 @@ def execute_rebalance_public_ips():
         headers = {"Content-Type": "application/json",
                    "x-csrftoken": xsrfToken.strip('"')}
 
-        results_put_ippool = requests.put(urls_fgt[vmId-1] + 'api/v2/cmdb/firewall/ippool/dynip1?vdom=root',
+        results_put_ippool = requests.put(urls_fgt[vmId-1] + 'api/v2/cmdb/firewall/ippool/dynIP?vdom=root',
                                           data=dumps(target_data),
                                           verify=False,
                                           headers=headers,
@@ -974,10 +974,6 @@ def execute_bandwith_change():
                 print("Destroying fgt: " + str(2) + " to service " + str(reqid) + " Gbps")
                 time.sleep(1)
             VMS_RUNNING -= 1
-
-
-
-
 
 
 cron = BackgroundScheduler(daemon=True)
