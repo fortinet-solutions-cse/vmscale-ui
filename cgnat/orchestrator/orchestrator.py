@@ -118,6 +118,7 @@ def start_vm():
 
         returned_str = execute_start_vm(fgt_id) + "<!--status:10%-->"
 
+        """
         fgt_contacted = False
         counter = 0
         while not fgt_contacted:
@@ -131,6 +132,7 @@ def start_vm():
                 print("Monitoring FortiGate startup (%s). Attempt: %d" % (urls_fgt[fgt_id - 1], counter))
             counter += 1
             time.sleep(1)
+        """
 
         returned_str += execute_add_device(fgt_id) + "<!--status:60%-->"
 
@@ -537,6 +539,9 @@ def panic():
     returned_str = ""
 
     try:
+        global VMS_RUNNING
+        VMS_RUNNING = 1
+
         response = Response()
         response.headers.add('Access-Control-Allow-Origin', '*')
 
@@ -551,9 +556,6 @@ def panic():
             returned_str += execute_stop_vm(vm)
 
         returned_str += execute_start_vm(1) + "<!--status:50%-->"
-
-        global VMS_RUNNING
-        VMS_RUNNING = 1
 
         returned_str += execute_rebalance_public_ips() + "<!--status:70%-->"
 
@@ -713,19 +715,12 @@ def request_cpu_load_from_nodes():
     # Get Values from DSO CGNATMapper
     # ********************************
 
+    """
     global url_cgnatmapper
-
-    # Get dpid
-
-    loadbal = requests.get(url_cgnatmapper + '/v1.0/loadbal',
-                           timeout=TIMEOUT)
-
-    # Use this notation '[*' to get the keys extracted into a list
-    dpid = [*loads(loadbal.content.decode('utf-8')).keys()][0]
 
     # Get port statistics
 
-    results = requests.get(url_cgnatmapper + '/v1.0/switch_stats/switches/' + dpid + '/port_stats',
+    results = requests.get(url_cgnatmapper + '/v1.0/switch_stats/switches/port_stats',
                            timeout=TIMEOUT)
 
     port_stats = loads(results.content.decode('utf-8'))
@@ -750,21 +745,21 @@ def request_cpu_load_from_nodes():
     push_value_to_list(data_fgtthroughput4_time, (bps[11] + bps[12]) / 2000000000 * 8)
     push_value_to_list(data_fgtthroughput5_time, (bps[13] + bps[14]) / 2000000000 * 8)
     push_value_to_list(data_fgtthroughput6_time, (bps[15] + bps[16]) / 2000000000 * 8)
-
+    """
 
 def execute_start_vm(fgt_id):
     ssh = paramiko.SSHClient()
     ssh.load_system_host_keys()
     ssh.connect(fgt_hypervisors[fgt_id - 1], username=USERNAME_HYPERVISOR)
-    ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
+    _, ssh_stdout, ssh_stderr = ssh.exec_command(
         "LIBVIRT_DEFAULT_URI=qemu:///system virsh start fgt-cgnat-" + str(fgt_id))
 
     stdout = ssh_stdout.read().decode('ascii').strip('\n')
     stderr = ssh_stderr.read().decode('ascii').strip('\n')
 
-    if ssh_stdout.channel.recv_exit_status() == 0:
-        global VMS_RUNNING
-        VMS_RUNNING += 1
+    #if ssh_stdout.channel.recv_exit_status() == 0:
+    global VMS_RUNNING
+    VMS_RUNNING += 1
 
     returned_str = "<b>FortiGate id: </b>" + str(fgt_id) + "<br>" + \
                    "<b>FortiGate VM instantiation: </b>" + str(stderr).replace('\\n', '<br>') + \
@@ -777,15 +772,15 @@ def execute_stop_vm(fgt_id):
     ssh = paramiko.SSHClient()
     ssh.load_system_host_keys()
     ssh.connect(fgt_hypervisors[fgt_id - 1], username=USERNAME_HYPERVISOR)
-    ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(
-        "LIBVIRT_DEFAULT_URI=qemu:///system virsh shutdown fgt-cgnat-" + str(fgt_id))
+    _, ssh_stdout, ssh_stderr = ssh.exec_command(
+        "LIBVIRT_DEFAULT_URI=qemu:///system virsh // shutdown fgt-cgnat-" + str(fgt_id))
 
     stdout = ssh_stdout.read().decode('ascii').strip('\n')
     stderr = ssh_stderr.read().decode('ascii').strip('\n')
 
-    if ssh_stdout.channel.recv_exit_status() == 0:
-        global VMS_RUNNING
-        VMS_RUNNING -= 1
+    #if ssh_stdout.channel.recv_exit_status() == 0:
+    global VMS_RUNNING
+    VMS_RUNNING -= 1
 
     returned_str = "<b>FortiGate VM shutdown: </b>" + str(stderr).replace('\\n', '<br>') + \
                    ":" + str(stdout).replace('\\n', '<br>') + "<br>"
@@ -799,34 +794,32 @@ def execute_add_device(fgt_id):
     returned_str = ""
     private_port = [31, 27]
     public_port = [32, 28]
-    public_mac_addr = ["52:54:00:EE:AA:01", "52:54:00:AE:CA:01"]
     for device in range(1, fgt_id+1):
 
-        lower_limit = int(((device-1)*TOP_IP_LIMIT/VMS_RUNNING)+1)
-        upper_limit = int(device*TOP_IP_LIMIT/VMS_RUNNING)
+        lower_limit = int(((device-1)*TOP_IP_LIMIT/fgt_id)+1)
+        upper_limit = int(device*TOP_IP_LIMIT/fgt_id)
 
         device_data = {
             "private_port": private_port[device - 1],
             "public_port": public_port[device - 1],
-            "public_mac_addr": public_mac_addr[device - 1],
             "public_ranges": [[PUBLIC_SUBNET_PREFIX + str(lower_limit), PUBLIC_SUBNET_PREFIX + str(upper_limit)]]
         }
 
         if device == fgt_id:
-            results = requests.post(url_cgnatmapper + '/v1/devices/' + str(fgt_id),
-                                    data=device_data,
+            returned_str += "<br><b> Adding device to NoviFlow: </b>" + str(device)
+            results = requests.post(url_cgnatmapper + '/v1/devices',
+                                    data=dumps(device_data),
                                     timeout=TIMEOUT)
         else:
-            results = requests.put(url_cgnatmapper + '/v1/devices/' + str(fgt_id),
-                                   data=device_data,
+            returned_str += "<br><b> Modifying device in NoviFlow: </b>" + str(device)
+            results = requests.put(url_cgnatmapper + '/v1/devices/' + str(device),
+                                   data=dumps(device_data),
                                    timeout=TIMEOUT)
 
-        returned_str += "<b>NoviFlow response (code): </b>" + str(results.status_code)
+        returned_str += "<br><b>NoviFlow response (code): </b>" + str(results.status_code)
 
         returned_str += "<br><b>NoviFlow response (content): </b>" + \
-                        str(dumps(loads(results.content.decode('utf-8')),
-                                  indent=4,
-                                  sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;'))
+                        str(results.content.decode('utf-8'))
 
     return returned_str
 
@@ -837,25 +830,25 @@ def execute_remove_device(fgt_id):
     returned_str = ""
     private_port = [31, 27]
     public_port = [32, 28]
-    public_mac_addr = ["52:54:00:EE:AA:01", "52:54:00:AE:CA:01"]
     for device in range(1, fgt_id+1):
 
-        lower_limit = int(((device-1)*TOP_IP_LIMIT/(VMS_RUNNING - 1))+1)
-        upper_limit = int(device*TOP_IP_LIMIT/(VMS_RUNNING - 1))
+        lower_limit = int(((device-1)*TOP_IP_LIMIT/(fgt_id - 1))+1)
+        upper_limit = int(device*TOP_IP_LIMIT/(fgt_id - 1))
 
         device_data = {
             "private_port": private_port[device - 1],
             "public_port": public_port[device - 1],
-            "public_mac_addr": public_mac_addr[device - 1],
             "public_ranges": [[PUBLIC_SUBNET_PREFIX + str(lower_limit), PUBLIC_SUBNET_PREFIX + str(upper_limit)]]
         }
 
         if device == fgt_id:
-            results = requests.delete(url_cgnatmapper + '/v1/devices/' + str(fgt_id),
+            returned_str += "<br><b> Deleting device to NoviFlow: </b>" + str(device)
+            results = requests.delete(url_cgnatmapper + '/v1/devices/' + str(device),
                                       timeout=TIMEOUT)
         else:
-            results = requests.put(url_cgnatmapper + '/v1/devices/' + str(fgt_id),
-                                   data=device_data,
+            returned_str += "<br><b> Modifying device in NoviFlow: </b>" + str(device)
+            results = requests.put(url_cgnatmapper + '/v1/devices/' + str(device),
+                                   data=dumps(device_data),
                                    timeout=TIMEOUT)
 
         returned_str += "<br><b>NoviFlow response (code): </b>" + str(results.status_code) + "<br>"
