@@ -731,12 +731,11 @@ def request_cpu_load_from_nodes():
     # Get Values from DSO CGNATMapper
     # ********************************
 
-    """
     global url_cgnatmapper
 
     # Get port statistics
 
-    results = requests.get(url_cgnatmapper + '/v1.0/switch_stats/switches/port_stats',
+    results = requests.get(url_cgnatmapper + '/v1.0/switch_stats/switches/00000090fb64cce9/port_stats',
                            timeout=TIMEOUT)
 
     port_stats = loads(results.content.decode('utf-8'))
@@ -751,17 +750,17 @@ def request_cpu_load_from_nodes():
     # Instead of port3 (which is faulty) we use 21-24
     # Instead of port4 we use 25-28
     push_value_to_list(data_totalthroughput_ingress_time,
-                       (bps[1] + bps[21] + bps[22] + bps[23] + bps[24]) / 1000000000 * 8)
+                       bps[1] / 1000000000 * 8)
     push_value_to_list(data_totalthroughput_egress_time,
-                       (bps[2] + bps[25] + bps[26] + bps[27] + bps[28]) / 1000000000 * 8)
+                       bps[2] / 1000000000 * 8)
 
-    push_value_to_list(data_fgtthroughput1_time, (bps[5] + bps[6]) / 2000000000 * 8)
-    push_value_to_list(data_fgtthroughput2_time, (bps[7] + bps[8]) / 2000000000 * 8)
+    push_value_to_list(data_fgtthroughput1_time, (bps[31] + bps[32]) / 2000000000 * 8)
+    push_value_to_list(data_fgtthroughput2_time, (bps[27] + bps[28]) / 2000000000 * 8)
     push_value_to_list(data_fgtthroughput3_time, (bps[9] + bps[10]) / 2000000000 * 8)
     push_value_to_list(data_fgtthroughput4_time, (bps[11] + bps[12]) / 2000000000 * 8)
     push_value_to_list(data_fgtthroughput5_time, (bps[13] + bps[14]) / 2000000000 * 8)
     push_value_to_list(data_fgtthroughput6_time, (bps[15] + bps[16]) / 2000000000 * 8)
-    """
+
 
 def execute_start_vm(fgt_id):
     ssh = paramiko.SSHClient()
@@ -773,7 +772,7 @@ def execute_start_vm(fgt_id):
     stdout = ssh_stdout.read().decode('ascii').strip('\n')
     stderr = ssh_stderr.read().decode('ascii').strip('\n')
 
-    #if ssh_stdout.channel.recv_exit_status() == 0:
+    # if ssh_stdout.channel.recv_exit_status() == 0:
     global VMS_RUNNING
     VMS_RUNNING += 1
 
@@ -919,6 +918,7 @@ def execute_rebalance_public_ips():
 def execute_bandwith_change():
 
     global BANDWITH_VALUE, LAST_BANDWITH_VALUE, VMS_RUNNING
+    returned_str = ""
 
     if LAST_BANDWITH_VALUE != BANDWITH_VALUE:
         LAST_BANDWITH_VALUE = BANDWITH_VALUE
@@ -926,44 +926,72 @@ def execute_bandwith_change():
         reqid = BANDWITH_VALUE
 
         # Send new bandwith limit to FTS
+        try:
+            headers = {
+                'Content-Type': "application/json",
+            }
+
+            url_fts = "http://" + FTS1_IP + "/api/networkLimit/modify"
+            fts_data = '{"config": { \
+                        "SpeedLimit": ' + str(reqid * 10410) + ', \
+                        "RampUpSecond": "0", \
+                        "RampDownSecond": "0", \
+                        "TestType": "HttpCps", \
+                        "LimitType": "speed"}, \
+                        "order": 0}'
+
+            results = requests.post(url_fts,
+                                    data=fts_data,
+                                    headers=headers,
+                                    timeout=TIMEOUT)
+
+            returned_str += "<br><b>FortiTester1 response (code): </b>" + str(results.status_code)
+            returned_str += "<br><b>FortiTester1 response (content): </b>" + \
+                            str(dumps(loads(results.content.decode('utf-8')),
+                                      indent=4,
+                                      sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;')) + "<!--status:85%-->"
+        except:
+            return traceback.format_exc()
 
         # Scale out/in according to new value
 
         # TODO: Put this in two separate loops for scaling out/in
 
         # TODO: Consider use a previous fixed BANDWITH_VALUE to avoid interferences during exec
-        
+        print("5")
         if BANDWITH_VALUE > 15 and VMS_RUNNING <= 1:
             print("Creating fgt: " + str(2) + " to service " + str(reqid) + " Gbps")
-            _start_vm(2)
+            _start_vm(2, auto_throughput=False)
         if BANDWITH_VALUE > 35 and VMS_RUNNING <= 2:
             print("Creating fgt: " + str(3) + " to service " + str(reqid) + " Gbps")
-            _start_vm(3)
+            _start_vm(3, auto_throughput=False)
         if BANDWITH_VALUE > 55 and VMS_RUNNING <= 3:
             print("Creating fgt: " + str(4) + " to service " + str(reqid) + " Gbps")
-            _start_vm(4)
+            _start_vm(4, auto_throughput=False)
         if BANDWITH_VALUE > 75 and VMS_RUNNING <= 4:
             print("Creating fgt: " + str(5) + " to service " + str(reqid) + " Gbps")
-            _start_vm(5)
+            _start_vm(5, auto_throughput=False)
         if BANDWITH_VALUE > 95 and VMS_RUNNING <= 5:
             print("Creating fgt: " + str(6) + " to service " + str(reqid) + " Gbps")
-            _start_vm(6)
+            _start_vm(6, auto_throughput=False)
 
         if BANDWITH_VALUE < 95 and VMS_RUNNING >= 6:
             print("Destroying fgt: " + str(6) + " to service " + str(reqid) + " Gbps")
-            _stop_vm(6)
+            _stop_vm(6, auto_throughput=False)
         if BANDWITH_VALUE < 75 and VMS_RUNNING >= 5:
             print("Destroying fgt: " + str(5) + " to service " + str(reqid) + " Gbps")
-            _stop_vm(5)
+            _stop_vm(5, auto_throughput=False)
         if BANDWITH_VALUE < 55 and VMS_RUNNING >= 4:
             print("Destroying fgt: " + str(4) + " to service " + str(reqid) + " Gbps")
-            _stop_vm(4)
+            _stop_vm(4, auto_throughput=False)
         if BANDWITH_VALUE < 35 and VMS_RUNNING >= 3:
             print("Destroying fgt: " + str(3) + " to service " + str(reqid) + " Gbps")
-            _stop_vm(3)
+            _stop_vm(3, auto_throughput=False)
         if BANDWITH_VALUE < 15 and VMS_RUNNING >= 2:
             print("Destroying fgt: " + str(2) + " to service " + str(reqid) + " Gbps")
-            _stop_vm(2)
+            _stop_vm(2, auto_throughput=False)
+
+    return returned_str
 
 
 cron = BackgroundScheduler(daemon=True)
