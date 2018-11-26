@@ -125,7 +125,7 @@ def start_vm():
         return response
 
 
-def _start_vm(fgt_id):
+def _start_vm(fgt_id, auto_throughput=True):
 
     global returned_str
     returned_str = ""
@@ -151,44 +151,44 @@ def _start_vm(fgt_id):
         returned_str += execute_rebalance_public_ips() + "<!--status:70%-->"
 
         # Increase traffic load FTS1
-        time.sleep(3)
+        if auto_throughput:
+            time.sleep(3)
+            headers = {
+                'Content-Type': "application/json",
+            }
 
-        headers = {
-            'Content-Type': "application/json",
-        }
+            url_fts = "http://" + FTS1_IP + "/api/networkLimit/modify"
+            fts_data = '{"config": { \
+                        "SpeedLimit": ' + str(fgt_id * FTS_CPS_PER_VM / 2) + ', \
+                        "RampUpSecond": "0", \
+                        "RampDownSecond": "0", \
+                        "TestType": "HttpCps", \
+                        "LimitType": "speed"}, \
+                        "order": 0}'
 
-        url_fts = "http://" + FTS1_IP + "/api/networkLimit/modify"
-        fts_data = '{"config": { \
-                       "SpeedLimit": ' + str(fgt_id * FTS_CPS_PER_VM / 2) + ', \
-                       "RampUpSecond": "0", \
-                       "RampDownSecond": "0", \
-                       "TestType": "HttpCps", \
-                       "LimitType": "speed"}, \
-                    "order": 0}'
+            results = requests.post(url_fts,
+                                    data=fts_data,
+                                    headers=headers,
+                                    timeout=TIMEOUT)
 
-        results = requests.post(url_fts,
-                                data=fts_data,
-                                headers=headers,
-                                timeout=TIMEOUT)
+            returned_str += "<br><b>FortiTester1 response (code): </b>" + str(results.status_code)
+            returned_str += "<br><b>FortiTester1 response (content): </b>" + \
+                            str(dumps(loads(results.content.decode('utf-8')),
+                                      indent=4,
+                                      sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;')) + "<!--status:85%-->"
 
-        returned_str += "<br><b>FortiTester1 response (code): </b>" + str(results.status_code)
-        returned_str += "<br><b>FortiTester1 response (content): </b>" + \
-                        str(dumps(loads(results.content.decode('utf-8')),
-                                  indent=4,
-                                  sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;')) + "<!--status:85%-->"
+            # Increase traffic load FTS2
+            url_fts = "http://" + FTS2_IP + "/api/networkLimit/modify"
+            results = requests.post(url_fts,
+                                    data=fts_data,
+                                    headers=headers,
+                                    timeout=TIMEOUT)
 
-        # Increase traffic load FTS2
-        url_fts = "http://" + FTS2_IP + "/api/networkLimit/modify"
-        results = requests.post(url_fts,
-                                data=fts_data,
-                                headers=headers,
-                                timeout=TIMEOUT)
-
-        returned_str += "<br><b>FortiTester2 response (code): </b>" + str(results.status_code)
-        returned_str += "<br><b>FortiTester2 response (content): </b>" + \
-                        str(dumps(loads(results.content.decode('utf-8')),
-                                  indent=4,
-                                  sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;')) + "<!--status:100%-->"
+            returned_str += "<br><b>FortiTester2 response (code): </b>" + str(results.status_code)
+            returned_str += "<br><b>FortiTester2 response (content): </b>" + \
+                            str(dumps(loads(results.content.decode('utf-8')),
+                                      indent=4,
+                                      sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;')) + "<!--status:100%-->"
 
         return returned_str
 
@@ -213,52 +213,52 @@ def stop_vm():
         return response
 
 
-def _stop_vm(fgt_id):
+def _stop_vm(fgt_id, auto_throughput=True):
     global returned_str
     returned_str = ""
 
     try:
-        # Decrease traffic load FTS1
-        headers = {
-            'Content-Type': "application/json",
-        }
+        if auto_throughput:
+            # Decrease traffic load FTS1
+            headers = {
+                'Content-Type': "application/json",
+            }
 
-        url_fts = "http://" + FTS1_IP + "/api/networkLimit/modify"
-        fts_data = '{"config": { \
-                       "SpeedLimit": ' + str((fgt_id - 1) * FTS_CPS_PER_VM / 2) + ', \
-                       "RampUpSecond": "0", \
-                       "RampDownSecond": "0", \
-                       "TestType": "HttpCps", \
-                       "LimitType": "speed"}, \
-                    "order": 0}'
+            url_fts = "http://" + FTS1_IP + "/api/networkLimit/modify"
+            fts_data = '{"config": { \
+                        "SpeedLimit": ' + str((fgt_id - 1) * FTS_CPS_PER_VM / 2) + ', \
+                        "RampUpSecond": "0", \
+                        "RampDownSecond": "0", \
+                        "TestType": "HttpCps", \
+                        "LimitType": "speed"}, \
+                        "order": 0}'
 
-        results = requests.post(url_fts,
-                                data=fts_data,
-                                headers=headers,
-                                timeout=TIMEOUT)
+            results = requests.post(url_fts,
+                                    data=fts_data,
+                                    headers=headers,
+                                    timeout=TIMEOUT)
 
-        returned_str = "<b>FortiGate id: </b>" + str(fgt_id) + "<br>" + \
-                       "<b>FortiTester1 response (code): </b>" + str(results.status_code) + \
-                       "<br><b>FortiTester1 response (content): </b>" + \
-                       str(dumps(loads(results.content.decode('utf-8')),
-                                 indent=4,
-                                 sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;')) + "<!--status:20%-->"
-
-        # Decrease traffic load FTS2
-        url_fts = "http://" + FTS2_IP + "/api/networkLimit/modify"
-
-        results = requests.post(url_fts,
-                                data=fts_data,
-                                headers=headers,
-                                timeout=TIMEOUT)
-
-        returned_str += "<b>FortiTester2 response (code): </b>" + str(results.status_code) + \
-                        "<br><b>FortiTester2 response (content): </b>" + \
+            returned_str = "<b>FortiGate id: </b>" + str(fgt_id) + "<br>" + \
+                        "<b>FortiTester1 response (code): </b>" + str(results.status_code) + \
+                        "<br><b>FortiTester1 response (content): </b>" + \
                         str(dumps(loads(results.content.decode('utf-8')),
-                                  indent=4,
-                                  sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;')) + "<!--status:40%-->"
+                                        indent=4,
+                                        sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;')) + "<!--status:20%-->"
 
-        time.sleep(1)
+            # Decrease traffic load FTS2
+            url_fts = "http://" + FTS2_IP + "/api/networkLimit/modify"
+
+            results = requests.post(url_fts,
+                                    data=fts_data,
+                                    headers=headers,
+                                    timeout=TIMEOUT)
+
+            returned_str += "<b>FortiTester2 response (code): </b>" + str(results.status_code) + \
+                            "<br><b>FortiTester2 response (content): </b>" + \
+                            str(dumps(loads(results.content.decode('utf-8')),
+                                      indent=4,
+                                      sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;')) + "<!--status:40%-->"
+            time.sleep(1)
 
         returned_str += execute_remove_device(fgt_id) + "<!--status:60%-->"
 
@@ -401,7 +401,7 @@ def stop_traffic():
                                          verify=False)
 
         if result_start_fts1.status_code == 200:
-            returned_str = "<b>FortiTester 1</b>: Traffic stopped succesfully"
+            returned_str = "<b>FortiTester 1</b>: Traffic stopped succesfully. <br>"
         else:
             returned_str = "<b>Error:</b> Could not stop traffic in FortiTester1. <br>" + \
                            " Code: " + str(result_start_fts1.status_code) + " Text: " + result_start_fts1.text
@@ -419,7 +419,7 @@ def stop_traffic():
                                          verify=False)
 
         if result_start_fts2.status_code == 200:
-            returned_str = "<b>FortiTester 2</b>: Traffic stopped succesfully"
+            returned_str += "<b>FortiTester 2</b>: Traffic stopped succesfully"
         else:
             returned_str += "<b>Error:</b> Could not stop traffic in FortiTester2. <br>" + \
                             " Code: " + str(result_start_fts2.status_code) + " Text: " + result_start_fts2.text
