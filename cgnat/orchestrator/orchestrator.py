@@ -35,7 +35,7 @@ app = Flask(__name__)
 # Urls to access FGT REST API
 urls_fgt = [
     'https://10.210.14.33/',
-    'https://10.210.14.34/'
+    'https://10.210.14.34/',
     'https://10.210.14.35/']
 
 # URLs to access hypervisor REST API (cpu load)
@@ -556,7 +556,6 @@ def panic():
 
     try:
         global VMS_RUNNING
-        VMS_RUNNING = 1
 
         response = Response()
         response.headers.add('Access-Control-Allow-Origin', '*')
@@ -573,6 +572,8 @@ def panic():
 
         returned_str += execute_start_vm(1) + "<!--status:50%-->"
 
+        VMS_RUNNING = 1
+        
         returned_str += execute_rebalance_public_ips() + "<!--status:70%-->"
 
         time.sleep(5)
@@ -844,8 +845,8 @@ def execute_remove_device(fgt_id):
 
     # Send "remove device" request
     returned_str = ""
-    private_port = [31, 27]
-    public_port = [32, 28]
+    private_port = [31, 27, 23]
+    public_port = [32, 28, 24]
     for device in range(1, fgt_id+1):
 
         lower_limit = int(((device-1)*TOP_IP_LIMIT/(fgt_id - 1))+1)
@@ -933,23 +934,23 @@ def execute_bandwith_change():
 
             url_fts = "http://" + FTS1_IP + "/api/networkLimit/modify"
             fts_data = '{"config": { \
-                        "SpeedLimit": ' + str(reqid * 10410) + ', \
+                        "SpeedLimit": ' + str(reqid * 709.12) + ', \
                         "RampUpSecond": "0", \
                         "RampDownSecond": "0", \
                         "TestType": "HttpCps", \
                         "LimitType": "speed"}, \
                         "order": 0}'
 
-            results = requests.post(url_fts,
-                                    data=fts_data,
-                                    headers=headers,
-                                    timeout=TIMEOUT)
+            # results = requests.post(url_fts,
+            #                        data=fts_data,
+            #                        headers=headers,
+            #                        timeout=TIMEOUT)
 
-            returned_str += "<br><b>FortiTester1 response (code): </b>" + str(results.status_code)
-            returned_str += "<br><b>FortiTester1 response (content): </b>" + \
-                            str(dumps(loads(results.content.decode('utf-8')),
-                                      indent=4,
-                                      sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;')) + "<!--status:85%-->"
+            # returned_str += "<br><b>FortiTester1 response (code): </b>" + str(results.status_code)
+            # returned_str += "<br><b>FortiTester1 response (content): </b>" + \
+            #                str(dumps(loads(results.content.decode('utf-8')),
+            #                          indent=4,
+            #                          sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;')) + "<!--status:85%-->"
         except:
             return traceback.format_exc()
 
@@ -958,7 +959,6 @@ def execute_bandwith_change():
         # TODO: Put this in two separate loops for scaling out/in
 
         # TODO: Consider use a previous fixed BANDWITH_VALUE to avoid interferences during exec
-        print("5")
         if BANDWITH_VALUE > 15 and VMS_RUNNING <= 1:
             print("Creating fgt: " + str(2) + " to service " + str(reqid) + " Gbps")
             _start_vm(2, auto_throughput=False)
