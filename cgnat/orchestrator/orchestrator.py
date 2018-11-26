@@ -35,24 +35,27 @@ app = Flask(__name__)
 # Urls to access FGT REST API
 urls_fgt = [
     'https://10.210.14.33/',
-    'https://10.210.14.34/']
+    'https://10.210.14.34/'
+    'https://10.210.14.35/']
 
 # URLs to access hypervisor REST API (cpu load)
 urls_hypervisors = [
     'http://10.210.14.18:61208/api/2/cpu',
-    'http://10.210.14.19:61208/api/2/cpu']
+    'http://10.210.14.19:61208/api/2/cpu',
+    'http://10.210.14.6:61208/api/2/cpu']
 
 # Address of the hypervisor of each fortigate
 fgt_hypervisors = [
     '10.210.14.18',
-    '10.210.14.19']
+    '10.210.14.19',
+    '10.210.14.6']
 
 url_cgnatmapper = 'http://10.210.9.133:8080'
 
 FTS1_IP = "10.210.1.50"
 FTS2_IP = "10.210.1.29"
 
-FTS1_CASE_ID = '5bf58e0aedc8ea034a053791'
+FTS1_CASE_ID = '5bfbf937edc8ea034a0537bc'
 FTS2_CASE_ID = '5b02d8acac929f0348c9c9d0'
 FTS_CPS_PER_VM = 5200
 
