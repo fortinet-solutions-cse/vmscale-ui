@@ -55,7 +55,7 @@ url_cgnatmapper = 'http://10.210.9.133:8080'
 FTS1_IP = "10.210.1.50"
 FTS2_IP = "10.210.1.29"
 
-FTS1_CASE_ID = '5bfbf937edc8ea034a0537bc'
+FTS1_CASE_ID = '5bfd52a1edc8ea03e7691ded'
 FTS2_CASE_ID = '5b02d8acac929f0348c9c9d0'
 FTS_CPS_PER_VM = 5200
 
@@ -73,8 +73,10 @@ VMS_RUNNING = 1
 TOP_IP_LIMIT = 200
 PUBLIC_SUBNET_PREFIX = '64.64.84.'  # IP Pools will be contained in PUBLIC_SUBNET_PREFIX.1 up to PUBLIC_SUBNET_PREFIX.TOP_IP_LIMIT
 
-BANDWITH_VALUE = 0
+BANDWIDTH_VALUE = 0
 LAST_BANDWITH_VALUE = 0
+
+AUTO_SPAWN = True
 
 fgt_sessions = [requests.Session() for u in urls_fgt]
 
@@ -134,7 +136,7 @@ def _start_vm(fgt_id, auto_throughput=True):
 
         fgt_contacted = False
         counter = 0
-        while not fgt_contacted:
+        while not fgt_contacted and counter < 60:
             try:
                 results = requests.post(urls_fgt[fgt_id - 1] + '/logincheck',
                                         data='username=admin&secretkey=&ajax=1',
@@ -562,7 +564,7 @@ def panic():
 
         returned_str = "<b>Panic log:</b> <br>" + str(stop_traffic().data.decode('ascii').strip('\n')) + "<br><br> <!--status:10%-->"
 
-        for vm in range(2, len(urls_fgt)+1):
+        for vm in reversed(range(2, len(urls_fgt)+1)):
             returned_str += "<b>Orchestrating removal for device: </b>" + str(vm) + execute_remove_device(vm) + "<br>"
 
         returned_str += "<b>Orchestrating creation for device:</b> 1 " + execute_add_device(1) + "<br> <!--status:30%-->"
@@ -630,15 +632,16 @@ def synchronize_counters():
     return response
 
 
-@app.route("/update_bandwith", methods=['POST'])
-def update_bandwith():
+@app.route("/update_bandwidth", methods=['POST'])
+def update_bandwidth():
 
-    global BANDWITH_VALUE
+    global BANDWIDTH_VALUE
+    global AUTO_SPAWN
     response = Response()
     response.headers.add('Access-Control-Allow-Origin', '*')
     try:
-        BANDWITH_VALUE = request.args.get('value')
-        BANDWITH_VALUE = int(BANDWITH_VALUE)
+        BANDWIDTH_VALUE = int(request.args.get('value'))
+        AUTO_SPAWN = request.args.get('auto_spawn') == "true"
         response.status_code = 200
 
     except:
@@ -646,7 +649,8 @@ def update_bandwith():
         print("No value returned")
         return response
 
-    print("Bandwith change request set to: " + str(BANDWITH_VALUE))
+    print("Bandwidth change request set to: " + str(BANDWIDTH_VALUE) +
+          " and auto-spawn: " + str(AUTO_SPAWN))
     return response
 
 
@@ -736,7 +740,7 @@ def request_cpu_load_from_nodes():
 
     # Get port statistics
 
-    results = requests.get(url_cgnatmapper + '/v1.0/switch_stats/switches/00000090fb64cce9/port_stats',
+    results = requests.get(url_cgnatmapper + '/v1/switch_stats/switches/00000090fb64cce9/port_stats',
                            timeout=TIMEOUT)
 
     port_stats = loads(results.content.decode('utf-8'))
@@ -918,13 +922,13 @@ def execute_rebalance_public_ips():
 
 def execute_bandwith_change():
 
-    global BANDWITH_VALUE, LAST_BANDWITH_VALUE, VMS_RUNNING
+    global BANDWIDTH_VALUE, LAST_BANDWITH_VALUE, VMS_RUNNING
     returned_str = ""
 
-    if LAST_BANDWITH_VALUE != BANDWITH_VALUE:
-        LAST_BANDWITH_VALUE = BANDWITH_VALUE
+    if LAST_BANDWITH_VALUE != BANDWIDTH_VALUE:
+        LAST_BANDWITH_VALUE = BANDWIDTH_VALUE
 
-        reqid = BANDWITH_VALUE
+        reqid = BANDWIDTH_VALUE
 
         # Send new bandwith limit to FTS
         try:
@@ -934,60 +938,61 @@ def execute_bandwith_change():
 
             url_fts = "http://" + FTS1_IP + "/api/networkLimit/modify"
             fts_data = '{"config": { \
-                        "SpeedLimit": ' + str(reqid * 709.12) + ', \
-                        "RampUpSecond": "0", \
-                        "RampDownSecond": "0", \
-                        "TestType": "HttpCps", \
-                        "LimitType": "speed"}, \
+                        "BandWidthLimit": ' + str(reqid * 1000) + ', \
+                        "PPSLimit": 0, \
+                        "TestType": "HttpCps"}, \
                         "order": 0}'
 
-            # results = requests.post(url_fts,
-            #                        data=fts_data,
-            #                        headers=headers,
-            #                        timeout=TIMEOUT)
+            results = requests.post(url_fts,
+                                    data=fts_data,
+                                    headers=headers,
+                                    timeout=TIMEOUT)
 
-            # returned_str += "<br><b>FortiTester1 response (code): </b>" + str(results.status_code)
-            # returned_str += "<br><b>FortiTester1 response (content): </b>" + \
-            #                str(dumps(loads(results.content.decode('utf-8')),
-            #                          indent=4,
-            #                          sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;')) + "<!--status:85%-->"
+            returned_str += "<br><b>FortiTester1 response (code): </b>" + str(results.status_code)
+            returned_str += "<br><b>FortiTester1 response (content): </b>" + \
+                            str(dumps(loads(results.content.decode('utf-8')),
+                                      indent=4,
+                                      sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;')) + "<!--status:85%-->"
         except:
-            return traceback.format_exc()
+            returned_str += traceback.format_exc()
+
+        if not AUTO_SPAWN:
+            return returned_str
 
         # Scale out/in according to new value
 
         # TODO: Put this in two separate loops for scaling out/in
 
         # TODO: Consider use a previous fixed BANDWITH_VALUE to avoid interferences during exec
-        if BANDWITH_VALUE > 15 and VMS_RUNNING <= 1:
+        if BANDWIDTH_VALUE > 15 and VMS_RUNNING <= 1:
             print("Creating fgt: " + str(2) + " to service " + str(reqid) + " Gbps")
             _start_vm(2, auto_throughput=False)
-        if BANDWITH_VALUE > 35 and VMS_RUNNING <= 2:
+        if BANDWIDTH_VALUE > 35 and VMS_RUNNING <= 2:
             print("Creating fgt: " + str(3) + " to service " + str(reqid) + " Gbps")
             _start_vm(3, auto_throughput=False)
-        if BANDWITH_VALUE > 55 and VMS_RUNNING <= 3:
+        if BANDWIDTH_VALUE > 55 and VMS_RUNNING <= 3:
             print("Creating fgt: " + str(4) + " to service " + str(reqid) + " Gbps")
             _start_vm(4, auto_throughput=False)
-        if BANDWITH_VALUE > 75 and VMS_RUNNING <= 4:
+        if BANDWIDTH_VALUE > 75 and VMS_RUNNING <= 4:
             print("Creating fgt: " + str(5) + " to service " + str(reqid) + " Gbps")
             _start_vm(5, auto_throughput=False)
-        if BANDWITH_VALUE > 95 and VMS_RUNNING <= 5:
+        if BANDWIDTH_VALUE > 95 and VMS_RUNNING <= 5:
             print("Creating fgt: " + str(6) + " to service " + str(reqid) + " Gbps")
             _start_vm(6, auto_throughput=False)
 
-        if BANDWITH_VALUE < 95 and VMS_RUNNING >= 6:
+        if BANDWIDTH_VALUE < 95 and VMS_RUNNING >= 6:
             print("Destroying fgt: " + str(6) + " to service " + str(reqid) + " Gbps")
             _stop_vm(6, auto_throughput=False)
-        if BANDWITH_VALUE < 75 and VMS_RUNNING >= 5:
+        if BANDWIDTH_VALUE < 75 and VMS_RUNNING >= 5:
             print("Destroying fgt: " + str(5) + " to service " + str(reqid) + " Gbps")
             _stop_vm(5, auto_throughput=False)
-        if BANDWITH_VALUE < 55 and VMS_RUNNING >= 4:
+        if BANDWIDTH_VALUE < 55 and VMS_RUNNING >= 4:
             print("Destroying fgt: " + str(4) + " to service " + str(reqid) + " Gbps")
             _stop_vm(4, auto_throughput=False)
-        if BANDWITH_VALUE < 35 and VMS_RUNNING >= 3:
+        if BANDWIDTH_VALUE < 35 and VMS_RUNNING >= 3:
             print("Destroying fgt: " + str(3) + " to service " + str(reqid) + " Gbps")
             _stop_vm(3, auto_throughput=False)
-        if BANDWITH_VALUE < 15 and VMS_RUNNING >= 2:
+        if BANDWIDTH_VALUE < 15 and VMS_RUNNING >= 2:
             print("Destroying fgt: " + str(2) + " to service " + str(reqid) + " Gbps")
             _stop_vm(2, auto_throughput=False)
 
