@@ -122,7 +122,7 @@ def start_vm():
         fgt_id = request.args.get('fgt')
         fgt_id = int(fgt_id)
 
-        response.data = _start_vm(fgt_id)
+        response.data = _start_vm(fgt_id, auto_throughput=False)
         return response
     except:
         response.data = traceback.format_exc()
@@ -210,7 +210,7 @@ def stop_vm():
         fgt_id = request.args.get('fgt')
         fgt_id = int(fgt_id)
         
-        response.data = _stop_vm(fgt_id)
+        response.data = _stop_vm(fgt_id, auto_throughput=False)
         return response
     except:
         response.data = traceback.format_exc()
@@ -246,8 +246,8 @@ def _stop_vm(fgt_id, auto_throughput=True):
                         "<b>FortiTester1 response (code): </b>" + str(results.status_code) + \
                         "<br><b>FortiTester1 response (content): </b>" + \
                         str(dumps(loads(results.content.decode('utf-8')),
-                                        indent=4,
-                                        sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;')) + "<!--status:20%-->"
+                                  indent=4,
+                                  sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;')) + "<!--status:20%-->"
 
             # Decrease traffic load FTS2
             url_fts = "http://" + FTS2_IP + "/api/networkLimit/modify"
@@ -318,10 +318,10 @@ def start_traffic():
             returned_str = "<b>FortiTester 1.</b> Traffic started successfully."
         else:
             returned_str = "<b>Error:</b> Could not start traffic in FortiTester1. <br>" + \
-                           " Code: " + str(result_start_fts1.status_code) + " Text: " + result_start_fts1.text
+                           " Code: " + str(result_start_fts1.status_code) + " Text: " + str(result_start_fts1.text)
     else:
         returned_str = "<b>Error:</b> Could not log in to FortiTester1. <br> " + \
-                       " Code: " + str(result_login_fts1.status_code) + " Text: " + strresult_login_fts1.text
+                       " Code: " + str(result_login_fts1.status_code) + " Text: " + str(result_login_fts1.text)
 
     # Start case FTS2
     url = "http://" + FTS2_IP + "/api/case/" + FTS2_CASE_ID + "/start"
