@@ -747,6 +747,12 @@ def request_cpu_load_from_nodes():
 
     port_stats = loads(results.content.decode('utf-8'))
 
+    if len(port_stats) == 0:
+        stats_data = {'refresh_interval': 2}
+        requests.put(url_cgnatmapper + '/v1/switch_stats',
+                     data=dumps(stats_data),
+                     timeout=TIMEOUT)
+
     bps = {}
 
     for port in port_stats:
