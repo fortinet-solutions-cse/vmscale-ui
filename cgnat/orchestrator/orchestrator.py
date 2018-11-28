@@ -78,6 +78,8 @@ LAST_BANDWITH_VALUE = 0
 
 AUTO_SPAWN = True
 
+DPID = '00000090fb64cce9'
+
 fgt_sessions = [requests.Session() for u in urls_fgt]
 
 data_cpuload_time1 = [-1] * 60
@@ -740,7 +742,7 @@ def request_cpu_load_from_nodes():
 
     # Get port statistics
 
-    results = requests.get(url_cgnatmapper + '/v1/switch_stats/switches/00000090fb64cce9/port_stats',
+    results = requests.get(url_cgnatmapper + '/v1/switch_stats/switches/' + DPID + '/port_stats',
                            timeout=TIMEOUT)
 
     port_stats = loads(results.content.decode('utf-8'))
