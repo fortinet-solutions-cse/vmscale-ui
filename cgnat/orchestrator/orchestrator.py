@@ -768,8 +768,8 @@ def request_cpu_load_from_nodes():
                        bps[2] / 1000000000 * 8)
 
     push_value_to_list(data_fgtthroughput1_time, (bps[31] + bps[32]) / 2000000000 * 8)
-    push_value_to_list(data_fgtthroughput2_time, (bps[27] + bps[28]) / 2000000000 * 8)
-    push_value_to_list(data_fgtthroughput3_time, (bps[9] + bps[10]) / 2000000000 * 8)
+    push_value_to_list(data_fgtthroughput2_time, (bps[29] + bps[30]) / 2000000000 * 8)
+    push_value_to_list(data_fgtthroughput3_time, (bps[27] + bps[28]) / 2000000000 * 8)
     push_value_to_list(data_fgtthroughput4_time, (bps[11] + bps[12]) / 2000000000 * 8)
     push_value_to_list(data_fgtthroughput5_time, (bps[13] + bps[14]) / 2000000000 * 8)
     push_value_to_list(data_fgtthroughput6_time, (bps[15] + bps[16]) / 2000000000 * 8)
@@ -821,8 +821,8 @@ def execute_add_device(fgt_id):
 
     # Send "add device" request: modify every device config and add a new one
     returned_str = ""
-    private_port = [31, 27]
-    public_port = [32, 28]
+    private_port = [31, 29]
+    public_port = [32, 30]
     for device in range(1, fgt_id+1):
 
         lower_limit = int(((device-1)*TOP_IP_LIMIT/fgt_id)+1)
@@ -857,8 +857,8 @@ def execute_remove_device(fgt_id):
 
     # Send "remove device" request
     returned_str = ""
-    private_port = [31, 27, 23]
-    public_port = [32, 28, 24]
+    private_port = [31, 29, 27]
+    public_port = [32, 30, 28]
     for device in range(1, fgt_id+1):
 
         lower_limit = int(((device-1)*TOP_IP_LIMIT/(fgt_id - 1))+1)
