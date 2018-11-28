@@ -815,7 +815,7 @@
             </div>
             <div style="padding-left: 30px; padding-top: 30px; display:inline-block">
                 Auto spawn
-                <input type="checkbox" checked data-toggle="toggle" data-onstyle="danger">
+                <input type="checkbox" id="auto-spawn" checked data-toggle="toggle" data-onstyle="danger">
             </div>
             <div style="padding-left: 30px; padding-top: 30px; margin:auto">
                 <input type="text" value="0" class="dial" data-fgColor="#FFFFFF" data-bgColor="#ca1e00" 
@@ -826,7 +826,8 @@
                         $(".dial").knob({
                             'release': function (v) { 
                                 $.ajax({
-                                    url: "http://" + window.location.hostname + ":5000/update_bandwith?value=" + v,
+                                    url: "http://" + window.location.hostname + ":5000/update_bandwidth?value=" + v 
+                                        + "&auto_spawn=" + $("#auto-spawn")[0].checked,
                                     type: "POST"
                                 });
                             },
