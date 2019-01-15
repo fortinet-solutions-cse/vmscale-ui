@@ -63,7 +63,76 @@
         height:50%;
         opacity: 0.5;
      }
-     .wrapper {
+     #fgtload_time7 {
+        background:url('red.png') 0% 0%;
+        background-position: center;
+        background-repeat: no-repeat;
+        height:50%;
+        opacity: 0.5;
+     }
+     #fgtload_time8 {
+        background:url('red.png') 0% 0%;
+        background-position: center;
+        background-repeat: no-repeat;
+        height:50%;
+        opacity: 0.5;
+     }
+     #fgtsess_time1 {
+        background:url('green.png') 0% 0%;
+        background-position: center;
+        background-repeat: no-repeat;
+        height:50%;
+        opacity: 0.5;
+     }
+     #fgtsess_time2 {
+        background:url('red.png') 0% 0%;
+        background-position: center;
+        background-repeat: no-repeat;
+        height:50%;
+        opacity: 0.5;
+     }
+     #fgtsess_time3 {
+        background:url('red.png') 0% 0%;
+        background-position: center;
+        background-repeat: no-repeat;
+        height:50%;
+        opacity: 0.5;
+     }
+     #fgtsess_time4 {
+        background:url('red.png') 0% 0%;
+        background-position: center;
+        background-repeat: no-repeat;
+        height:50%;
+        opacity: 0.5;
+     }
+     #fgtsess_time5 {
+        background:url('red.png') 0% 0%;
+        background-position: center;
+        background-repeat: no-repeat;
+        height:50%;
+        opacity: 0.5;
+     }
+     #fgtsess_time6 {
+        background:url('red.png') 0% 0%;
+        background-position: center;
+        background-repeat: no-repeat;
+        height:50%;
+        opacity: 0.5;
+     }
+     #fgtsess_time7 {
+        background:url('red.png') 0% 0%;
+        background-position: center;
+        background-repeat: no-repeat;
+        height:50%;
+        opacity: 0.5;
+     }
+     #fgtsess_time8 {
+        background:url('red.png') 0% 0%;
+        background-position: center;
+        background-repeat: no-repeat;
+        height:50%;
+        opacity: 0.5;
+     }     .wrapper {
         display: flex;
         align-items: stretch;
     }
@@ -220,16 +289,6 @@
         template_cpuload_time2.yAxis.title.text = '';
         $('#cpuload_time2').highcharts(template_cpuload_time2);
 
-        var template_cpuload_time3 = $.extend(true, {}, template_cpuload_time);
-        template_cpuload_time3.title.text = "Host 3";
-        template_cpuload_time3.yAxis.title.text = '';
-        $('#cpuload_time3').highcharts(template_cpuload_time3);
-
-        var template_cpuload_time4 = $.extend(true, {}, template_cpuload_time);
-        template_cpuload_time4.title.text = "Host 4";
-        template_cpuload_time4.yAxis.title.text = '';
-        $('#cpuload_time4').highcharts(template_cpuload_time4);
-
         var template_fgtload_time = $.extend(true, {}, template_cpuload_time);
         template_fgtload_time.chart.backgroundColor = 'rgba(0,0,0,0)'
         template_fgtload_time.colors = ['#3F30A0'];
@@ -269,6 +328,66 @@
         template_fgtload_time6.yAxis.title.text = '';
         $('#fgtload_time6').highcharts(template_fgtload_time6);
 
+        var template_fgtload_time7 = $.extend(true, {}, template_fgtload_time);
+        template_fgtload_time7.title.text = "FGT7";
+        template_fgtload_time7.yAxis.title.text = '';
+        $('#fgtload_time7').highcharts(template_fgtload_time7);
+
+        var template_fgtload_time8 = $.extend(true, {}, template_fgtload_time);
+        template_fgtload_time8.title.text = "FGT8";
+        template_fgtload_time8.yAxis.title.text = '';
+        $('#fgtload_time8').highcharts(template_fgtload_time8);
+
+
+        var template_fgtsess_time = $.extend(true, {}, template_cpuload_time);
+        template_fgtsess_time.chart.backgroundColor = 'rgba(0,0,0,0)'
+        template_fgtsess_time.colors = ['#3F30A0'];
+        template_fgtsess_time.title.color = '#FFEEEE'
+        template_fgtsess_time.series = [{
+            marker: {
+                enabled: false,
+            }
+        }];
+
+        var template_fgtsess_time1 = $.extend(true, {}, template_fgtsess_time);
+        template_fgtsess_time1.title.text = "FGT1";
+        $('#fgtsess_time1').highcharts(template_fgtsess_time1);
+
+        var template_fgtsess_time2 = $.extend(true, {}, template_fgtsess_time);
+        template_fgtsess_time2.title.text = "FGT2";
+        template_fgtsess_time2.yAxis.title.text = '';
+        $('#fgtsess_time2').highcharts(template_fgtsess_time2);
+
+        var template_fgtsess_time3 = $.extend(true, {}, template_fgtsess_time);
+        template_fgtsess_time3.title.text = "FGT3";
+        template_fgtsess_time3.yAxis.title.text = '';
+        $('#fgtsess_time3').highcharts(template_fgtsess_time3);
+
+        var template_fgtsess_time4 = $.extend(true, {}, template_fgtsess_time);
+        template_fgtsess_time4.title.text = "FGT4";
+        template_fgtsess_time4.yAxis.title.text = '';
+        $('#fgtsess_time4').highcharts(template_fgtsess_time4);
+
+        var template_fgtsess_time5 = $.extend(true, {}, template_fgtsess_time);
+        template_fgtsess_time5.title.text = "FGT5";
+        template_fgtsess_time5.yAxis.title.text = '';
+        $('#fgtsess_time5').highcharts(template_fgtsess_time5);
+
+        var template_fgtsess_time6 = $.extend(true, {}, template_fgtsess_time);
+        template_fgtsess_time6.title.text = "FGT6";
+        template_fgtsess_time6.yAxis.title.text = '';
+        $('#fgtsess_time6').highcharts(template_fgtsess_time6);
+
+        var template_fgtsess_time7 = $.extend(true, {}, template_fgtsess_time);
+        template_fgtsess_time7.title.text = "FGT7";
+        template_fgtsess_time7.yAxis.title.text = '';
+        $('#fgtsess_time7').highcharts(template_fgtsess_time7);
+
+        var template_fgtsess_time8 = $.extend(true, {}, template_fgtsess_time);
+        template_fgtsess_time8.title.text = "FGT8";
+        template_fgtsess_time8.yAxis.title.text = '';
+        $('#fgtsess_time8').highcharts(template_fgtsess_time8);
+
     });
 </script>
 
@@ -288,7 +407,7 @@
                     text: 'GBps'
                 },
                 min: 0,
-                max: 120,
+                max: 200,
                 tickInterval: 20
             },
             colors: ['#FF7200', '#AA7200', '#8bbc21', '#910000', '#1aadce',
@@ -392,6 +511,16 @@
                 }
             }, {
                 name: 'FGT6',
+                marker: {
+                    enabled: false,
+                }
+            }, {
+                name: 'FGT7',
+                marker: {
+                    enabled: false,
+                }
+            }, {
+                name: 'FGT8',
                 marker: {
                     enabled: false,
                 }
@@ -692,14 +821,22 @@
             setTimeout(function () {
                 $('#cpuload_time1').highcharts().reflow()
                 $('#cpuload_time2').highcharts().reflow()
-                $('#cpuload_time3').highcharts().reflow()
-                $('#cpuload_time4').highcharts().reflow()
                 $('#fgtload_time1').highcharts().reflow()
                 $('#fgtload_time2').highcharts().reflow()
                 $('#fgtload_time3').highcharts().reflow()
                 $('#fgtload_time4').highcharts().reflow()
                 $('#fgtload_time5').highcharts().reflow()
                 $('#fgtload_time6').highcharts().reflow()
+                $('#fgtload_time7').highcharts().reflow()
+                $('#fgtload_time8').highcharts().reflow()
+                $('#fgtsess_time1').highcharts().reflow()
+                $('#fgtsess_time2').highcharts().reflow()
+                $('#fgtsess_time3').highcharts().reflow()
+                $('#fgtsess_time4').highcharts().reflow()
+                $('#fgtsess_time5').highcharts().reflow()
+                $('#fgtsess_time6').highcharts().reflow()
+                $('#fgtsess_time7').highcharts().reflow()
+                $('#fgtsess_time8').highcharts().reflow()
                 $('#totalthroughput_time').highcharts().reflow()
                 $('#fgtthroughput_time').highcharts().reflow()
             },400);
@@ -733,6 +870,21 @@
                 $('#fgtload_time' + index).css("background-image", "url('green.png')")
             }
             chart.redraw();
+            var chart = $("#fgtsess_time" + index).highcharts();
+            if (data["fgtsess_time" + index][(data["fgtsess_time" + index].length) - 1] == -1) {
+                chart.setTitle({
+                    text: "FGT" + index + " - off"
+                });
+                $('#fgtsess_time' + index).css({opacity:0.5})
+                $('#fgtsess_time' + index).css("background-image", "url('red.png')")
+            } else {
+                chart.setTitle({
+                    text: "<b>FGT" + index + " - on</b>"
+                });
+                $('#fgtsess_time' + index).css({opacity:1})
+                $('#fgtsess_time' + index).css("background-image", "url('green.png')")
+            }
+            chart.redraw();
             
         }
 
@@ -748,10 +900,6 @@
                         'cpuload_time1'], true);
                     $('#cpuload_time2').highcharts().series[0].setData(parsedJSONResult[
                         'cpuload_time2'], true);
-                    $('#cpuload_time3').highcharts().series[0].setData(parsedJSONResult[
-                        'cpuload_time3'], true);
-                    $('#cpuload_time4').highcharts().series[0].setData(parsedJSONResult[
-                        'cpuload_time4'], true);
 
                     $('#fgtload_time1').highcharts().series[0].setData(parsedJSONResult[
                         'fgtload_time1'], true);
@@ -765,6 +913,27 @@
                         'fgtload_time5'], true);
                     $('#fgtload_time6').highcharts().series[0].setData(parsedJSONResult[
                         'fgtload_time6'], true);
+                    $('#fgtload_time7').highcharts().series[0].setData(parsedJSONResult[
+                        'fgtload_time7'], true);
+                    $('#fgtload_time8').highcharts().series[0].setData(parsedJSONResult[
+                        'fgtload_time8'], true);
+
+                    $('#fgtsess_time1').highcharts().series[0].setData(parsedJSONResult[
+                        'fgtsess_time1'], true);
+                    $('#fgtsess_time2').highcharts().series[0].setData(parsedJSONResult[
+                        'fgtsess_time2'], true);
+                    $('#fgtsess_time3').highcharts().series[0].setData(parsedJSONResult[
+                        'fgtsess_time3'], true);
+                    $('#fgtsess_time4').highcharts().series[0].setData(parsedJSONResult[
+                        'fgtsess_time4'], true);
+                    $('#fgtsess_time5').highcharts().series[0].setData(parsedJSONResult[
+                        'fgtsess_time5'], true);
+                    $('#fgtsess_time6').highcharts().series[0].setData(parsedJSONResult[
+                        'fgtsess_time6'], true);
+                    $('#fgtsess_time7').highcharts().series[0].setData(parsedJSONResult[
+                        'fgtsess_time7'], true);
+                    $('#fgtsess_time8').highcharts().series[0].setData(parsedJSONResult[
+                        'fgtsess_time8'], true);
 
                     $('#totalthroughput_time').highcharts().series[0].setData(parsedJSONResult[
                         'totalthroughput_ingress_time'], true);
@@ -783,6 +952,10 @@
                         'fgtthroughput5_time'], true);
                     $('#fgtthroughput_time').highcharts().series[5].setData(parsedJSONResult[
                         'fgtthroughput6_time'], true);
+                    $('#fgtthroughput_time').highcharts().series[6].setData(parsedJSONResult[
+                        'fgtthroughput7_time'], true);
+                    $('#fgtthroughput_time').highcharts().series[7].setData(parsedJSONResult[
+                        'fgtthroughput8_time'], true);
 
                     updateTitle(parsedJSONResult, 1);
                     updateTitle(parsedJSONResult, 2);
@@ -790,19 +963,31 @@
                     updateTitle(parsedJSONResult, 4);
                     updateTitle(parsedJSONResult, 5);
                     updateTitle(parsedJSONResult, 6);
+                    updateTitle(parsedJSONResult, 7);
+                    updateTitle(parsedJSONResult, 8);
 
                     if (parsedJSONResult['vms_running'] != parsedJSONResult['vms_running_real']) {
-                        $('#sync_warning').show()
+                        $('#sync_warning').show();
                     }
                     else {
-                        $('#sync_warning').hide()
+                        $('#sync_warning').hide();
                     }
+                    
+                    tester_case_limit = parsedJSONResult['tester_case_limit'];
+                    value = tester_case_limit[tester_case_limit.length - 1];
+                    if ( value != -1 ) {
+                        $('#tester_throughput').val(value/1000)
+                    } else {
+                        $('#tester_throughput').val(0)
+                    }
+                    $('#tester_throughput').trigger('change');
+                    
 
                 }
             });
         };
 
-        setInterval(update_data, 2000);
+        setInterval(update_data, 4000);
 
     });
 </script>
@@ -820,10 +1005,10 @@
             <div style="padding-left: 30px; padding-top: 30px; margin:auto">
                 <input type="text" value="0" class="dial" data-fgColor="#FFFFFF" data-bgColor="#ca1e00" 
                     data-angleOffset="-125" data-angleArc="250" data-rotation="clockwise"
-                    data-min="0" data-max="120">
+                    data-min="0" data-max="200" id="mandated_throughput">
                 <script>
                     $(function() {
-                        $(".dial").knob({
+                        $('#mandated_throughput').knob({
                             'release': function (v) { 
                                 $.ajax({
                                     url: "http://" + window.location.hostname + ":5000/update_bandwidth?value=" + v 
@@ -835,6 +1020,19 @@
                     });
                 </script>
                 <div style="position: relative; left: 70px; top: -80px;font-size:25px; font-weight:normal; margin:auto">Gbps</div>
+            </div>
+            <div style="padding-left: 30px; padding-top: 30px; margin:auto">
+                <input type="text" value="0" class="dial" data-fgColor="#BBBBBB" data-bgColor="#ca1e00" 
+                    data-angleOffset="-125" data-angleArc="250" data-rotation="clockwise"
+                    data-min="0" data-max="200" id="tester_throughput">
+                <script>
+                    $(function() {
+                        $('#tester_throughput').knob({
+                            'release': function (v) {},
+                        });
+                    });
+                </script>
+                <div style="position: relative; left: 70px; top: -80px;font-size:25px; font-weight:normal; margin:auto; color:#BBBBBB">Gbps</div>
             </div>
         </nav>
 
@@ -942,24 +1140,52 @@
                 <div class="tab-content">
                     <div id="home" class="tab-pane fade in active">
                         <div class="row">
-                            <div class="panel panel-default">
-                                <div class="panel-heading">CPU Load</div>
-                                <div class="panel-body">
-                                    <div id="cpuload_time1" style="width:24.9%; float:left; height:20vh;"></div>
-                                    <div id="cpuload_time2" style="width:24.9%; float:left; height:20vh;"></div>
-                                    <div id="cpuload_time3" style="width:24.9%; float:left; height:20vh;"></div>
-                                    <div id="cpuload_time4" style="width:24.9%; float:left; height:20vh;"></div>
+                                <div class="col-sm-2">
+                                        <div class="panel panel-default">
+                                            <div class="panel-heading">CPU Load Host 1</div>
+                                            <div class="panel-body">
+                                                <div id="cpuload_time1" style="width:100%; float:left; height:20vh;"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-10">
+                                        <div class="panel panel-default">
+                                            <div class="panel-heading">FortiGate Load</div>
+                                            <div class="panel-body">
+                                                <div id="fgtload_time1" style="width:12.4%; float:left; height:19vh;"></div>
+                                                <div id="fgtload_time2" style="width:12.4%; float:left; height:19vh;"></div>
+                                                <div id="fgtload_time3" style="width:12.4%; float:left; height:19vh;"></div>
+                                                <div id="fgtload_time4" style="width:12.4%; float:left; height:19vh;"></div>
+                                                <div id="fgtload_time5" style="width:12.4%; float:left; height:19vh;"></div>
+                                                <div id="fgtload_time6" style="width:12.4%; float:left; height:19vh;"></div>
+                                                <div id="fgtload_time7" style="width:12.4%; float:left; height:19vh;"></div>
+                                                <div id="fgtload_time8" style="width:12.4%; float:left; height:19vh;"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                        <div class="row">
+                            <div class="col-sm-2">
+                                <div class="panel panel-default">
+                                    <div class="panel-heading">CPU Load Host 2</div>
+                                    <div class="panel-body">
+                                        <div id="cpuload_time2" style="width:100%; float:left; height:20vh;"></div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="panel panel-default">
-                                <div class="panel-heading">FortiGate Load<div class="square" id="sync_warning" style="float:right"></div></div>
-                                <div class="panel-body">
-                                    <div id="fgtload_time1" style="width:24.8%; float:left; height:19vh;"></div>
-                                    <div id="fgtload_time2" style="width:24.8%; float:left; height:19vh;"></div>
-                                    <div id="fgtload_time3" style="width:12.4%; float:left; height:19vh;"></div>
-                                    <div id="fgtload_time4" style="width:12.4%; float:left; height:19vh;"></div>
-                                    <div id="fgtload_time5" style="width:12.4%; float:left; height:19vh;"></div>
-                                    <div id="fgtload_time6" style="width:12.4%; float:left; height:19vh;"></div>
+                            <div class="col-sm-10">
+                                <div class="panel panel-default">
+                                    <div class="panel-heading">FortiGate Sessions<div class="square" id="sync_warning" style="float:right"></div></div>
+                                    <div class="panel-body">
+                                        <div id="fgtsess_time1" style="width:12.4%; float:left; height:19vh;"></div>
+                                        <div id="fgtsess_time2" style="width:12.4%; float:left; height:19vh;"></div>
+                                        <div id="fgtsess_time3" style="width:12.4%; float:left; height:19vh;"></div>
+                                        <div id="fgtsess_time4" style="width:12.4%; float:left; height:19vh;"></div>
+                                        <div id="fgtsess_time5" style="width:12.4%; float:left; height:19vh;"></div>
+                                        <div id="fgtsess_time6" style="width:12.4%; float:left; height:19vh;"></div>
+                                        <div id="fgtsess_time7" style="width:12.4%; float:left; height:19vh;"></div>
+                                        <div id="fgtsess_time8" style="width:12.4%; float:left; height:19vh;"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -997,13 +1223,15 @@
                         </div>
                         <div class="modal-body">
                             <div class="form-group">
-                                <label for="text">FortiGate identifier(2-6):</label>
+                                <label for="text">FortiGate identifier(2-8):</label>
                                 <select class="form-control" id="fgt_id_scale_out">
                                     <option>2</option>
                                     <option>3</option>
                                     <option>4</option>
                                     <option>5</option>
                                     <option>6</option>
+                                    <option>7</option>
+                                    <option>8</option>
                                 </select>
                             </div>
                             <div class="progress">
@@ -1036,13 +1264,15 @@
                         </div>
                         <div class="modal-body">
                             <div class="form-group">
-                                <label for="text">FortiGate identifier (2-6):</label>
+                                <label for="text">FortiGate identifier (2-8):</label>
                                 <select class="form-control" id="fgt_id_scale_in">
                                     <option>2</option>
                                     <option>3</option>
                                     <option>4</option>
                                     <option>5</option>
                                     <option>6</option>
+                                    <option>7</option>
+                                    <option>8</option>
                                 </select>
                             </div>
                             <div class="progress">

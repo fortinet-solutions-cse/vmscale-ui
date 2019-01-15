@@ -36,27 +36,32 @@ app = Flask(__name__)
 urls_fgt = [
     'https://10.210.14.33/',
     'https://10.210.14.34/',
-    'https://10.210.14.35/']
+    'https://10.210.14.35/',
+    'https://10.210.14.36/',
+    'https://10.210.14.37/',
+    'https://10.210.14.38/',
+    'https://10.210.14.39/',
+    'https://10.210.14.40/']
 
 # URLs to access hypervisor REST API (cpu load)
 urls_hypervisors = [
-    'http://10.210.14.18:61208/api/2/cpu',
-    'http://10.210.14.19:61208/api/2/cpu',
-    'http://10.210.14.6:61208/api/2/cpu']
+    'http://10.210.14.6:61208/api/2/cpu',
+    'http://10.210.14.7:61208/api/2/cpu']
 
 # Address of the hypervisor of each fortigate
 fgt_hypervisors = [
-    '10.210.14.18',
-    '10.210.14.19',
-    '10.210.14.6']
+    '10.210.14.6',
+    '10.210.14.7']
 
 url_cgnatmapper = 'http://10.210.9.133:8080'
 
 FTS1_IP = "10.210.1.50"
-FTS2_IP = "10.210.1.29"
+FTS2_IP = "10.210.1.28"
+FTS3_IP = "10.210.14.21"
 
-FTS1_CASE_ID = '5bfd52a1edc8ea03e7691ded'
-FTS2_CASE_ID = '5b02d8acac929f0348c9c9d0'
+FTS1_CASE_ID = '5c34b6adedc8ea03e6eba3f6'
+FTS2_CASE_ID = '5c35bf91dfaa0f02eb32932f'
+FTS3_CASE_ID = '5c35d0914c977103325e3f2a'
 FTS_CPS_PER_VM = 5200
 
 TIMEOUT = 3
@@ -84,14 +89,24 @@ fgt_sessions = [requests.Session() for u in urls_fgt]
 
 data_cpuload_time1 = [-1] * 60
 data_cpuload_time2 = [-1] * 60
-data_cpuload_time3 = [-1] * 60
-data_cpuload_time4 = [-1] * 60
+
 data_fgtload_time1 = [-1] * 60
 data_fgtload_time2 = [-1] * 60
 data_fgtload_time3 = [-1] * 60
 data_fgtload_time4 = [-1] * 60
 data_fgtload_time5 = [-1] * 60
 data_fgtload_time6 = [-1] * 60
+data_fgtload_time7 = [-1] * 60
+data_fgtload_time8 = [-1] * 60
+
+data_fgtsess_time1 = [-1] * 60
+data_fgtsess_time2 = [-1] * 60
+data_fgtsess_time3 = [-1] * 60
+data_fgtsess_time4 = [-1] * 60
+data_fgtsess_time5 = [-1] * 60
+data_fgtsess_time6 = [-1] * 60
+data_fgtsess_time7 = [-1] * 60
+data_fgtsess_time8 = [-1] * 60
 
 data_totalthroughput_ingress_time = [-1] * 60
 data_totalthroughput_egress_time = [-1] * 60
@@ -102,6 +117,10 @@ data_fgtthroughput3_time = [-1] * 60
 data_fgtthroughput4_time = [-1] * 60
 data_fgtthroughput5_time = [-1] * 60
 data_fgtthroughput6_time = [-1] * 60
+data_fgtthroughput7_time = [-1] * 60
+data_fgtthroughput8_time = [-1] * 60
+
+data_fortitester_case_limit = [-1]
 
 returned_str = ""
 
@@ -305,6 +324,15 @@ def start_traffic():
                                       headers=headers,
                                       verify=False)
 
+    # Login FTS3
+    url = "http://" + FTS3_IP + "/api/user/login"
+
+    result_login_fts3 = requests.post(url,
+                                      data=payload,
+                                      timeout=TIMEOUT,
+                                      headers=headers,
+                                      verify=False)
+
     # Start case FTS1
     url = "http://" + FTS1_IP + "/api/case/" + FTS1_CASE_ID + "/start"
 
@@ -341,6 +369,25 @@ def start_traffic():
         returned_str += "<br><b>Error:</b> Could not log in to FortiTester2. <br> " + \
                         " Code: " + str(result_login_fts2.status_code) + " Text: " + str(result_login_fts2.text)
 
+    # Start case FTS3
+    url = "http://" + FTS3_IP + "/api/case/" + FTS3_CASE_ID + "/start"
+
+    if result_login_fts3.status_code == 200:
+        result_start_fts3 = requests.get(url,
+                                         timeout=TIMEOUT,
+                                         cookies=result_login_fts3.cookies,
+                                         verify=False)
+
+        if result_start_fts3.status_code == 200:
+            returned_str += "<br><b>FortiTester 3.</b> Traffic started successfully."
+        else:
+            returned_str += "<br><b>Error:</b> Could not start traffic in FortiTester3. <br>" + \
+                            " Code: " + str(result_start_fts3.status_code) + " Text: " + str(result_start_fts3.text)
+    else:
+        returned_str += "<br><b>Error:</b> Could not log in to FortiTester3. <br> " + \
+                        " Code: " + str(result_login_fts3.status_code) + " Text: " + str(result_login_fts3.text)
+
+
     # Logout FTS1
     url = "http://" + FTS1_IP + "/api/user/logout"
 
@@ -362,6 +409,17 @@ def start_traffic():
 
     if result_logout_fts2.status_code != 200:
         returned_str += "<br> <b>Note:</b> User was not logged out of FortiTester2."
+
+    # Logout FTS3
+    url = "http://" + FTS3_IP + "/api/user/logout"
+
+    result_logout_fts3 = requests.get(url,
+                                      timeout=TIMEOUT,
+                                      cookies=result_login_fts3.cookies,
+                                      verify=False)
+
+    if result_logout_fts3.status_code != 200:
+        returned_str += "<br> <b>Note:</b> User was not logged out of FortiTester3."
 
     response.data = returned_str
 
@@ -390,6 +448,15 @@ def stop_traffic():
     url = "http://" + FTS2_IP + "/api/user/login"
 
     result_login_fts2 = requests.post(url,
+                                      data=payload,
+                                      timeout=TIMEOUT,
+                                      headers=headers,
+                                      verify=False)
+
+    # Login FTS3
+    url = "http://" + FTS3_IP + "/api/user/login"
+
+    result_login_fts3 = requests.post(url,
                                       data=payload,
                                       timeout=TIMEOUT,
                                       headers=headers,
@@ -431,6 +498,24 @@ def stop_traffic():
         returned_str += "<b>Error:</b> Could not log in to FortiTester2. <br> " + \
                         " Code: " + str(result_login_fts2.status_code) + " Text: " + result_login_fts2.text
 
+    # Stop case FTS3
+    url = "http://" + FTS3_IP + "/api/case/stop"
+
+    if result_login_fts3.status_code == 200:
+        result_start_fts3 = requests.get(url,
+                                         timeout=TIMEOUT,
+                                         cookies=result_login_fts3.cookies,
+                                         verify=False)
+
+        if result_start_fts3.status_code == 200:
+            returned_str += "<b>FortiTester 3</b>: Traffic stopped succesfully"
+        else:
+            returned_str += "<b>Error:</b> Could not stop traffic in FortiTester3. <br>" + \
+                            " Code: " + str(result_start_fts3.status_code) + " Text: " + result_start_fts3.text
+    else:
+        returned_str += "<b>Error:</b> Could not log in to FortiTester3. <br> " + \
+                        " Code: " + str(result_login_fts3.status_code) + " Text: " + result_login_fts3.text
+
     # Logout FTS1
     url = "http://" + FTS1_IP + "/api/user/logout"
 
@@ -453,6 +538,17 @@ def stop_traffic():
     if result_logout_fts2.status_code != 200:
         returned_str += "<br> <b>Note:</b> User was not logged out of FortiTester2."
 
+    # Logout FTS3
+    url = "http://" + FTS3_IP + "/api/user/logout"
+
+    result_logout_fts3 = requests.get(url,
+                                      timeout=TIMEOUT,
+                                      cookies=result_login_fts3.cookies,
+                                      verify=False)
+
+    if result_logout_fts3.status_code != 200:
+        returned_str += "<br> <b>Note:</b> User was not logged out of FortiTester3."
+
     response.data = returned_str
 
     return response
@@ -460,10 +556,14 @@ def stop_traffic():
 
 @app.route("/reset_data", methods=['POST'])
 def reset_data():
-    global data_cpuload_time1, data_cpuload_time2, data_cpuload_time3, \
-        data_cpuload_time4, data_fgtload_time1, data_fgtload_time2, \
+    global data_cpuload_time1, data_cpuload_time2, \
+        data_fgtload_time1, data_fgtload_time2, \
         data_fgtload_time3, data_fgtload_time4, data_fgtload_time5, \
-        data_fgtload_time6, data_totalthroughput_ingress_time, \
+        data_fgtload_time6, data_fgtload_time7, data_fgtload_time8, \
+        data_fgtsess_time1, data_fgtsess_time2, \
+        data_fgtsess_time3, data_fgtsess_time4, data_fgtsess_time5, \
+        data_fgtsess_time6, data_fgtsess_time7, data_fgtsess_time8, \
+        data_totalthroughput_ingress_time, \
         data_totalthroughput_egress_time, data_fgtthroughput1_time, \
         data_fgtthroughput2_time, data_fgtthroughput3_time, \
         data_fgtthroughput4_time, data_fgtthroughput5_time, \
@@ -471,14 +571,23 @@ def reset_data():
 
     data_cpuload_time1 = [-1] * 60
     data_cpuload_time2 = [-1] * 60
-    data_cpuload_time3 = [-1] * 60
-    data_cpuload_time4 = [-1] * 60
     data_fgtload_time1 = [-1] * 60
     data_fgtload_time2 = [-1] * 60
     data_fgtload_time3 = [-1] * 60
     data_fgtload_time4 = [-1] * 60
     data_fgtload_time5 = [-1] * 60
     data_fgtload_time6 = [-1] * 60
+    data_fgtload_time7 = [-1] * 60
+    data_fgtload_time8 = [-1] * 60
+
+    data_fgtsess_time1 = [-1] * 60
+    data_fgtsess_time2 = [-1] * 60
+    data_fgtsess_time3 = [-1] * 60
+    data_fgtsess_time4 = [-1] * 60
+    data_fgtsess_time5 = [-1] * 60
+    data_fgtsess_time6 = [-1] * 60
+    data_fgtsess_time7 = [-1] * 60
+    data_fgtsess_time8 = [-1] * 60
 
     data_totalthroughput_ingress_time = [-1] * 60
     data_totalthroughput_egress_time = [-1] * 60
@@ -489,6 +598,8 @@ def reset_data():
     data_fgtthroughput4_time = [-1] * 60
     data_fgtthroughput5_time = [-1] * 60
     data_fgtthroughput6_time = [-1] * 60
+
+    data_fortitester_case_limit = [-1]
 
     response = Response()
     response.headers.add('Access-Control-Allow-Origin', '*')
@@ -520,14 +631,22 @@ def status():
 
     data = {"cpuload_time1": data_cpuload_time1,
             "cpuload_time2": data_cpuload_time2,
-            "cpuload_time3": data_cpuload_time3,
-            "cpuload_time4": data_cpuload_time4,
             "fgtload_time1": data_fgtload_time1,
             "fgtload_time2": data_fgtload_time2,
             "fgtload_time3": data_fgtload_time3,
             "fgtload_time4": data_fgtload_time4,
             "fgtload_time5": data_fgtload_time5,
             "fgtload_time6": data_fgtload_time6,
+            "fgtload_time7": data_fgtload_time7,
+            "fgtload_time8": data_fgtload_time8,
+            "fgtsess_time1": data_fgtsess_time1,
+            "fgtsess_time2": data_fgtsess_time2,
+            "fgtsess_time3": data_fgtsess_time3,
+            "fgtsess_time4": data_fgtsess_time4,
+            "fgtsess_time5": data_fgtsess_time5,
+            "fgtsess_time6": data_fgtsess_time6,
+            "fgtsess_time7": data_fgtsess_time7,
+            "fgtsess_time8": data_fgtsess_time8,
             "totalthroughput_ingress_time": data_totalthroughput_ingress_time,
             "totalthroughput_egress_time": data_totalthroughput_egress_time,
             "fgtthroughput1_time": data_fgtthroughput1_time,
@@ -536,6 +655,9 @@ def status():
             "fgtthroughput4_time": data_fgtthroughput4_time,
             "fgtthroughput5_time": data_fgtthroughput5_time,
             "fgtthroughput6_time": data_fgtthroughput6_time,
+            "fgtthroughput7_time": data_fgtthroughput7_time,
+            "fgtthroughput8_time": data_fgtthroughput8_time,
+            "tester_case_limit": data_fortitester_case_limit,
             "vms_running": VMS_RUNNING
             }
 
@@ -620,7 +742,9 @@ def synchronize_counters():
             "fgtload_time3": data_fgtload_time3,
             "fgtload_time4": data_fgtload_time4,
             "fgtload_time5": data_fgtload_time5,
-            "fgtload_time6": data_fgtload_time6
+            "fgtload_time6": data_fgtload_time6,
+            "fgtload_time7": data_fgtload_time7,
+            "fgtload_time8": data_fgtload_time8
             }
 
     vms_running_real = 0
@@ -672,12 +796,6 @@ def request_cpu_load_from_nodes():
     if len(results) > 1:
         if results[1] is not None: push_value_to_list(data_cpuload_time2,
                                                       loads(results[1].content.decode('utf-8'))['total'])
-    if len(results) > 2:
-        if results[2] is not None: push_value_to_list(data_cpuload_time3,
-                                                      loads(results[2].content.decode('utf-8'))['total'])
-    if len(results) > 3:
-        if results[3] is not None: push_value_to_list(data_cpuload_time4,
-                                                      loads(results[3].content.decode('utf-8'))['total'])
 
     # ******************************
     # Get Values from FortiGates
@@ -688,6 +806,7 @@ def request_cpu_load_from_nodes():
 
     fgt_login_requests = [None] * len(urls_fgt)
     fgt_cpu_requests = [None] * len(urls_fgt)
+    fgt_cps_requests = [None] * len(urls_fgt)
 
     # First, request CPU data
 
@@ -727,12 +846,41 @@ def request_cpu_load_from_nodes():
                 push_value_to_list(globals()['data_fgtload_time' + str(i + 1)],
                                    loads(fgt_cpu_results[i].content.decode('utf-8'))['results']['cpu'][0]['current'])
             except:
-                print("Error getting data from FortiGate:", i)
+                print("Error getting data - cpu load - from FortiGate:", i)
         else:
             print("FGT request was not ok:", i)
             if fgt_cpu_results[i] is not None:
                 print("  -> result: ", fgt_cpu_results[i].status_code)
             push_value_to_list(globals()['data_fgtload_time' + str(i + 1)], -1)
+
+    # Now get the info related to sessions per second
+    for i in range(len(fgt_sessions)):
+        fgt_cps_requests[i] = grequests.get(
+            urls_fgt[i] + 'api/v2/monitor/firewall/session/select?count=0&summary=true',
+            session=fgt_sessions[i],
+            headers=fgt_sessions[i].headers,
+            timeout=TIMEOUT,
+            verify=False)
+
+    fgt_cps_results = grequests.map(fgt_cps_requests)
+
+    print("fgt_cps_results:", fgt_cps_results)
+
+    # Only if request to get CPU was 200 OK then
+    # get the value and push it to the list
+
+    for i in range(len(fgt_cps_results)):
+        if fgt_cps_results[i] and fgt_cps_results[i].status_code == 200:
+            try:
+                push_value_to_list(globals()['data_fgtsess_time' + str(i + 1)],
+                                   loads(fgt_cps_results[i].content.decode('utf-8'))['results']['summary']['setup_rate'])
+            except:
+                print("Error getting data - session setup rate- from FortiGate:", i)
+        else:
+            print("FGT request was not ok:", i)
+            if fgt_cps_results[i] is not None:
+                print("  -> result: ", fgt_cps_results[i].status_code)
+            push_value_to_list(globals()['data_fgtsess_time' + str(i + 1)], -1)
 
     # ********************************
     # Get Values from DSO CGNATMapper
@@ -763,16 +911,33 @@ def request_cpu_load_from_nodes():
     # Instead of port3 (which is faulty) we use 21-24
     # Instead of port4 we use 25-28
     push_value_to_list(data_totalthroughput_ingress_time,
-                       bps[1] / 1000000000 * 8)
+                       (bps[1] + bps[3]) / 1000000000 * 8)
     push_value_to_list(data_totalthroughput_egress_time,
-                       bps[2] / 1000000000 * 8)
+                       (bps[2] + bps[4]) / 1000000000 * 8)
 
     push_value_to_list(data_fgtthroughput1_time, (bps[31] + bps[32]) / 2000000000 * 8)
     push_value_to_list(data_fgtthroughput2_time, (bps[29] + bps[30]) / 2000000000 * 8)
     push_value_to_list(data_fgtthroughput3_time, (bps[27] + bps[28]) / 2000000000 * 8)
-    push_value_to_list(data_fgtthroughput4_time, (bps[11] + bps[12]) / 2000000000 * 8)
-    push_value_to_list(data_fgtthroughput5_time, (bps[13] + bps[14]) / 2000000000 * 8)
-    push_value_to_list(data_fgtthroughput6_time, (bps[15] + bps[16]) / 2000000000 * 8)
+    push_value_to_list(data_fgtthroughput4_time, (bps[25] + bps[26]) / 2000000000 * 8)
+    push_value_to_list(data_fgtthroughput5_time, (bps[23] + bps[24]) / 2000000000 * 8)
+    push_value_to_list(data_fgtthroughput6_time, (bps[21] + bps[22]) / 2000000000 * 8)
+    push_value_to_list(data_fgtthroughput7_time, (bps[19] + bps[20]) / 2000000000 * 8)
+    push_value_to_list(data_fgtthroughput8_time, (bps[17] + bps[18]) / 2000000000 * 8)
+
+    # ********************************
+    # Get Values from FortiTester
+    # ********************************
+
+    #results = requests.get('http://' + FTS1_IP + '/api/networkLimit/getRunningLimit',
+    #                       timeout=TIMEOUT)
+
+    #if results.status_code >= 200 and results.status_code < 300:
+    #    value = loads(results.content.decode('utf-8'))
+    #    if 'Data' in value:
+    #        case_limit = value['Data'][0]['BandWidthLimit']
+    #    else:
+    #        case_limit = -1
+    #    push_value_to_list(data_fortitester_case_limit, case_limit)
 
 
 def execute_start_vm(fgt_id):
@@ -806,7 +971,7 @@ def execute_stop_vm(fgt_id):
     stdout = ssh_stdout.read().decode('ascii').strip('\n')
     stderr = ssh_stderr.read().decode('ascii').strip('\n')
 
-    #if ssh_stdout.channel.recv_exit_status() == 0:
+    # if ssh_stdout.channel.recv_exit_status() == 0:
     global VMS_RUNNING
     VMS_RUNNING -= 1
 
@@ -821,8 +986,8 @@ def execute_add_device(fgt_id):
 
     # Send "add device" request: modify every device config and add a new one
     returned_str = ""
-    private_port = [31, 29]
-    public_port = [32, 30]
+    private_port = [31, 29, 27, 25, 23, 21, 19, 17]
+    public_port = [32, 30, 28, 26, 24, 22, 20, 18]
     for device in range(1, fgt_id+1):
 
         lower_limit = int(((device-1)*TOP_IP_LIMIT/fgt_id)+1)
@@ -857,8 +1022,8 @@ def execute_remove_device(fgt_id):
 
     # Send "remove device" request
     returned_str = ""
-    private_port = [31, 29, 27]
-    public_port = [32, 30, 28]
+    private_port = [31, 29, 27, 25, 23, 21, 19, 17]
+    public_port = [32, 30, 28, 26, 24, 22, 20, 18]
     for device in range(1, fgt_id+1):
 
         lower_limit = int(((device-1)*TOP_IP_LIMIT/(fgt_id - 1))+1)
