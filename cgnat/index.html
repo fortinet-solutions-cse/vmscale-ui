@@ -343,6 +343,9 @@
         template_fgtsess_time.chart.backgroundColor = 'rgba(0,0,0,0)'
         template_fgtsess_time.colors = ['#3F30A0'];
         template_fgtsess_time.title.color = '#FFEEEE'
+        template_fgtsess_time.yAxis.title.text = "Session Setup Rate"
+        template_fgtsess_time.yAxis.max = 20000
+        template_fgtsess_time.yAxis.tickInterval = 5000
         template_fgtsess_time.series = [{
             marker: {
                 enabled: false,
@@ -410,7 +413,7 @@
                 max: 200,
                 tickInterval: 20
             },
-            colors: ['#FF7200', '#AA7200', '#8bbc21', '#910000', '#1aadce',
+            colors: ['#FF7200', '#AA2200', '#881133', '#910000', '#1aadce',
                 '#492970', '#f28f43', '#77a1e5', '#c42525', '#a6c96a'
             ],
             legend: {
@@ -441,15 +444,24 @@
                 }]
             },
             series: [{
+                name: 'total',
+                marker: {
+                    enabled: false,
+                },
+                lineWidth: 5,
+                color: '#FF9102'
+            }, {
                 name: 'ingress',
                 marker: {
                     enabled: false,
-                }
+                },
+                color: '#E05050'
             }, {
                 name: 'egress',
                 marker: {
                     enabled: false,
-                }
+                },
+                color: '#801c1c'
             }]
         };
 
@@ -468,8 +480,8 @@
                     text: 'Gbps'
                 },
                 min: 0,
-                max: 20,
-                tickInterval: 4
+                max: 25,
+                tickInterval: 5
             },
             legend: {
                 layout: 'vertical',
@@ -936,8 +948,10 @@
                         'fgtsess_time8'], true);
 
                     $('#totalthroughput_time').highcharts().series[0].setData(parsedJSONResult[
-                        'totalthroughput_ingress_time'], true);
+                        'totalthroughput_time'], true);
                     $('#totalthroughput_time').highcharts().series[1].setData(parsedJSONResult[
+                        'totalthroughput_ingress_time'], true);
+                    $('#totalthroughput_time').highcharts().series[2].setData(parsedJSONResult[
                         'totalthroughput_egress_time'], true);
 
                     $('#fgtthroughput_time').highcharts().series[0].setData(parsedJSONResult[

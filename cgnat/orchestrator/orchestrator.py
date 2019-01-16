@@ -108,6 +108,7 @@ data_fgtsess_time6 = [-1] * 60
 data_fgtsess_time7 = [-1] * 60
 data_fgtsess_time8 = [-1] * 60
 
+data_totalthroughput_time = [-1] * 60
 data_totalthroughput_ingress_time = [-1] * 60
 data_totalthroughput_egress_time = [-1] * 60
 
@@ -563,11 +564,11 @@ def reset_data():
         data_fgtsess_time1, data_fgtsess_time2, \
         data_fgtsess_time3, data_fgtsess_time4, data_fgtsess_time5, \
         data_fgtsess_time6, data_fgtsess_time7, data_fgtsess_time8, \
-        data_totalthroughput_ingress_time, \
+        data_totalthroughput_time, data_totalthroughput_ingress_time, \
         data_totalthroughput_egress_time, data_fgtthroughput1_time, \
         data_fgtthroughput2_time, data_fgtthroughput3_time, \
         data_fgtthroughput4_time, data_fgtthroughput5_time, \
-        data_fgtthroughput6_time
+        data_fgtthroughput6_time, data_fgtthroughput7_time, data_fgtthroughput8_time
 
     data_cpuload_time1 = [-1] * 60
     data_cpuload_time2 = [-1] * 60
@@ -589,6 +590,7 @@ def reset_data():
     data_fgtsess_time7 = [-1] * 60
     data_fgtsess_time8 = [-1] * 60
 
+    data_totalthroughput_time = [-1] * 60
     data_totalthroughput_ingress_time = [-1] * 60
     data_totalthroughput_egress_time = [-1] * 60
 
@@ -598,6 +600,8 @@ def reset_data():
     data_fgtthroughput4_time = [-1] * 60
     data_fgtthroughput5_time = [-1] * 60
     data_fgtthroughput6_time = [-1] * 60
+    data_fgtthroughput7_time = [-1] * 60
+    data_fgtthroughput8_time = [-1] * 60
 
     data_fortitester_case_limit = [-1]
 
@@ -647,6 +651,7 @@ def status():
             "fgtsess_time6": data_fgtsess_time6,
             "fgtsess_time7": data_fgtsess_time7,
             "fgtsess_time8": data_fgtsess_time8,
+            "totalthroughput_time": data_totalthroughput_time,
             "totalthroughput_ingress_time": data_totalthroughput_ingress_time,
             "totalthroughput_egress_time": data_totalthroughput_egress_time,
             "fgtthroughput1_time": data_fgtthroughput1_time,
@@ -902,18 +907,26 @@ def request_cpu_load_from_nodes():
                      timeout=TIMEOUT)
 
     bps = {}
+    bps_ingress = {}
+    bps_egress = {}
 
     for port in port_stats:
         bps[port['id']] = (port['tx_bytes'] - port['last']['tx_bytes'] +
                            port['rx_bytes'] - port['last']['rx_bytes']) / \
                           (port['timestamp'] - port['last']['timestamp'])
 
-    # Instead of port3 (which is faulty) we use 21-24
-    # Instead of port4 we use 25-28
+        bps_ingress[port['id']] = (port['tx_bytes'] - port['last']['tx_bytes']) / \
+                          (port['timestamp'] - port['last']['timestamp'])
+
+        bps_egress[port['id']] = (port['rx_bytes'] - port['last']['rx_bytes']) / \
+                          (port['timestamp'] - port['last']['timestamp'])
+
     push_value_to_list(data_totalthroughput_ingress_time,
-                       (bps[1] + bps[3]) / 1000000000 * 8)
+                       (bps_ingress[1] + bps_ingress[3] + bps_ingress[5] + bps_ingress[7] + bps_ingress[9]) / 1000000000 * 8)
     push_value_to_list(data_totalthroughput_egress_time,
-                       (bps[2] + bps[4]) / 1000000000 * 8)
+                       (bps_egress[1] + bps_egress[3] + bps_egress[5] + bps_egress[7] + bps_egress[9]) / 1000000000 * 8)
+    push_value_to_list(data_totalthroughput_time,
+                       (bps[1] + bps[3] + bps[5] + bps[7] + bps[9]) / 1000000000 * 8)
 
     push_value_to_list(data_fgtthroughput1_time, (bps[31] + bps[32]) / 2000000000 * 8)
     push_value_to_list(data_fgtthroughput2_time, (bps[29] + bps[30]) / 2000000000 * 8)
