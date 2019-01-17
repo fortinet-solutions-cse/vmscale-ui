@@ -65,10 +65,15 @@ FTS1_IP = "10.210.1.50"
 FTS2_IP = "10.210.1.28"
 FTS3_IP = "10.210.14.21"
 
-FTS1_CASE_ID = '5c34b6adedc8ea03e6eba3f6'
+FTS1_CASE_ID = '5c408900edc8ea03e6eba41e'
 FTS2_CASE_ID = '5c35bf91dfaa0f02eb32932f'
 FTS3_CASE_ID = '5c35d0914c977103325e3f2a'
 FTS_CPS_PER_VM = 5200
+
+MAX_BW_FTS1 = 72000
+MAX_BW_FTS1 = 72000
+MAX_BW_FTS1 = 20000
+
 
 TIMEOUT = 3
 POLL_INTERVAL = 4
@@ -117,6 +122,8 @@ data_fgtsess_time8 = [-100] * 60
 data_totalthroughput_time = [-100] * 60
 data_totalthroughput_ingress_time = [-100] * 60
 data_totalthroughput_egress_time = [-100] * 60
+
+data_totalsessionrate_time = [-100] * 60
 
 data_fgtthroughput1_time = [-100] * 60
 data_fgtthroughput2_time = [-100] * 60
@@ -498,7 +505,7 @@ def stop_traffic():
                                          verify=False)
 
         if result_start_fts2.status_code == 200:
-            returned_str += "<b>FortiTester 2</b>: Traffic stopped succesfully"
+            returned_str += "<b>FortiTester 2</b>: Traffic stopped succesfully <br>"
         else:
             returned_str += "<b>Error:</b> Could not stop traffic in FortiTester2. <br>" + \
                             " Code: " + str(result_start_fts2.status_code) + " Text: " + result_start_fts2.text
@@ -572,7 +579,7 @@ def reset_data():
         data_fgtsess_time3, data_fgtsess_time4, data_fgtsess_time5, \
         data_fgtsess_time6, data_fgtsess_time7, data_fgtsess_time8, \
         data_totalthroughput_time, data_totalthroughput_ingress_time, \
-        data_totalthroughput_egress_time, data_fgtthroughput1_time, \
+        data_totalthroughput_egress_time, data_totalsessionrate_time, data_fgtthroughput1_time, \
         data_fgtthroughput2_time, data_fgtthroughput3_time, \
         data_fgtthroughput4_time, data_fgtthroughput5_time, \
         data_fgtthroughput6_time, data_fgtthroughput7_time, data_fgtthroughput8_time
@@ -600,6 +607,8 @@ def reset_data():
     data_totalthroughput_time = [-100] * 60
     data_totalthroughput_ingress_time = [-100] * 60
     data_totalthroughput_egress_time = [-100] * 60
+
+    data_totalsessionrate_time = [-100] * 60
 
     data_fgtthroughput1_time = [-100] * 60
     data_fgtthroughput2_time = [-100] * 60
@@ -661,6 +670,7 @@ def status():
             "totalthroughput_time": data_totalthroughput_time,
             "totalthroughput_ingress_time": data_totalthroughput_ingress_time,
             "totalthroughput_egress_time": data_totalthroughput_egress_time,
+            "totalsessionrate_time": data_totalsessionrate_time,
             "fgtthroughput1_time": data_fgtthroughput1_time,
             "fgtthroughput2_time": data_fgtthroughput2_time,
             "fgtthroughput3_time": data_fgtthroughput3_time,
@@ -897,6 +907,13 @@ def request_cpu_load_from_nodes():
                 print("  -> result: ", fgt_cps_results[i].status_code)
             push_value_to_list(globals()['data_fgtsess_time' + str(i + 1)], -100)
 
+    total_session_rate = 0
+    for i in range(len(fgt_cps_results)):
+        if globals()['data_fgtsess_time' + str(i + 1)][-1] >= 0:
+            total_session_rate += globals()['data_fgtsess_time' + str(i + 1)][-1]
+ 
+    push_value_to_list(data_totalsessionrate_time, total_session_rate)
+
     # ********************************
     # Get Values from DSO CGNATMapper
     # ********************************
@@ -1047,7 +1064,7 @@ def execute_remove_device(fgt_id):
     returned_str = ""
     private_port = [31, 29, 27, 25, 23, 21, 19, 17]
     public_port = [32, 30, 28, 26, 24, 22, 20, 18]
-    for device in range(1, fgt_id+1):
+    for device in reversed(range(1, fgt_id+1)):
 
         lower_limit = int(((device-1)*TOP_IP_LIMIT/(fgt_id - 1))+1)
         upper_limit = int(device*TOP_IP_LIMIT/(fgt_id - 1))

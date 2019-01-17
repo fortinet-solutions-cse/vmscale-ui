@@ -270,17 +270,18 @@
                     dataLabels: {
                         enabled: false
                     },
-                    enableMouseTracking: false
+                    enableMouseTracking: true
                 }
             },
             series: [{
+                name: '% CPU Load',
                 marker: {
                     enabled: false,
                 }
             }]
         };
 
-        var template_cpuload_time1 = $.extend(true, {}, template_cpuload_time);
+/*        var template_cpuload_time1 = $.extend(true, {}, template_cpuload_time);
         template_cpuload_time1.title.text = "Host 1";
         $('#cpuload_time1').highcharts(template_cpuload_time1);
 
@@ -288,7 +289,7 @@
         template_cpuload_time2.title.text = "Host 2";
         template_cpuload_time2.yAxis.title.text = '';
         $('#cpuload_time2').highcharts(template_cpuload_time2);
-
+*/
         var template_fgtload_time = $.extend(true, {}, template_cpuload_time);
         template_fgtload_time.chart.backgroundColor = 'rgba(0,0,0,0)'
         template_fgtload_time.colors = ['#3F30A0'];
@@ -349,6 +350,7 @@
         template_fgtsess_time.yAxis.tickInterval = 5000
         template_fgtsess_time.series = [{
             marker: {
+                name: 'Session Setup Rate',
                 enabled: false,
             }
         }];
@@ -427,7 +429,7 @@
                     dataLabels: {
                         enabled: false
                     },
-                    enableMouseTracking: false
+                    enableMouseTracking: true
                 }
             },
             responsive: {
@@ -467,6 +469,62 @@
         };
 
         $('#totalthroughput_time').highcharts(template_total_throughput_time);
+        
+        var template_totalsessionrate_time = {
+            chart: {
+                type: 'line',
+                animation: false
+
+            },
+            title: {
+                text: ''
+            },
+            yAxis: {
+                title: {
+                    text: ''
+                },
+                min: 0,
+                max: 160000,
+                tickInterval: 40000
+            },
+            colors: ['#FF7200', '#AA2200', '#881133', '#910000', '#1aadce',
+                '#492970', '#f28f43', '#77a1e5', '#c42525', '#a6c96a'
+            ],
+            legend: false,
+            plotOptions: {
+                line: {
+                    dataLabels: {
+                        enabled: false
+                    },
+                    enableMouseTracking: true
+                }
+            },
+            responsive: {
+                rules: [{
+                    condition: {
+                        maxWidth: 500
+                    },
+                    chartOptions: {
+                        legend: {
+                            layout: 'horizontal',
+                            align: 'center',
+                            verticalAlign: 'bottom'
+                        }
+                    }
+                }]
+            },
+            series: [{
+                name: 'total',
+                marker: {
+                    enabled: false,
+                },
+                color: '#AAEEA2'
+            }]
+        };
+
+        $('#totalsessionrate_time').highcharts(template_totalsessionrate_time);
+        
+
 
         var template_fgt_throughput_time = {
             chart: {
@@ -494,7 +552,7 @@
                     dataLabels: {
                         enabled: false
                     },
-                    enableMouseTracking: false
+                    enableMouseTracking: true
                 }
             },
             series: [{
@@ -832,9 +890,9 @@
         $('#auto-mode').click(function(){
             $('#sidebar').toggleClass('active');
             setTimeout(function () {
-                $('#cpuload_time1').highcharts().reflow()
+/*                $('#cpuload_time1').highcharts().reflow()
                 $('#cpuload_time2').highcharts().reflow()
-                $('#fgtload_time1').highcharts().reflow()
+*/                $('#fgtload_time1').highcharts().reflow()
                 $('#fgtload_time2').highcharts().reflow()
                 $('#fgtload_time3').highcharts().reflow()
                 $('#fgtload_time4').highcharts().reflow()
@@ -851,6 +909,7 @@
                 $('#fgtsess_time7').highcharts().reflow()
                 $('#fgtsess_time8').highcharts().reflow()
                 $('#totalthroughput_time').highcharts().reflow()
+                $('#totalsessionrate_time').highcharts().reflow()
                 $('#fgtthroughput_time').highcharts().reflow()
             },400);
             
@@ -909,11 +968,11 @@
 
                     var parsedJSONResult = $.parseJSON(result);
 
-                    $('#cpuload_time1').highcharts().series[0].setData(parsedJSONResult[
+/*                    $('#cpuload_time1').highcharts().series[0].setData(parsedJSONResult[
                         'cpuload_time1'], true);
                     $('#cpuload_time2').highcharts().series[0].setData(parsedJSONResult[
                         'cpuload_time2'], true);
-
+*/
                     $('#fgtload_time1').highcharts().series[0].setData(parsedJSONResult[
                         'fgtload_time1'], true);
                     $('#fgtload_time2').highcharts().series[0].setData(parsedJSONResult[
@@ -954,7 +1013,10 @@
                         'totalthroughput_ingress_time'], true);
                     $('#totalthroughput_time').highcharts().series[2].setData(parsedJSONResult[
                         'totalthroughput_egress_time'], true);
-
+                    
+                    $('#totalsessionrate_time').highcharts().series[0].setData(parsedJSONResult[
+                    'totalsessionrate_time'], true);
+                        
                     $('#fgtthroughput_time').highcharts().series[0].setData(parsedJSONResult[
                         'fgtthroughput1_time'], true);
                     $('#fgtthroughput_time').highcharts().series[1].setData(parsedJSONResult[
@@ -1034,7 +1096,7 @@
                 </script>
                 <div style="position: relative; left: 70px; top: -80px;font-size:25px; font-weight:normal; margin:auto">Gbps</div>
             </div>
-            <div style="padding-left: 30px; padding-top: 30px; margin:auto">
+<!--             <div style="padding-left: 30px; padding-top: 30px; margin:auto">
                 <input type="text" value="0" class="dial" data-fgColor="#BBBBBB" data-bgColor="#ca1e00" 
                     data-angleOffset="-125" data-angleArc="250" data-rotation="clockwise"
                     data-min="0" data-max="200" id="tester_throughput">
@@ -1047,7 +1109,7 @@
                 </script>
                 <div style="position: relative; left: 70px; top: -80px;font-size:25px; font-weight:normal; margin:auto; color:#BBBBBB">Gbps</div>
             </div>
-        </nav>
+ -->    </nav>
 
         <!-- Main content and charts -->
 
@@ -1152,33 +1214,33 @@
 
                 <div class="tab-content">
                     <div id="home" class="tab-pane fade in active">
-                        <div class="row">
+<!--                         <div class="row">
                                 <div class="col-sm-2">
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading">CPU Load Host 1</div>
-                                            <div class="panel-body">
-                                                <div id="cpuload_time1" style="width:100%; float:left; height:20vh;"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-sm-10">
-                                        <div class="panel panel-default">
-                                            <div class="panel-heading">FortiGate Load</div>
-                                            <div class="panel-body">
-                                                <div id="fgtload_time1" style="width:12.4%; float:left; height:19vh;"></div>
-                                                <div id="fgtload_time2" style="width:12.4%; float:left; height:19vh;"></div>
-                                                <div id="fgtload_time3" style="width:12.4%; float:left; height:19vh;"></div>
-                                                <div id="fgtload_time4" style="width:12.4%; float:left; height:19vh;"></div>
-                                                <div id="fgtload_time5" style="width:12.4%; float:left; height:19vh;"></div>
-                                                <div id="fgtload_time6" style="width:12.4%; float:left; height:19vh;"></div>
-                                                <div id="fgtload_time7" style="width:12.4%; float:left; height:19vh;"></div>
-                                                <div id="fgtload_time8" style="width:12.4%; float:left; height:19vh;"></div>
-                                            </div>
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading">CPU Load Host 1</div>
+                                        <div class="panel-body">
+                                            <div id="cpuload_time1" style="width:100%; float:left; height:20vh;"></div>
                                         </div>
                                     </div>
                                 </div>
+ -->                                <div class="col-sm-12">
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading">FortiGate Load</div>
+                                        <div class="panel-body">
+                                            <div id="fgtload_time1" style="width:12.4%; float:left; height:19vh;"></div>
+                                            <div id="fgtload_time2" style="width:12.4%; float:left; height:19vh;"></div>
+                                            <div id="fgtload_time3" style="width:12.4%; float:left; height:19vh;"></div>
+                                            <div id="fgtload_time4" style="width:12.4%; float:left; height:19vh;"></div>
+                                            <div id="fgtload_time5" style="width:12.4%; float:left; height:19vh;"></div>
+                                            <div id="fgtload_time6" style="width:12.4%; float:left; height:19vh;"></div>
+                                            <div id="fgtload_time7" style="width:12.4%; float:left; height:19vh;"></div>
+                                            <div id="fgtload_time8" style="width:12.4%; float:left; height:19vh;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         <div class="row">
-                            <div class="col-sm-2">
+<!--                             <div class="col-sm-2">
                                 <div class="panel panel-default">
                                     <div class="panel-heading">CPU Load Host 2</div>
                                     <div class="panel-body">
@@ -1186,9 +1248,10 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-sm-10">
+ -->                        
+                            <div class="col-sm-12">
                                 <div class="panel panel-default">
-                                    <div class="panel-heading">FortiGate Sessions<div class="square" id="sync_warning" style="float:right"></div></div>
+                                    <div class="panel-heading">FortiGate Session Setup Rate<div class="square" id="sync_warning" style="float:right"></div></div>
                                     <div class="panel-body">
                                         <div id="fgtsess_time1" style="width:12.4%; float:left; height:19vh;"></div>
                                         <div id="fgtsess_time2" style="width:12.4%; float:left; height:19vh;"></div>
@@ -1203,7 +1266,7 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-sm-5">
+                            <div class="col-sm-3">
                                 <div class="panel panel-default">
                                     <div class="panel-heading">Total Throughput</div>
                                     <div class="panel-body">
@@ -1211,7 +1274,15 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-sm-7">
+                            <div class="col-sm-3">
+                                <div class="panel panel-default">
+                                    <div class="panel-heading">Total Session Setup Rate</div>
+                                    <div class="panel-body">
+                                        <div id="totalsessionrate_time" style="width:100%; float:left; height:25vh;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
                                 <div class="panel panel-default">
                                     <div class="panel-heading">FortiGate Throughput [SDN Layer]</div>
                                     <div class="panel-body">
