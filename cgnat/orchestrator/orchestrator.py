@@ -51,9 +51,15 @@ urls_hypervisors = [
 # Address of the hypervisor of each fortigate
 fgt_hypervisors = [
     '10.210.14.6',
+    '10.210.14.6',
+    '10.210.14.6',
+    '10.210.14.6',
+    '10.210.14.7',
+    '10.210.14.7',
+    '10.210.14.7',
     '10.210.14.7']
 
-url_cgnatmapper = 'http://10.210.9.133:8080'
+url_cgnatmapper = 'http://10.210.14.10:8080'
 
 FTS1_IP = "10.210.1.50"
 FTS2_IP = "10.210.1.28"
@@ -75,7 +81,7 @@ MAX_NUMBER_OF_SAMPLES = 300
 
 VMS_RUNNING = 1
 
-TOP_IP_LIMIT = 200
+TOP_IP_LIMIT = 255
 PUBLIC_SUBNET_PREFIX = '64.64.84.'  # IP Pools will be contained in PUBLIC_SUBNET_PREFIX.1 up to PUBLIC_SUBNET_PREFIX.TOP_IP_LIMIT
 
 BANDWIDTH_VALUE = 0
@@ -87,48 +93,48 @@ DPID = '00000090fb64cce9'
 
 fgt_sessions = [requests.Session() for u in urls_fgt]
 
-data_cpuload_time1 = [-1] * 60
-data_cpuload_time2 = [-1] * 60
+data_cpuload_time1 = [-100] * 60
+data_cpuload_time2 = [-100] * 60
 
-data_fgtload_time1 = [-1] * 60
-data_fgtload_time2 = [-1] * 60
-data_fgtload_time3 = [-1] * 60
-data_fgtload_time4 = [-1] * 60
-data_fgtload_time5 = [-1] * 60
-data_fgtload_time6 = [-1] * 60
-data_fgtload_time7 = [-1] * 60
-data_fgtload_time8 = [-1] * 60
+data_fgtload_time1 = [-100] * 60
+data_fgtload_time2 = [-100] * 60
+data_fgtload_time3 = [-100] * 60
+data_fgtload_time4 = [-100] * 60
+data_fgtload_time5 = [-100] * 60
+data_fgtload_time6 = [-100] * 60
+data_fgtload_time7 = [-100] * 60
+data_fgtload_time8 = [-100] * 60
 
-data_fgtsess_time1 = [-1] * 60
-data_fgtsess_time2 = [-1] * 60
-data_fgtsess_time3 = [-1] * 60
-data_fgtsess_time4 = [-1] * 60
-data_fgtsess_time5 = [-1] * 60
-data_fgtsess_time6 = [-1] * 60
-data_fgtsess_time7 = [-1] * 60
-data_fgtsess_time8 = [-1] * 60
+data_fgtsess_time1 = [-100] * 60
+data_fgtsess_time2 = [-100] * 60
+data_fgtsess_time3 = [-100] * 60
+data_fgtsess_time4 = [-100] * 60
+data_fgtsess_time5 = [-100] * 60
+data_fgtsess_time6 = [-100] * 60
+data_fgtsess_time7 = [-100] * 60
+data_fgtsess_time8 = [-100] * 60
 
-data_totalthroughput_time = [-1] * 60
-data_totalthroughput_ingress_time = [-1] * 60
-data_totalthroughput_egress_time = [-1] * 60
+data_totalthroughput_time = [-100] * 60
+data_totalthroughput_ingress_time = [-100] * 60
+data_totalthroughput_egress_time = [-100] * 60
 
-data_fgtthroughput1_time = [-1] * 60
-data_fgtthroughput2_time = [-1] * 60
-data_fgtthroughput3_time = [-1] * 60
-data_fgtthroughput4_time = [-1] * 60
-data_fgtthroughput5_time = [-1] * 60
-data_fgtthroughput6_time = [-1] * 60
-data_fgtthroughput7_time = [-1] * 60
-data_fgtthroughput8_time = [-1] * 60
+data_fgtthroughput1_time = [-100] * 60
+data_fgtthroughput2_time = [-100] * 60
+data_fgtthroughput3_time = [-100] * 60
+data_fgtthroughput4_time = [-100] * 60
+data_fgtthroughput5_time = [-100] * 60
+data_fgtthroughput6_time = [-100] * 60
+data_fgtthroughput7_time = [-100] * 60
+data_fgtthroughput8_time = [-100] * 60
 
-data_fortitester_case_limit = [-1]
+data_fortitester_case_limit = [-100]
 
 returned_str = ""
 
 
 def push_value_to_list(list, value):
     list.append(float("{0:.2f}".format(value)))
-    if list[0] <= -1 or not KEEP_DATA or len(list) > MAX_NUMBER_OF_SAMPLES:
+    if list[0] <= -100 or not KEEP_DATA or len(list) > MAX_NUMBER_OF_SAMPLES:
         del list[0]
 
 
@@ -170,6 +176,7 @@ def _start_vm(fgt_id, auto_throughput=True):
             counter += 1
             time.sleep(1)
 
+        time.sleep(10) # Allow ten seconds more for FortiGate to be ready
         returned_str += execute_add_device(fgt_id) + "<!--status:60%-->"
 
         returned_str += execute_rebalance_public_ips() + "<!--status:70%-->"
@@ -570,40 +577,40 @@ def reset_data():
         data_fgtthroughput4_time, data_fgtthroughput5_time, \
         data_fgtthroughput6_time, data_fgtthroughput7_time, data_fgtthroughput8_time
 
-    data_cpuload_time1 = [-1] * 60
-    data_cpuload_time2 = [-1] * 60
-    data_fgtload_time1 = [-1] * 60
-    data_fgtload_time2 = [-1] * 60
-    data_fgtload_time3 = [-1] * 60
-    data_fgtload_time4 = [-1] * 60
-    data_fgtload_time5 = [-1] * 60
-    data_fgtload_time6 = [-1] * 60
-    data_fgtload_time7 = [-1] * 60
-    data_fgtload_time8 = [-1] * 60
+    data_cpuload_time1 = [-100] * 60
+    data_cpuload_time2 = [-100] * 60
+    data_fgtload_time1 = [-100] * 60
+    data_fgtload_time2 = [-100] * 60
+    data_fgtload_time3 = [-100] * 60
+    data_fgtload_time4 = [-100] * 60
+    data_fgtload_time5 = [-100] * 60
+    data_fgtload_time6 = [-100] * 60
+    data_fgtload_time7 = [-100] * 60
+    data_fgtload_time8 = [-100] * 60
 
-    data_fgtsess_time1 = [-1] * 60
-    data_fgtsess_time2 = [-1] * 60
-    data_fgtsess_time3 = [-1] * 60
-    data_fgtsess_time4 = [-1] * 60
-    data_fgtsess_time5 = [-1] * 60
-    data_fgtsess_time6 = [-1] * 60
-    data_fgtsess_time7 = [-1] * 60
-    data_fgtsess_time8 = [-1] * 60
+    data_fgtsess_time1 = [-100] * 60
+    data_fgtsess_time2 = [-100] * 60
+    data_fgtsess_time3 = [-100] * 60
+    data_fgtsess_time4 = [-100] * 60
+    data_fgtsess_time5 = [-100] * 60
+    data_fgtsess_time6 = [-100] * 60
+    data_fgtsess_time7 = [-100] * 60
+    data_fgtsess_time8 = [-100] * 60
 
-    data_totalthroughput_time = [-1] * 60
-    data_totalthroughput_ingress_time = [-1] * 60
-    data_totalthroughput_egress_time = [-1] * 60
+    data_totalthroughput_time = [-100] * 60
+    data_totalthroughput_ingress_time = [-100] * 60
+    data_totalthroughput_egress_time = [-100] * 60
 
-    data_fgtthroughput1_time = [-1] * 60
-    data_fgtthroughput2_time = [-1] * 60
-    data_fgtthroughput3_time = [-1] * 60
-    data_fgtthroughput4_time = [-1] * 60
-    data_fgtthroughput5_time = [-1] * 60
-    data_fgtthroughput6_time = [-1] * 60
-    data_fgtthroughput7_time = [-1] * 60
-    data_fgtthroughput8_time = [-1] * 60
+    data_fgtthroughput1_time = [-100] * 60
+    data_fgtthroughput2_time = [-100] * 60
+    data_fgtthroughput3_time = [-100] * 60
+    data_fgtthroughput4_time = [-100] * 60
+    data_fgtthroughput5_time = [-100] * 60
+    data_fgtthroughput6_time = [-100] * 60
+    data_fgtthroughput7_time = [-100] * 60
+    data_fgtthroughput8_time = [-100] * 60
 
-    data_fortitester_case_limit = [-1]
+    data_fortitester_case_limit = [-100]
 
     response = Response()
     response.headers.add('Access-Control-Allow-Origin', '*')
@@ -669,7 +676,7 @@ def status():
     vms_running_real = 0
     for k, v in data.items():
         if 'fgtload_time' in k:
-            if v[len(v)-1] != -1:
+            if v[len(v)-1] != -100:
                 vms_running_real += 1
     data['vms_running_real'] = vms_running_real
 
@@ -685,42 +692,45 @@ def panic():
     global returned_str
     returned_str = ""
 
+    global VMS_RUNNING
+
+    response = Response()
+    response.headers.add('Access-Control-Allow-Origin', '*')
+
     try:
-        global VMS_RUNNING
-
-        response = Response()
-        response.headers.add('Access-Control-Allow-Origin', '*')
-
         returned_str = "<b>Panic log:</b> <br>" + str(stop_traffic().data.decode('ascii').strip('\n')) + "<br><br> <!--status:10%-->"
+    except:
+        returned_str += traceback.format_exc()
 
+    try:
         for vm in reversed(range(2, len(urls_fgt)+1)):
             returned_str += "<b>Orchestrating removal for device: </b>" + str(vm) + execute_remove_device(vm) + "<br>"
 
         returned_str += "<b>Orchestrating creation for device:</b> 1 " + execute_add_device(1) + "<br> <!--status:30%-->"
+    except:
+        returned_str += traceback.format_exc()
 
+    try:
         for vm in range(2, len(urls_fgt)+1):
             returned_str += execute_stop_vm(vm)
-
         returned_str += execute_start_vm(1) + "<!--status:50%-->"
-
         VMS_RUNNING = 1
-        
-        returned_str += execute_rebalance_public_ips() + "<!--status:70%-->"
-
-        time.sleep(5)
-
-        returned_str += "<br><b>Resetting charts:</b> " + str(reset_data().data.decode('ascii').strip('\n')) + "<!--status:100%-->"
-
-        global KEEP_DATA
-        KEEP_DATA = 1
-
-        response.data = returned_str
-        return response
-
     except:
+        returned_str += traceback.format_exc()
 
-        response.data = returned_str + traceback.format_exc()
-        return response
+    try:
+        returned_str += execute_rebalance_public_ips() + "<!--status:70%-->"
+        time.sleep(5)
+        returned_str += "<br><b>Resetting charts:</b> " + str(reset_data().data.decode('ascii').strip('\n')) + "<!--status:100%-->"
+    except:
+        returned_str += traceback.format_exc()
+
+    global KEEP_DATA
+    KEEP_DATA = 1
+
+    response.data = returned_str
+    return response
+
 
 
 @app.route("/progress_report", methods=['GET'])
@@ -755,7 +765,7 @@ def synchronize_counters():
     vms_running_real = 0
     for k, v in data.items():
         if 'fgtload_time' in k:
-            if v[len(v)-1] != -1:
+            if v[len(v)-1] != -100:
                 vms_running_real += 1
 
     VMS_RUNNING = vms_running_real
@@ -856,7 +866,7 @@ def request_cpu_load_from_nodes():
             print("FGT request was not ok:", i)
             if fgt_cpu_results[i] is not None:
                 print("  -> result: ", fgt_cpu_results[i].status_code)
-            push_value_to_list(globals()['data_fgtload_time' + str(i + 1)], -1)
+            push_value_to_list(globals()['data_fgtload_time' + str(i + 1)], -100)
 
     # Now get the info related to sessions per second
     for i in range(len(fgt_sessions)):
@@ -885,7 +895,7 @@ def request_cpu_load_from_nodes():
             print("FGT request was not ok:", i)
             if fgt_cps_results[i] is not None:
                 print("  -> result: ", fgt_cps_results[i].status_code)
-            push_value_to_list(globals()['data_fgtsess_time' + str(i + 1)], -1)
+            push_value_to_list(globals()['data_fgtsess_time' + str(i + 1)], -100)
 
     # ********************************
     # Get Values from DSO CGNATMapper
@@ -1150,35 +1160,47 @@ def execute_bandwith_change():
         # TODO: Put this in two separate loops for scaling out/in
 
         # TODO: Consider use a previous fixed BANDWITH_VALUE to avoid interferences during exec
-        if BANDWIDTH_VALUE > 15 and VMS_RUNNING <= 1:
+        if BANDWIDTH_VALUE > 20 and VMS_RUNNING <= 1:
             print("Creating fgt: " + str(2) + " to service " + str(reqid) + " Gbps")
             _start_vm(2, auto_throughput=False)
-        if BANDWIDTH_VALUE > 35 and VMS_RUNNING <= 2:
+        if BANDWIDTH_VALUE > 40 and VMS_RUNNING <= 2:
             print("Creating fgt: " + str(3) + " to service " + str(reqid) + " Gbps")
             _start_vm(3, auto_throughput=False)
-        if BANDWIDTH_VALUE > 55 and VMS_RUNNING <= 3:
+        if BANDWIDTH_VALUE > 60 and VMS_RUNNING <= 3:
             print("Creating fgt: " + str(4) + " to service " + str(reqid) + " Gbps")
             _start_vm(4, auto_throughput=False)
-        if BANDWIDTH_VALUE > 75 and VMS_RUNNING <= 4:
+        if BANDWIDTH_VALUE > 80 and VMS_RUNNING <= 4:
             print("Creating fgt: " + str(5) + " to service " + str(reqid) + " Gbps")
             _start_vm(5, auto_throughput=False)
-        if BANDWIDTH_VALUE > 95 and VMS_RUNNING <= 5:
+        if BANDWIDTH_VALUE > 100 and VMS_RUNNING <= 5:
             print("Creating fgt: " + str(6) + " to service " + str(reqid) + " Gbps")
             _start_vm(6, auto_throughput=False)
+        if BANDWIDTH_VALUE > 120 and VMS_RUNNING <= 6:
+            print("Creating fgt: " + str(7) + " to service " + str(reqid) + " Gbps")
+            _start_vm(7, auto_throughput=False)
+        if BANDWIDTH_VALUE > 140 and VMS_RUNNING <= 7:
+            print("Creating fgt: " + str(8) + " to service " + str(reqid) + " Gbps")
+            _start_vm(8, auto_throughput=False)
 
-        if BANDWIDTH_VALUE < 95 and VMS_RUNNING >= 6:
+        if BANDWIDTH_VALUE < 140 and VMS_RUNNING >= 8:
+            print("Destroying fgt: " + str(8) + " to service " + str(reqid) + " Gbps")
+            _stop_vm(8, auto_throughput=False)
+        if BANDWIDTH_VALUE < 120 and VMS_RUNNING >= 7:
+            print("Destroying fgt: " + str(7) + " to service " + str(reqid) + " Gbps")
+            _stop_vm(7, auto_throughput=False)
+        if BANDWIDTH_VALUE < 100 and VMS_RUNNING >= 6:
             print("Destroying fgt: " + str(6) + " to service " + str(reqid) + " Gbps")
             _stop_vm(6, auto_throughput=False)
-        if BANDWIDTH_VALUE < 75 and VMS_RUNNING >= 5:
+        if BANDWIDTH_VALUE < 80 and VMS_RUNNING >= 5:
             print("Destroying fgt: " + str(5) + " to service " + str(reqid) + " Gbps")
             _stop_vm(5, auto_throughput=False)
-        if BANDWIDTH_VALUE < 55 and VMS_RUNNING >= 4:
+        if BANDWIDTH_VALUE < 60 and VMS_RUNNING >= 4:
             print("Destroying fgt: " + str(4) + " to service " + str(reqid) + " Gbps")
             _stop_vm(4, auto_throughput=False)
-        if BANDWIDTH_VALUE < 35 and VMS_RUNNING >= 3:
+        if BANDWIDTH_VALUE < 40 and VMS_RUNNING >= 3:
             print("Destroying fgt: " + str(3) + " to service " + str(reqid) + " Gbps")
             _stop_vm(3, auto_throughput=False)
-        if BANDWIDTH_VALUE < 15 and VMS_RUNNING >= 2:
+        if BANDWIDTH_VALUE < 20 and VMS_RUNNING >= 2:
             print("Destroying fgt: " + str(2) + " to service " + str(reqid) + " Gbps")
             _stop_vm(2, auto_throughput=False)
 

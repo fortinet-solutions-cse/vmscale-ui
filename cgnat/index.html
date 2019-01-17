@@ -345,6 +345,7 @@
         template_fgtsess_time.title.color = '#FFEEEE'
         template_fgtsess_time.yAxis.title.text = "Session Setup Rate"
         template_fgtsess_time.yAxis.max = 20000
+        template_fgtsess_time.yAxis.min = 0
         template_fgtsess_time.yAxis.tickInterval = 5000
         template_fgtsess_time.series = [{
             marker: {
@@ -868,7 +869,7 @@
 
         function updateTitle(data, index) {
             var chart = $("#fgtload_time" + index).highcharts();
-            if (data["fgtload_time" + index][(data["fgtload_time" + index].length) - 1] == -1) {
+            if (data["fgtload_time" + index][(data["fgtload_time" + index].length) - 1] <= -1) {
                 chart.setTitle({
                     text: "FGT" + index + " - off"
                 });
@@ -883,7 +884,7 @@
             }
             chart.redraw();
             var chart = $("#fgtsess_time" + index).highcharts();
-            if (data["fgtsess_time" + index][(data["fgtsess_time" + index].length) - 1] == -1) {
+            if (data["fgtsess_time" + index][(data["fgtsess_time" + index].length) - 1] <= -1) {
                 chart.setTitle({
                     text: "FGT" + index + " - off"
                 });
@@ -995,8 +996,6 @@
                         $('#tester_throughput').val(0)
                     }
                     $('#tester_throughput').trigger('change');
-                    
-
                 }
             });
         };
