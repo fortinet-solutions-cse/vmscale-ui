@@ -3,6 +3,7 @@ from flask import Flask, Response, request, jsonify
 from random import random
 from apscheduler.schedulers.background import BackgroundScheduler
 from json import loads, dumps
+from functools import reduce
 import grequests
 import requests
 import gevent
@@ -70,9 +71,10 @@ FTS2_CASE_ID = '5c35bf91dfaa0f02eb32932f'
 FTS3_CASE_ID = '5c35d0914c977103325e3f2a'
 FTS_CPS_PER_VM = 5200
 
-MAX_BW_FTS1 = 72000
-MAX_BW_FTS1 = 72000
-MAX_BW_FTS1 = 20000
+MAX_BW_FTS1 = 78000
+MAX_BW_FTS2 = 78000
+MAX_BW_FTS3 = 15000
+MAX_BW_FTS_TOTAL = MAX_BW_FTS1 + MAX_BW_FTS2 + MAX_BW_FTS3
 
 
 TIMEOUT = 3
@@ -93,6 +95,8 @@ BANDWIDTH_VALUE = 0
 LAST_BANDWITH_VALUE = 0
 
 AUTO_SPAWN = True
+
+NUM_SAMPLES_FOR_AVERAGE = 5
 
 DPID = '00000090fb64cce9'
 
@@ -138,9 +142,23 @@ data_fortitester_case_limit = [-100]
 
 returned_str = ""
 
+dict_for_averages = {}
 
 def push_value_to_list(list, value):
-    list.append(float("{0:.2f}".format(value)))
+
+    global DICT_FOR_AVERAGES
+
+    if id(list) not in dict_for_averages:
+        dict_for_averages[id(list)] = [0] * NUM_SAMPLES_FOR_AVERAGE
+
+    dict_for_averages[id(list)].append(value)
+    del dict_for_averages[id(list)][0]
+
+    print(dict_for_averages[id(list)])
+
+    average = reduce(lambda x, y: x + y, dict_for_averages[id(list)]) / len(dict_for_averages[id(list)])
+
+    list.append(float("{0:.2f}".format(average)))
     if list[0] <= -100 or not KEEP_DATA or len(list) > MAX_NUMBER_OF_SAMPLES:
         del list[0]
 
@@ -686,7 +704,7 @@ def status():
     vms_running_real = 0
     for k, v in data.items():
         if 'fgtload_time' in k:
-            if v[len(v)-1] != -100:
+            if v[len(v)-1] <= -100:
                 vms_running_real += 1
     data['vms_running_real'] = vms_running_real
 
@@ -1143,7 +1161,7 @@ def execute_bandwith_change():
 
         reqid = BANDWIDTH_VALUE
 
-        # Send new bandwith limit to FTS
+        # Send new bandwith limit to FTS1
         try:
             headers = {
                 'Content-Type': "application/json",
@@ -1151,7 +1169,7 @@ def execute_bandwith_change():
 
             url_fts = "http://" + FTS1_IP + "/api/networkLimit/modify"
             fts_data = '{"config": { \
-                        "BandWidthLimit": ' + str(reqid * 1000) + ', \
+                        "BandWidthLimit": ' + str(int(reqid * 1000 * MAX_BW_FTS1 / MAX_BW_FTS_TOTAL)) + ', \
                         "PPSLimit": 0, \
                         "TestType": "HttpCps"}, \
                         "order": 0}'
@@ -1168,6 +1186,60 @@ def execute_bandwith_change():
                                       sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;')) + "<!--status:85%-->"
         except:
             returned_str += traceback.format_exc()
+
+        # Send new bandwith limit to FTS2
+        try:
+            headers = {
+                'Content-Type': "application/json",
+            }
+
+            url_fts = "http://" + FTS2_IP + "/api/networkLimit/modify"
+            fts_data = '{"config": { \
+                        "BandWidthLimit": ' + str(int(reqid * 1000 * MAX_BW_FTS2 / MAX_BW_FTS_TOTAL)) + ', \
+                        "PPSLimit": 0, \
+                        "TestType": "HttpCps"}, \
+                        "order": 0}'
+
+            results = requests.post(url_fts,
+                                    data=fts_data,
+                                    headers=headers,
+                                    timeout=TIMEOUT)
+
+            returned_str += "<br><b>FortiTester2 response (code): </b>" + str(results.status_code)
+            returned_str += "<br><b>FortiTester2 response (content): </b>" + \
+                            str(dumps(loads(results.content.decode('utf-8')),
+                                      indent=4,
+                                      sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;')) + "<!--status:85%-->"
+        except:
+            returned_str += traceback.format_exc()
+
+        # Send new bandwith limit to FTS3
+        try:
+            headers = {
+                'Content-Type': "application/json",
+            }
+
+            url_fts = "http://" + FTS3_IP + "/api/networkLimit/modify"
+            fts_data = '{"config": { \
+                        "BandWidthLimit": ' + str(int(reqid * 1000 * MAX_BW_FTS3 / MAX_BW_FTS_TOTAL)) + ', \
+                        "PPSLimit": 0, \
+                        "TestType": "HttpCps"}, \
+                        "order": 0}'
+
+            results = requests.post(url_fts,
+                                    data=fts_data,
+                                    headers=headers,
+                                    timeout=TIMEOUT)
+
+            returned_str += "<br><b>FortiTester3 response (code): </b>" + str(results.status_code)
+            returned_str += "<br><b>FortiTester3 response (content): </b>" + \
+                            str(dumps(loads(results.content.decode('utf-8')),
+                                      indent=4,
+                                      sort_keys=True).replace('\n', '<br>').replace(' ', '&nbsp;')) + "<!--status:85%-->"
+        except:
+            returned_str += traceback.format_exc()
+
+        print(returned_str)
 
         if not AUTO_SPAWN:
             return returned_str
