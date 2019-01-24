@@ -159,7 +159,7 @@ def push_value_to_list(list, value):
     average = reduce(lambda x, y: x + y, dict_for_averages[id(list)]) / len(dict_for_averages[id(list)])
 
     list.append(float("{0:.2f}".format(average)))
-    if list[0] <= -100 or not KEEP_DATA or len(list) > MAX_NUMBER_OF_SAMPLES:
+    if list[0] <= -( 100 - 1 ) or not KEEP_DATA or len(list) > MAX_NUMBER_OF_SAMPLES:
         del list[0]
 
 
@@ -704,7 +704,7 @@ def status():
     vms_running_real = 0
     for k, v in data.items():
         if 'fgtload_time' in k:
-            if v[len(v)-1] <= -100:
+            if v[len(v)-1] >= - (100 - 1):
                 vms_running_real += 1
     data['vms_running_real'] = vms_running_real
 
