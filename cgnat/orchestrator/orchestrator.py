@@ -10,6 +10,7 @@ import gevent
 import paramiko
 import traceback
 import html2text
+import re
 
 # Note previous patch to avoid error with paramiko
 # and grequests: https://github.com/paramiko/paramiko/issues/633
@@ -154,8 +155,6 @@ def push_value_to_list(list, value):
     dict_for_averages[id(list)].append(value)
     del dict_for_averages[id(list)][0]
 
-    print(dict_for_averages[id(list)])
-
     average = reduce(lambda x, y: x + y, dict_for_averages[id(list)]) / len(dict_for_averages[id(list)])
 
     list.append(float("{0:.2f}".format(average)))
@@ -201,8 +200,8 @@ def _start_vm(fgt_id, auto_throughput=True):
             counter += 1
             time.sleep(1)
 
-        time.sleep(10) # Allow ten seconds more for FortiGate to be ready
-        returned_str += execute_add_device(fgt_id) + "<!--status:60%-->"
+        time.sleep(10)  # Allow ten seconds more for FortiGate to be ready
+        returned_str += execute_add_device_in_mapper(fgt_id) + "<!--status:60%-->"
 
         returned_str += execute_rebalance_public_ips() + "<!--status:70%-->"
 
@@ -734,7 +733,7 @@ def panic():
         for vm in reversed(range(2, len(urls_fgt)+1)):
             returned_str += "<b>Orchestrating removal for device: </b>" + str(vm) + execute_remove_device(vm) + "<br>"
 
-        returned_str += "<b>Orchestrating creation for device:</b> 1 " + execute_add_device(1) + "<br> <!--status:30%-->"
+        returned_str += "<b>Orchestrating creation for device:</b> 1 " + execute_add_device_in_mapper(1) + "<br> <!--status:30%-->"
     except:
         returned_str += traceback.format_exc()
 
@@ -828,7 +827,7 @@ def request_cpu_load_from_nodes():
     # Get Values from Hypervisors
     # ******************************
 
-    global urls_hypervisors
+    """ global urls_hypervisors
 
     rs = (grequests.get(u, timeout=TIMEOUT) for u in urls_hypervisors)
 
@@ -839,6 +838,7 @@ def request_cpu_load_from_nodes():
     if len(results) > 1:
         if results[1] is not None: push_value_to_list(data_cpuload_time2,
                                                       loads(results[1].content.decode('utf-8'))['total'])
+ """
 
     # ******************************
     # Get Values from FortiGates
@@ -886,15 +886,16 @@ def request_cpu_load_from_nodes():
     for i in range(len(fgt_cpu_results)):
         if fgt_cpu_results[i] and fgt_cpu_results[i].status_code == 200:
             try:
-                push_value_to_list(globals()['data_fgtload_time' + str(i + 1)],
-                                   loads(fgt_cpu_results[i].content.decode('utf-8'))['results']['cpu'][0]['current'])
+            #    push_value_to_list(globals()['data_fgtload_time' + str(i + 1)],
+            #                       loads(fgt_cpu_results[i].content.decode('utf-8'))['results']['cpu'][0]['current'])
+                pass
             except:
                 print("Error getting data - cpu load - from FortiGate:", i)
         else:
             print("FGT request was not ok:", i)
             if fgt_cpu_results[i] is not None:
                 print("  -> result: ", fgt_cpu_results[i].status_code)
-            push_value_to_list(globals()['data_fgtload_time' + str(i + 1)], -100)
+            #push_value_to_list(globals()['data_fgtload_time' + str(i + 1)], -100)
 
     # Now get the info related to sessions per second
     for i in range(len(fgt_sessions)):
@@ -929,8 +930,40 @@ def request_cpu_load_from_nodes():
     for i in range(len(fgt_cps_results)):
         if globals()['data_fgtsess_time' + str(i + 1)][-1] >= 0:
             total_session_rate += globals()['data_fgtsess_time' + str(i + 1)][-1]
- 
+
     push_value_to_list(data_totalsessionrate_time, total_session_rate)
+
+
+    # Request CPU from Hypervisor (keep also CPU Load from FGT for now)
+
+    for i in range(0, len(urls_hypervisors)):
+        ip_hv = re.findall(r'[0-9]+(?:\.[0-9]+){3}', urls_hypervisors[i])[0]
+        print(ip_hv)
+
+        ssh = paramiko.SSHClient()
+        ssh.load_system_host_keys()
+        ssh.connect(ip_hv, username=USERNAME_HYPERVISOR)
+        _, ssh_stdout, ssh_stderr = ssh.exec_command(
+            "top -b -n1 -c -w 200|grep fgt|grep -v grep|awk '{ print $9,$14}'|tr -s '= ' '*'|cut -d'*'  -f1,3 |sed -e 's/,debug-threads//'")
+
+        stdout = ssh_stdout.read().decode('ascii').strip('\n')
+        stderr = ssh_stderr.read().decode('ascii').strip('\n')
+
+        print(stdout)
+        print(stderr)
+        print(ssh_stdout.channel.recv_exit_status())
+
+        regex = '(.*)\*fgt-cgnat-([0-9]*)'
+        results = re.findall(regex, stdout)
+
+        for m in results:
+            val, id = m
+            print(val)
+            print(id)
+            push_value_to_list(globals()['data_fgtload_time' + str(id)], float(val)/16)
+
+        ssh.close()
+
 
     # ********************************
     # Get Values from DSO CGNATMapper
@@ -1040,7 +1073,7 @@ def execute_stop_vm(fgt_id):
     return returned_str
 
 
-def execute_add_device(fgt_id):
+def execute_add_device_in_mapper(fgt_id):
 
     # Send "add device" request: modify every device config and add a new one
     returned_str = ""
