@@ -317,11 +317,13 @@ def _stop_vm(fgt_id, auto_throughput=True):
 
         returned_str += execute_remove_device(fgt_id) + "<!--status:60%-->"
 
-
         # StopVm
-        returned_str += execute_stop_vm(fgt_id) + "<!--status:80%-->"
+        global VMS_RUNNING
+        VMS_RUNNING -= 1
 
-        returned_str += execute_rebalance_public_ips() + "<!--status:100%-->"
+        returned_str += execute_rebalance_public_ips() + "<!--status:80%-->"
+        returned_str += execute_stop_vm(fgt_id) + "<!--status:100%-->"
+
         return returned_str
 
     except:
@@ -1028,8 +1030,7 @@ def execute_stop_vm(fgt_id):
     stderr = ssh_stderr.read().decode('ascii').strip('\n')
 
     # if ssh_stdout.channel.recv_exit_status() == 0:
-    global VMS_RUNNING
-    VMS_RUNNING -= 1
+
 
     returned_str = "<b>FortiGate id: </b>" + str(fgt_id) + "<br>" + \
                    "<b>VM shutdown: </b>" + str(stderr).replace('\\n', '<br>') + \
