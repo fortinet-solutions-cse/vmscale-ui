@@ -317,7 +317,6 @@ def _stop_vm(fgt_id, auto_throughput=True):
 
         returned_str += execute_remove_device(fgt_id) + "<!--status:60%-->"
 
-        time.sleep(5)
 
         # StopVm
         returned_str += execute_stop_vm(fgt_id) + "<!--status:80%-->"
