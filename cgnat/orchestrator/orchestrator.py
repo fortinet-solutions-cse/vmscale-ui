@@ -144,6 +144,7 @@ returned_str = ""
 
 dict_for_averages = {}
 
+
 def push_value_to_list(list, value):
 
     global DICT_FOR_AVERAGES
@@ -153,8 +154,6 @@ def push_value_to_list(list, value):
 
     dict_for_averages[id(list)].append(value)
     del dict_for_averages[id(list)][0]
-
-    print(dict_for_averages[id(list)])
 
     average = reduce(lambda x, y: x + y, dict_for_averages[id(list)]) / len(dict_for_averages[id(list)])
 
@@ -201,10 +200,10 @@ def _start_vm(fgt_id, auto_throughput=True):
             counter += 1
             time.sleep(1)
 
-        time.sleep(10) # Allow ten seconds more for FortiGate to be ready
+        time.sleep(10)  # Allow ten seconds more for FortiGate to be ready
         returned_str += execute_add_device(fgt_id) + "<!--status:60%-->"
 
-        returned_str += execute_rebalance_public_ips() + "<!--status:70%-->"
+        # returned_str += execute_rebalance_public_ips() + "<!--status:70%-->"
 
         # Increase traffic load FTS1
         if auto_throughput:
@@ -318,11 +317,14 @@ def _stop_vm(fgt_id, auto_throughput=True):
 
         returned_str += execute_remove_device(fgt_id) + "<!--status:60%-->"
 
-
         # StopVm
-        returned_str += execute_stop_vm(fgt_id) + "<!--status:80%-->"
+        global VMS_RUNNING
+        VMS_RUNNING -= 1
 
-        returned_str += execute_rebalance_public_ips() + "<!--status:100%-->"
+        returned_str += execute_rebalance_public_ips() + "<!--status:80%-->"
+   
+        returned_str += execute_stop_vm(fgt_id) + "<!--status:100%-->"
+
         return returned_str
 
     except:
@@ -1029,8 +1031,7 @@ def execute_stop_vm(fgt_id):
     stderr = ssh_stderr.read().decode('ascii').strip('\n')
 
     # if ssh_stdout.channel.recv_exit_status() == 0:
-    global VMS_RUNNING
-    VMS_RUNNING -= 1
+
 
     returned_str = "<b>FortiGate id: </b>" + str(fgt_id) + "<br>" + \
                    "<b>VM shutdown: </b>" + str(stderr).replace('\\n', '<br>') + \
@@ -1046,6 +1047,44 @@ def execute_add_device(fgt_id):
     private_port = [31, 29, 27, 25, 23, 21, 19, 17]
     public_port = [32, 30, 28, 26, 24, 22, 20, 18]
     for device in range(1, fgt_id+1):
+
+        vmId = device
+
+        lower_limit = int(((vmId-1)*TOP_IP_LIMIT/VMS_RUNNING)+1)
+        upper_limit = int(vmId*TOP_IP_LIMIT/VMS_RUNNING)
+        print("New range for vm: %d Range: %d..%d " % (vmId, lower_limit, upper_limit))
+
+        results_login = requests.post(urls_fgt[vmId-1] + '/logincheck',
+                                      data='username=admin&secretkey=&ajax=1',
+                                      verify=False,
+                                      timeout=TIMEOUT)
+        xsrfToken = results_login.cookies['ccsrftoken']
+        jar = results_login.cookies
+
+        target_data = {'startip': PUBLIC_SUBNET_PREFIX + str(lower_limit),
+                       'endip': PUBLIC_SUBNET_PREFIX + str(upper_limit)}
+
+        headers = {"Content-Type": "application/json",
+                   "x-csrftoken": xsrfToken.strip('"')}
+
+        results_put_ippool = requests.put(urls_fgt[vmId-1] + 'api/v2/cmdb/firewall/ippool/dynIP?vdom=root',
+                                          data=dumps(target_data),
+                                          verify=False,
+                                          headers=headers,
+                                          cookies=jar,
+                                          timeout=TIMEOUT)
+
+        results_logout = requests.post(urls_fgt[vmId-1] + 'logout',
+                                       verify=False,
+                                       headers=headers,
+                                       cookies=jar,
+                                       timeout=TIMEOUT)
+
+        returned_str += "<br><b>FortiGate %d. Re-balancing IPs. Responses: <br>     Login:</b> %s <b>Set IPPool:</b> %s <b>(Range:</b> %d..%d <b>) Logout:</b> %s" % \
+            (vmId, str(results_login.status_code), str(results_put_ippool.status_code), lower_limit, upper_limit, str(results_logout.status_code))
+
+
+
 
         lower_limit = int(((device-1)*TOP_IP_LIMIT/fgt_id)+1)
         upper_limit = int(device*TOP_IP_LIMIT/fgt_id)
@@ -1070,7 +1109,7 @@ def execute_add_device(fgt_id):
         returned_str += "<br><b>NoviFlow response (code): </b>" + str(results.status_code)
 
         returned_str += "<br><b>NoviFlow response (content): </b>" + \
-                        str(html2text.html2text(results.content.decode('utf-8'))) 
+                        str(html2text.html2text(results.content.decode('utf-8')))
 
     return returned_str + "<br>"
 
