@@ -66,14 +66,14 @@ FTS1_IP = "10.210.1.50"
 FTS2_IP = "10.210.1.28"
 FTS3_IP = "10.210.14.21"
 
-FTS1_CASE_ID = '5c408900edc8ea03e6eba41e'
-FTS2_CASE_ID = '5c35bf91dfaa0f02eb32932f'
-FTS3_CASE_ID = '5c35d0914c977103325e3f2a'
+FTS1_CASE_ID = '5cc19020edc8ea0372edf901'
+FTS2_CASE_ID = '5cc18fb9dfaa0f02f8a5fcdd'
+FTS3_CASE_ID = '5cc1d6564c977102b601d0c5'
 FTS_CPS_PER_VM = 5200
 
-MAX_BW_FTS1 = 78000
-MAX_BW_FTS2 = 78000
-MAX_BW_FTS3 = 15000
+MAX_BW_FTS1 = 80000
+MAX_BW_FTS2 = 80000
+MAX_BW_FTS3 = 40000
 MAX_BW_FTS_TOTAL = MAX_BW_FTS1 + MAX_BW_FTS2 + MAX_BW_FTS3
 
 
@@ -968,11 +968,11 @@ def request_cpu_load_from_nodes():
                           (port['timestamp'] - port['last']['timestamp'])
 
     push_value_to_list(data_totalthroughput_ingress_time,
-                       (bps_ingress[1] + bps_ingress[3] + bps_ingress[5] + bps_ingress[7] + bps_ingress[9]) / 1000000000 * 8)
+                       (bps_ingress[1] + bps_ingress[3] + bps_ingress[5] + bps_ingress[7] + bps_ingress[9] + bps_ingress[11]) / 1000000000 * 8)
     push_value_to_list(data_totalthroughput_egress_time,
-                       (bps_egress[1] + bps_egress[3] + bps_egress[5] + bps_egress[7] + bps_egress[9]) / 1000000000 * 8)
+                       (bps_egress[1] + bps_egress[3] + bps_egress[5] + bps_egress[7] + bps_egress[9] + bps_egress[11]) / 1000000000 * 8)
     push_value_to_list(data_totalthroughput_time,
-                       (bps[1] + bps[3] + bps[5] + bps[7] + bps[9]) / 1000000000 * 8)
+                       (bps[1] + bps[3] + bps[5] + bps[7] + bps[9] + bps[11]) / 1000000000 * 8)
 
     push_value_to_list(data_fgtthroughput1_time, (bps[31] + bps[32]) / 2000000000 * 8)
     push_value_to_list(data_fgtthroughput2_time, (bps[29] + bps[30]) / 2000000000 * 8)
@@ -1287,47 +1287,47 @@ def execute_bandwith_change():
         # TODO: Put this in two separate loops for scaling out/in
 
         # TODO: Consider use a previous fixed BANDWITH_VALUE to avoid interferences during exec
-        if BANDWIDTH_VALUE > 20 and VMS_RUNNING <= 1:
+        if BANDWIDTH_VALUE > 25 and VMS_RUNNING <= 1:
             print("Creating fgt: " + str(2) + " to service " + str(reqid) + " Gbps")
             _start_vm(2, auto_throughput=False)
-        if BANDWIDTH_VALUE > 40 and VMS_RUNNING <= 2:
+        if BANDWIDTH_VALUE > 50 and VMS_RUNNING <= 2:
             print("Creating fgt: " + str(3) + " to service " + str(reqid) + " Gbps")
             _start_vm(3, auto_throughput=False)
-        if BANDWIDTH_VALUE > 60 and VMS_RUNNING <= 3:
+        if BANDWIDTH_VALUE > 75 and VMS_RUNNING <= 3:
             print("Creating fgt: " + str(4) + " to service " + str(reqid) + " Gbps")
             _start_vm(4, auto_throughput=False)
-        if BANDWIDTH_VALUE > 80 and VMS_RUNNING <= 4:
+        if BANDWIDTH_VALUE > 100 and VMS_RUNNING <= 4:
             print("Creating fgt: " + str(5) + " to service " + str(reqid) + " Gbps")
             _start_vm(5, auto_throughput=False)
-        if BANDWIDTH_VALUE > 100 and VMS_RUNNING <= 5:
+        if BANDWIDTH_VALUE > 125 and VMS_RUNNING <= 5:
             print("Creating fgt: " + str(6) + " to service " + str(reqid) + " Gbps")
             _start_vm(6, auto_throughput=False)
-        if BANDWIDTH_VALUE > 120 and VMS_RUNNING <= 6:
+        if BANDWIDTH_VALUE > 150 and VMS_RUNNING <= 6:
             print("Creating fgt: " + str(7) + " to service " + str(reqid) + " Gbps")
             _start_vm(7, auto_throughput=False)
-        if BANDWIDTH_VALUE > 140 and VMS_RUNNING <= 7:
+        if BANDWIDTH_VALUE > 175 and VMS_RUNNING <= 7:
             print("Creating fgt: " + str(8) + " to service " + str(reqid) + " Gbps")
             _start_vm(8, auto_throughput=False)
 
-        if BANDWIDTH_VALUE < 140 and VMS_RUNNING >= 8:
+        if BANDWIDTH_VALUE < 175 and VMS_RUNNING >= 8:
             print("Destroying fgt: " + str(8) + " to service " + str(reqid) + " Gbps")
             _stop_vm(8, auto_throughput=False)
-        if BANDWIDTH_VALUE < 120 and VMS_RUNNING >= 7:
+        if BANDWIDTH_VALUE < 150 and VMS_RUNNING >= 7:
             print("Destroying fgt: " + str(7) + " to service " + str(reqid) + " Gbps")
             _stop_vm(7, auto_throughput=False)
-        if BANDWIDTH_VALUE < 100 and VMS_RUNNING >= 6:
+        if BANDWIDTH_VALUE < 125 and VMS_RUNNING >= 6:
             print("Destroying fgt: " + str(6) + " to service " + str(reqid) + " Gbps")
             _stop_vm(6, auto_throughput=False)
-        if BANDWIDTH_VALUE < 80 and VMS_RUNNING >= 5:
+        if BANDWIDTH_VALUE < 100 and VMS_RUNNING >= 5:
             print("Destroying fgt: " + str(5) + " to service " + str(reqid) + " Gbps")
             _stop_vm(5, auto_throughput=False)
-        if BANDWIDTH_VALUE < 60 and VMS_RUNNING >= 4:
+        if BANDWIDTH_VALUE < 75 and VMS_RUNNING >= 4:
             print("Destroying fgt: " + str(4) + " to service " + str(reqid) + " Gbps")
             _stop_vm(4, auto_throughput=False)
-        if BANDWIDTH_VALUE < 40 and VMS_RUNNING >= 3:
+        if BANDWIDTH_VALUE < 50 and VMS_RUNNING >= 3:
             print("Destroying fgt: " + str(3) + " to service " + str(reqid) + " Gbps")
             _stop_vm(3, auto_throughput=False)
-        if BANDWIDTH_VALUE < 20 and VMS_RUNNING >= 2:
+        if BANDWIDTH_VALUE < 25 and VMS_RUNNING >= 2:
             print("Destroying fgt: " + str(2) + " to service " + str(reqid) + " Gbps")
             _stop_vm(2, auto_throughput=False)
 
